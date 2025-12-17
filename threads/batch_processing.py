@@ -3,8 +3,8 @@ import sys
 import json
 import re
 from PyQt5.QtCore import QThread, pyqtSignal
-from callAPI import VertexClient
-from cutPDF import cut_and_compress_pdf, get_file_size_mb
+from core.callAPI import VertexClient
+from core.cutPDF import cut_and_compress_pdf, get_file_size_mb
 
 class BatchProcessingThread(QThread):
     progress = pyqtSignal(str, int)

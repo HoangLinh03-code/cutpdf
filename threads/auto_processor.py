@@ -5,9 +5,9 @@ import xlsxwriter
 import sys
 from PyQt5.QtCore import QThread, pyqtSignal
 
-from client_driver import GoogleDriveAPI
-from callAPI import VertexClient
-from cutPDF import cut_pdf_by_pages
+from core.client_driver import GoogleDriveAPI
+from core.callAPI import VertexClient
+from core.cutPDF import cut_pdf_by_pages
 
 class AutoProcessor(QThread):
     """

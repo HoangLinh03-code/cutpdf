@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import QFont, QPixmap, QIcon
 from datetime import datetime
 
-from config.credentials import CredentialManager
+from config.credentials import Config
 from ui.cut_pdf_widget import CutPdfWidget
 from ui.convert_pdf_widget import ConvertPdfWidget
 from ui.sidebar import Sidebar
@@ -30,21 +30,19 @@ class MainWindow(QWidget):
     def setup_credentials(self):
         """Setup credentials với fallback options"""
         try:
-            # Method 1: Từ CredentialManager
-            self.credential_manager = CredentialManager()
-            self.credentials = self.credential_manager.credentials
-            self.project_id = self.credential_manager.project_id
+            self.credentials = Config.get_google_credentials()
+            self.project_id = Config.GOOGLE_PROJECT_ID
             
             if self.credentials and self.project_id:
-                print(f"✅ Credentials loaded successfully!")
-                print(f"📊 Project ID: {self.project_id}")
-                self.update_status("✅ Credentials loaded successfully", "success")
-                return
-            
+                print(f"✅ Credentials loaded successfully from ENV!")
+                self.update_status("✅ Credentials loaded", "success")
+            else:
+                self.update_status("⚠️ Check .env file", "warning")
+                self.show_credential_warning()
+                
         except Exception as e:
             print(f"❌ Lỗi credentials: {e}")
             self.credentials = None
-            self.project_id = None
             
         # Hiển thị cảnh báo nhưng vẫn cho phép ứng dụng chạy
         if not self.credentials:

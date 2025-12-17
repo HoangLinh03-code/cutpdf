@@ -4,8 +4,8 @@ import re
 import json
 import sys
 import xlsxwriter
-from cutPDF import cut_pdf_by_pages  # cut_pdf_by_pages là hàm bạn sẽ viết để cắt từng bài
-from callAPI import VertexClient
+from core.cutPDF import cut_pdf_by_pages  # cut_pdf_by_pages là hàm bạn sẽ viết để cắt từng bài
+from core.callAPI import VertexClient
 
 class ProcessingThread(QThread):
     progress = pyqtSignal(str, int)  # message, percent

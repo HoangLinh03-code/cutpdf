@@ -3,19 +3,12 @@ import base64
 import os 
 import json 
 import time
-
+from config.credentials import Config
 # Load credentials từ environment
 
 
 def get_mathpix_credentials():
-    """Lấy credentials từ environment variables"""
-    
-    # Fallback về hardcoded nếu không có trong .env
-    
-    app_key = "ccea572d017978e32d6bc06ec98e1cf8edee07834194f6a23175730cf4e30b02"
-    app_id = "companyname_edmicroeducationcompanylimited_taxcode_0108115077_address_5thfloor_tayhabuilding_no_19tohuustreet_trungvanward_namtuliemdistrict_hanoicity_vietnam_d72a10_c73665"
-    
-    return app_key, app_id
+    return Config.MATHPIX_APP_KEY, Config.MATHPIX_APP_ID
 
 def send_pdf_to_mathpix(file_path):
     """Gửi PDF đến Mathpix API để convert"""

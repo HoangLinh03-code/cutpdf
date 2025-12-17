@@ -6,11 +6,11 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtGui import QFont
 
 from process import ProcessingThread
-from auto_processor import AutoProcessor
-from local_processor import LocalProcessor
-from client_driver import GoogleDriveAPI
+from threads.auto_processor import AutoProcessor
+from threads.local_processor import LocalProcessor
+from core.client_driver import GoogleDriveAPI
 from threads.batch_processing import BatchProcessingThread
-from compress_manager import CompressThread
+from core.compress_manager import CompressThread
 
 from PyQt5.QtCore import pyqtSignal
 

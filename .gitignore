@@ -12,3 +12,7 @@ credential.py
 .env
 __pycache__/
 venv/
+build/
+CutPDF_Pro.spec
+dist/
+fix.py

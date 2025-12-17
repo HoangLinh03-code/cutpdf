@@ -8,7 +8,7 @@ import requests
 import time
 
 # THÊM IMPORT CHO GOOGLE DRIVE
-from client_driver import GoogleDriveAPI  # THÊM DÒNG NÀY
+from core.client_driver import GoogleDriveAPI  # THÊM DÒNG NÀY
 
 class ConvertPdfWidget(QWidget):
     # Signals để giao tiếp với main window
