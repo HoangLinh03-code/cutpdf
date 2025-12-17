@@ -1,0 +1,14 @@
+CUTPDF/
+.env
+__pycache__/
+venv/
+mixques/
+output/
+*.json
+SHS CD Toan 10_ruot (TB2025)- KNTT (16.3.2025)/
+credential.py
+*.pickle
+*.json
+.env
+__pycache__/
+venv/

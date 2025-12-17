@@ -1,0 +1,18 @@
+"Từ tài liệu được cung cấp, hãy phân tích chi tiết mục lục và tạo ra một kết quả có định dạng là một mảng JSON.
+Mục tiêu chính: Trích xuất các đơn vị nội dung chi tiết, độc lập và có ý nghĩa học tập (Chi tiết đến từng hàng một của mục lục).
+Yêu cầu về cấu trúc và nội dung:
+Định dạng đầu ra: Phải là một mảng JSON duy nhất, trong đó mỗi phần tử là một đối tượng.
+Cấu trúc đối tượng: Mỗi đối tượng phải chứa chính xác ba khóa:
+name
+start_page
+end_page
+LOGIC TRÍCH XUẤT (QUAN TRỌNG NHẤT):
+Khi bạn gặp một mục lớn (ví dụ: 'Chuyên đề', 'Chương'), hãy kiểm tra xem nó có được chia thành các tiểu mục nhỏ hơn ngay bên dưới không (ví dụ: 'Phần thứ nhất', 'Section A', 'Unit 1').
+Nếu có, bạn PHẢI trích xuất các tiểu mục này thành các đối tượng JSON riêng biệt.
+KHÔNG được tạo đối tượng JSON cho mục lớn bao quát đó.
+Ví dụ cho tài liệu hiện tại: Hãy trích xuất "Phần thứ nhất", "Phần thứ hai", "Phần thứ ba" của từng Chuyên đề và bỏ qua chính các mục "Chuyên đề 1", "Chuyên đề 2", "Chuyên đề 3".
+Nội dung cần loại bỏ:
+Luôn luôn lọc và loại bỏ tất cả các phần phụ không phải là nội dung học tập chính, bao gồm: Lời nói đầu, Lời giới thiệu, Hướng dẫn sử dụng, Ôn tập, Tổng kết, Phụ lục, Bảng chú giải thuật ngữ, Tài liệu tham khảo.
+Kiểu dữ liệu: Giá trị của start_page và end_page phải là số nguyên.
+Hãy áp dụng logic trên và chỉ trả về mảng JSON cuối cùng.
+Nếu tên bài chứa dấu ?, xóa dấu ? đi."
