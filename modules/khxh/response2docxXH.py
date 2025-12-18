@@ -421,7 +421,7 @@ def generate_or_get_image(hinh_anh_data: Dict) -> tuple:
     
     if loai == "tu_mo_ta" and mo_ta:
         try:
-            from common.text2Image import generate_image_from_text
+            from modules.common.text2Image import generate_image_from_text
             # Hàm này trả về 1 bytes object (hoặc None)
             image_bytes = generate_image_from_text(mo_ta)
             if image_bytes:
@@ -605,11 +605,6 @@ class PromptBuilder:
 # ============================================================================
 
 class DynamicDocxRenderer:
-    """
-    Renderer tự động thích ứng với cấu trúc JSON
-    KHÔNG hard-code logic render
-    """
-    
     def __init__(self, doc: Document):
         self.doc = doc
     
@@ -867,7 +862,7 @@ def response2docx_flexible(
     batch_name: Optional[str] = None
 ) -> Optional[str]:
     try:
-        from api.callAPI import VertexClient
+        from modules.common.callAPI import VertexClient
         
         client = VertexClient(project_id, creds, model_name)
         

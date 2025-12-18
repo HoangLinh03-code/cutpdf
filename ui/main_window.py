@@ -1,30 +1,35 @@
+"""
+Main Window - Cửa sổ chính với 4 modules: Cut PDF, Convert PDF, GenQues KHTN, GenQues KHXH
+"""
 import os
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from PyQt5.QtGui import QFont, QPixmap, QIcon
+from PyQt5.QtGui import QFont
 from datetime import datetime
 
 from config.credentials import Config
 from ui.cut_pdf_widget import CutPdfWidget
 from ui.convert_pdf_widget import ConvertPdfWidget
+from ui.genques_khtn_widget import GenQuesKHTNWidget
+from ui.genques_khxh_widget import GenQuesKHXHWidget
 from ui.sidebar import Sidebar
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("CutPDF - PDF Processing Tool")
-        self.resize(1200, 800)
+        self.setWindowTitle("CutPDF - Multi-Tool Platform")
+        self.resize(1400, 850)
         
         # Initialize data
         self.generated_files = []
         self.default_prompt_file = os.path.join(os.path.dirname(__file__), "..", "prompt.txt")
         self.current_mode = 0
         
-        # Setup credentials với error handling tốt hơn
+        # Setup credentials với error handling
         self.setup_credentials()
         
-        # Init UI (sẽ hoạt động cả khi có hoặc không có credentials)
+        # Init UI
         self.init_ui()
 
     def setup_credentials(self):
@@ -34,7 +39,7 @@ class MainWindow(QWidget):
             self.project_id = Config.GOOGLE_PROJECT_ID
             
             if self.credentials and self.project_id:
-                print(f"✅ Credentials loaded successfully from ENV!")
+                print(f"✅ Credentials loaded successfully!")
                 self.update_status("✅ Credentials loaded", "success")
             else:
                 self.update_status("⚠️ Check .env file", "warning")
@@ -43,10 +48,7 @@ class MainWindow(QWidget):
         except Exception as e:
             print(f"❌ Lỗi credentials: {e}")
             self.credentials = None
-            
-        # Hiển thị cảnh báo nhưng vẫn cho phép ứng dụng chạy
-        if not self.credentials:
-            self.update_status("⚠️ AI features disabled - No credentials", "warning")
+            self.update_status("⚠️ AI features disabled", "warning")
             self.show_credential_warning()
 
     def show_credential_warning(self):
@@ -58,7 +60,7 @@ class MainWindow(QWidget):
         msg.setInformativeText(
             "Một số tính năng AI sẽ bị vô hiệu hóa.\n\n"
             "Để khắc phục:\n"
-            "• Đặt file service_account.json trong thư mục config/\n"
+            "• Kiểm tra file .env.gen trong thư mục gốc\n"
             "• Hoặc liên hệ admin để được hỗ trợ\n\n"
             "Ứng dụng vẫn có thể sử dụng các tính năng khác."
         )
@@ -67,11 +69,14 @@ class MainWindow(QWidget):
 
     def init_ui(self):
         """Khởi tạo giao diện chính với sidebar và status bar"""
-        # Main layout chính
         main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
         
         # Content layout (horizontal)
         content_layout = QHBoxLayout()
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.setSpacing(0)
         
         # Sidebar
         self.sidebar = Sidebar()
@@ -81,7 +86,7 @@ class MainWindow(QWidget):
         # Content area
         self.content_area = QStackedWidget()
         
-        # Tạo các widget - pass credentials (có thể là None)
+        # Tạo các widget
         self.cut_pdf_widget = CutPdfWidget(
             self.credentials, 
             self.project_id, 
@@ -90,15 +95,21 @@ class MainWindow(QWidget):
         
         self.convert_pdf_widget = ConvertPdfWidget()
         
+        # --- THÊM 2 WIDGET MỚI ---
+        self.genques_khtn_widget = GenQuesKHTNWidget()
+        self.genques_khxh_widget = GenQuesKHXHWidget()
+        # -------------------------
+        
         # Connect signals từ widgets để update status
         self.connect_widget_signals()
         
-        self.content_area.addWidget(self.cut_pdf_widget)
-        self.content_area.addWidget(self.convert_pdf_widget)
+        # Add widgets to stack
+        self.content_area.addWidget(self.cut_pdf_widget)         # Index 0
+        self.content_area.addWidget(self.convert_pdf_widget)     # Index 1
+        self.content_area.addWidget(self.genques_khtn_widget)    # Index 2
+        self.content_area.addWidget(self.genques_khxh_widget)    # Index 3
         
         content_layout.addWidget(self.content_area)
-        content_layout.setStretch(0, 0)  # Sidebar cố định
-        content_layout.setStretch(1, 1)  # Content linh hoạt
         
         # Tạo status bar
         self.create_status_bar()
@@ -117,13 +128,12 @@ class MainWindow(QWidget):
         self.status_bar.setFixedHeight(35)
         self.status_bar.setStyleSheet("""
             QFrame {
-                background-color: #f0f0f0;
-                border-top: 1px solid #d0d0d0;
+                background-color: #34495e;
+                border-top: 1px solid #2c3e50;
                 padding: 3px;
             }
         """)
         
-        # Layout cho status bar
         status_layout = QHBoxLayout(self.status_bar)
         status_layout.setContentsMargins(10, 5, 10, 5)
         
@@ -132,19 +142,22 @@ class MainWindow(QWidget):
         self.status_icon.setFixedSize(16, 16)
         self.status_message = QLabel("Sẵn sàng")
         self.status_message.setFont(QFont("Arial", 9))
+        self.status_message.setStyleSheet("color: #ecf0f1;")
         
-        # 2. Progress indicator (ẩn mặc định)
+        # 2. Progress indicator
         self.status_progress = QProgressBar()
         self.status_progress.setFixedSize(150, 20)
         self.status_progress.setVisible(False)
         self.status_progress.setStyleSheet("""
             QProgressBar {
-                border: 1px solid grey;
+                border: 1px solid #2c3e50;
                 border-radius: 3px;
                 text-align: center;
+                color: white;
+                background-color: #2c3e50;
             }
             QProgressBar::chunk {
-                background-color: #4CAF50;
+                background-color: #3498db;
                 border-radius: 3px;
             }
         """)
@@ -155,12 +168,12 @@ class MainWindow(QWidget):
         # 4. File counter
         self.file_counter = QLabel("Files: 0")
         self.file_counter.setFont(QFont("Arial", 9))
-        self.file_counter.setStyleSheet("color: #666;")
+        self.file_counter.setStyleSheet("color: #bdc3c7;")
         
         # 5. Memory usage
         self.memory_label = QLabel()
         self.memory_label.setFont(QFont("Arial", 9))
-        self.memory_label.setStyleSheet("color: #666;")
+        self.memory_label.setStyleSheet("color: #bdc3c7;")
         
         # 6. Connection status
         self.connection_status = QLabel()
@@ -170,57 +183,61 @@ class MainWindow(QWidget):
         # 7. Current time
         self.time_label = QLabel()
         self.time_label.setFont(QFont("Arial", 9))
-        self.time_label.setStyleSheet("color: #666;")
+        self.time_label.setStyleSheet("color: #bdc3c7;")
         self.update_time()
         
-        # Timer để update thông tin real-time
+        # Timer
         self.status_timer = QTimer()
         self.status_timer.timeout.connect(self.update_realtime_info)
-        self.status_timer.start(2000)  # Update mỗi 2 giây
+        self.status_timer.start(2000)
         
-        # Thêm các component vào layout
+        # Add to layout
         status_layout.addWidget(self.status_icon)
         status_layout.addWidget(self.status_message)
         status_layout.addWidget(self.status_progress)
         status_layout.addItem(spacer)
         status_layout.addWidget(self.file_counter)
-        status_layout.addWidget(QLabel("|"))
+        status_layout.addWidget(QLabel("|", styleSheet="color: #7f8c8d;"))
         status_layout.addWidget(self.memory_label)
-        status_layout.addWidget(QLabel("|"))
+        status_layout.addWidget(QLabel("|", styleSheet="color: #7f8c8d;"))
         status_layout.addWidget(self.connection_status)
-        status_layout.addWidget(QLabel("|"))
+        status_layout.addWidget(QLabel("|", styleSheet="color: #7f8c8d;"))
         status_layout.addWidget(self.time_label)
 
     def connect_widget_signals(self):
         """Kết nối signals từ các widget để update status"""
-        if hasattr(self.cut_pdf_widget, 'status_changed'):
-            self.cut_pdf_widget.status_changed.connect(self.update_status)
-        if hasattr(self.cut_pdf_widget, 'progress_changed'):
-            self.cut_pdf_widget.progress_changed.connect(self.update_progress)
-        if hasattr(self.cut_pdf_widget, 'file_count_changed'):
-            self.cut_pdf_widget.file_count_changed.connect(self.update_file_count)
+        widgets = [
+            self.cut_pdf_widget,
+            self.convert_pdf_widget,
+            self.genques_khtn_widget,
+            self.genques_khxh_widget
+        ]
+        
+        for widget in widgets:
+            if hasattr(widget, 'status_changed'):
+                widget.status_changed.connect(self.update_status)
+            if hasattr(widget, 'progress_changed'):
+                widget.progress_changed.connect(self.update_progress)
+            if hasattr(widget, 'file_count_changed'):
+                widget.file_count_changed.connect(self.update_file_count)
     
     def update_status(self, message, status_type="info"):
-        """
-        Update status message với icon tương ứng
-        status_type: 'info', 'success', 'warning', 'error', 'processing'
-        """
+        """Update status message với icon tương ứng"""
         if not hasattr(self, 'status_message'):
             return
             
         self.status_message.setText(message)
         
-        # Set icon và màu sắc theo loại status
         if status_type == "success":
-            self.set_status_icon("✅", "#4CAF50")
+            self.set_status_icon("✅", "#2ecc71")
         elif status_type == "error":
-            self.set_status_icon("❌", "#f44336")
+            self.set_status_icon("❌", "#e74c3c")
         elif status_type == "warning":
-            self.set_status_icon("⚠️", "#ff9800")
+            self.set_status_icon("⚠️", "#f39c12")
         elif status_type == "processing":
-            self.set_status_icon("🔄", "#2196f3")
-        else:  # info
-            self.set_status_icon("ℹ️", "#666666")
+            self.set_status_icon("🔄", "#3498db")
+        else:
+            self.set_status_icon("ℹ️", "#ecf0f1")
     
     def set_status_icon(self, emoji, color):
         """Set icon và màu cho status"""
@@ -244,18 +261,16 @@ class MainWindow(QWidget):
             return
             
         if count is None:
-            # Auto count từ generated_files
             count = len(self.generated_files)
         
         self.file_counter.setText(f"Files: {count}")
         
-        # Thay đổi màu theo số lượng
         if count == 0:
-            color = "#666"
+            color = "#bdc3c7"
         elif count < 10:
-            color = "#4CAF50"
+            color = "#2ecc71"
         else:
-            color = "#ff9800"
+            color = "#f39c12"
             
         self.file_counter.setStyleSheet(f"color: {color};")
     
@@ -282,13 +297,12 @@ class MainWindow(QWidget):
             memory_mb = process.memory_info().rss / 1024 / 1024
             self.memory_label.setText(f"RAM: {memory_mb:.1f}MB")
             
-            # Thay đổi màu theo mức sử dụng
             if memory_mb > 500:
-                self.memory_label.setStyleSheet("color: #f44336; font-weight: bold;")
+                self.memory_label.setStyleSheet("color: #e74c3c; font-weight: bold;")
             elif memory_mb > 200:
-                self.memory_label.setStyleSheet("color: #ff9800;")
+                self.memory_label.setStyleSheet("color: #f39c12;")
             else:
-                self.memory_label.setStyleSheet("color: #666;")
+                self.memory_label.setStyleSheet("color: #bdc3c7;")
                 
         except ImportError:
             self.memory_label.setText("RAM: N/A")
@@ -307,43 +321,34 @@ class MainWindow(QWidget):
         """Update các thông tin real-time"""
         self.update_time()
         self.update_memory_usage()
-        self.update_file_count()
-    
-    def show_status_message(self, message, duration=3000, status_type="info"):
-        """Hiển thị message tạm thời trong status bar"""
-        original_message = self.status_message.text()
-        original_style = self.status_message.styleSheet()
-        
-        # Hiển thị message mới
-        self.update_status(message, status_type)
-        
-        # Sau duration milliseconds, trở về message cũ
-        QTimer.singleShot(duration, lambda: self.restore_status(original_message, original_style))
-    
-    def restore_status(self, message, style):
-        """Khôi phục status message ban đầu"""
-        self.status_message.setText(message)
-        self.status_message.setStyleSheet(style)
 
     def switch_mode(self, mode):
-        """Chuyển đổi chế độ giữa Cut PDF và Convert PDF"""
+        """Chuyển đổi chế độ giữa 4 modules"""
         self.current_mode = mode
         self.content_area.setCurrentIndex(mode)
         
-        if mode == 0:
-            self.setWindowTitle("CutPDF - Cắt PDF bằng AI")
-            self.update_status("Switched to Cut PDF mode", "info")
-        else:
-            self.setWindowTitle("CutPDF - Convert PDF")
-            self.update_status("Switched to Convert PDF mode", "info")
+        titles = [
+            "CutPDF - Cắt PDF bằng AI",
+            "CutPDF - Convert PDF",
+            "CutPDF - Sinh Câu Hỏi KHTN",
+            "CutPDF - Sinh Câu Hỏi KHXH"
+        ]
+        
+        messages = [
+            "Switched to Cut PDF mode",
+            "Switched to Convert PDF mode",
+            "Switched to GenQues KHTN mode",
+            "Switched to GenQues KHXH mode"
+        ]
+        
+        self.setWindowTitle(titles[mode])
+        self.update_status(messages[mode], "info")
     
     def closeEvent(self, event):
         """Handle khi đóng ứng dụng"""
         self.update_status("Closing application...", "warning")
         
-        # Stop timer
         if hasattr(self, 'status_timer'):
             self.status_timer.stop()
         
-        # Cleanup
         event.accept()

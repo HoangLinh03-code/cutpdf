@@ -1,7 +1,7 @@
 import os
 from google import genai
 from google.genai import types
-from callAPI import get_vertex_ai_credentials 
+from modules.common.callAPI import get_vertex_ai_credentials 
 
 def generate_image_from_text(prompt, aspect_ratio="1:1"):
     try:

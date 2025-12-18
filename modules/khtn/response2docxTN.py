@@ -509,7 +509,7 @@ def generate_or_get_image(hinh_anh_data: Dict) -> tuple:
     
     if loai == "tu_mo_ta" and mo_ta:
         try:
-            from common.text2Image import generate_image_from_text
+            from modules.common.text2Image import generate_image_from_text
             # Hàm này trả về 1 bytes object (hoặc None)
             image_bytes = generate_image_from_text(mo_ta)
             if image_bytes:
@@ -814,14 +814,14 @@ class DynamicDocxRenderer:
         # Giải thích từng ý - THÊM XỬ LÝ LATEX
         for gt in cau.get("giai_thich", []):
             p_gt = self.doc.add_paragraph()
-            p_gt.add_run("- ")
+            p_gt.add_run("+ ")
             process_text_with_latex(gt.get('noi_dung_y', ''), p_gt)  
-            run_kl = p_gt.add_run(f" - {gt.get('ket_luan', 'SAI')}.")
+            run_kl = p_gt.add_run(f" {gt.get('ket_luan', 'SAI')} - ")
             run_kl.bold = True
             
             if gt.get('giai_thich'):
-                p_gt_detail = self.doc.add_paragraph()
-                process_text_with_latex(gt.get('giai_thich', ''), p_gt_detail)  
+                # p_gt_detail = self.doc.add_paragraph()
+                process_text_with_latex(gt.get('giai_thich', ''), p_gt)  
     
     def render_question_tra_loi_ngan(self, cau: Dict):
         """Render câu hỏi trả lời ngắn"""
@@ -940,7 +940,7 @@ def response2docx_flexible(
     Luôn luôn trả về 1 file .docx, dù AI có lỗi hay không.
     """
     try:
-        from api.callAPI import VertexClient
+        from modules.common.callAPI import VertexClient
         from docx import Document # Import ở đây để đảm bảo nếu lỗi ở mức import thì vẫn bắt được
         
         client = VertexClient(project_id, creds, model_name)
