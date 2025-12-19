@@ -1,0 +1,68 @@
+Hãy lựa chọn thay đổi câu hỏi sau đây thành 1 trong các dạng Trắc nghiệm, Đúng sai, Điền, Dropdown sao cho phù hợp với yêu cầu cụ thể như sau: 
+lUU Ý HÃY CHIA ĐỀU DẠNG CHO FILE , TÔI KHÔNG MUỐN CÁC CÂU HỎI CÓ QUÁ NHIỀU 1 DẠNG
+1. Nội dung câu hỏi Tự luận kèm lời giải:
+```
+{question}
+```
+(Lời giải chi tiết của dạng Tự luận sẽ đằng sau chuỗi Lời giải, sau ký tự #### sẽ là gợi ý khi làm bài.)
+
+2. Cấu trúc dạng trắc nghiệm (TN):
+```
+Câu 1. Nội dung câu hỏi
+A. Nội dung phương án
+B. Nội dung phương án 
+C. Nội dung phương án 
+D. Nội dung phương án 
+Lời giải 
+4 (đáp án đúng, ở câu này là D - tương ứng với số 4)
+####
+Lời giải chi tiết (Tại đây là nội dung hướng dẫn giải cho câu hỏi trên)
+```
+
+3. Cấu trúc dạng đúng sai (ĐS):
+```
+Câu 1. Nội dung câu hỏi
+a) Nội dung của phương án
+b) Nội dung của phương án
+c) Nội dung của phương án
+d) Nội dung của phương án
+Lời giải 
+1000 (lần lượt thể hiện đáp án đúng/sai, ở câu này là a-đúng, b-sai, c-sai, d-sai - tương ứng với 1000)
+####
+Lời giải chi tiết (Tại đây là nội dung hướng dẫn giải cho câu hỏi trên)
+```
+4. Cấu trúc dạng Điền (TLN):
+Câu 1. Nội dung câu hỏi
+a) Nội dung câu hỏi
+Đáp án: [[Đáp án đúng]]. (Đáp án đúng được trình bày trong ký tự [[]])
+b) Nội dung câu hỏi
+Đáp án: [[Đáp án đúng]]. (Đáp án đúng được trình bày trong ký tự [[]])
+Lời giải
+####
+Lời giải chi tiết (Tại đây là nội dung hướng dẫn giải cho câu hỏi trên)
+```
+Lưu ý khi chọn dạng Điền: Với dạng Điền nội dung đáp án trong [[]] phải là số và chỉ có tối đa là 4 ký tự trong [[]].
+
+5. Cấu trúc dạng Dropdown (DD):
+```
+Câu 1. Nội dung câu hỏi
+Nội dung câu hỏi [1_Đáp án,2_Đáp án,3_Đáp án]
+Nội dung câu hỏi [1_Đáp án,2_Đáp án,3_Đáp án] nội dung
+Nội dung câu hỏi [1_Đáp án,2_Đáp án,3_Đáp án]
+Lời giải 
+3_Đáp án,1_Đáp án,2_Đáp án
+####
+Lời giải chi tiết (Tại đây là nội dung hướng dẫn giải cho câu hỏi trên)
+```
+Lưu ý khi chọn dạng Dropdown: Với dạng Dropdown nội dung các lựa chọn trong [] phải ngắn gọn, không quá dài lưa thưa
+
+Lưu ý: Chỉ cần chọn dạng mới cho câu hỏi Tự luận. KHÔNG CẦN CHUYỂN ĐỔI DẠNG LUÔN CHỈ CHỌN DẠNG MỚI
+**Dựa vào những thông tin trên, hãy giúp tôi lựa chọn dạng Tự luận của câu hỏi đó thành 1 trong các dạng Trắc nghiệm, Đúng sai, Điền, Dropdown cùng cấp độ cho câu hỏi trên.**
+Mã dạng Trắc nghiệm sẽ là TN
+Mã dạng Đúng sai sẽ là ĐS
+Mã dạng Điền sẽ là TLN
+Mã dạng Dropdown sẽ là DD
+Cấu trúc MẪU KẾT QUẢ TRẢ VỀ sẽ là: 
+Dạng mới: [Mã dạng]
+
+Lưu ý quan trong: Nội dung trả về đúng **Cấu trúc MẪU KẾT QUẢ TRẢ VỀ**, Không thêm nội dung thừa thãi , trong trường hợp câu hỏi không đúng hoặc nội dung không đủ , trả về "không nhận diện được dạng câu hỏi"

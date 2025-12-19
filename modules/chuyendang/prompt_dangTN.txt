@@ -1,0 +1,57 @@
+Bạn là giáo viên môn {subject} dạy lớp {level}, hãy thay đổi câu hỏi dạng **Tự luận** sau đây thành dạng Trắc nghiệm với yêu cầu cụ thể như sau: 
+
+1. Nội dung câu hỏi Tự luận kèm lời giải:
+```
+{question}
+```
+(Lời giải chi tiết của dạng Tự luận sẽ đằng sau chuỗi Lời giải, sau ký tự #### sẽ là gợi ý khi làm bài.)
+
+2. Cấu trúc dạng trắc nghiệm:
+```
+Câu number. Nội dung câu hỏi (number sau Câu là số được lấy theo số sau Câu ở Nội dung câu hỏi Tự luận kèm lời giải)
+A. Nội dung phương án
+B. Nội dung phương án 
+C. Nội dung phương án 
+D. Nội dung phương án 
+Lời giải 
+4 (đáp án đúng, ở câu này là D - tương ứng với số 4)
+####
+Lời giải chi tiết (Tại đây là nội dung hướng dẫn giải cho câu hỏi trên)
+```
+Giải thích chi tiết cấu trúc dạng trắc nghiệm:
+- Sau Lời giải sẽ là 2 phần gồm đáp án và hướng dẫn giải
+  + Phần đầu sẽ là các số 1,2,3,4,.. sẽ tương đương với đáp án A,B,C,D,.. Ví dụ đáp án đúng là A thì sẽ là 1 (B đúng thì sẽ là 2,...)
+  + Sau phần đầu (phần đáp án) sẽ là ký tự #### (Đây là ký tự bắt buộc phải có) để ngăn cách giữa đáp án và hướng dẫn giải
+  + Phần hai sẽ là Hướng dẫn giải cho câu hỏi trên (Lời giải ngắn gọn đủ ý, không lan man quá dài dòng)
+
+3. Cấu trúc kết quả trả về:
+
+Câu number. Nội dung câu hỏi
+A. Nội dung phương án
+B. Nội dung phương án 
+C. Nội dung phương án 
+D. Nội dung phương án 
+Lời giải 
+4 
+####
+Lời giải chi tiết (Lời giải sẽ được trình bày ở đây. KHÔNG CẦN VIẾT LẠI chuỗi "Lời giải chi tiết")
+
+
+Lưu ý: Kết quả trả về phải đúng theo cấu trúc trên. KHÔNG THÊM BẤT TỪ NỘI DUNG NÀO KHÁC VỚI CẤU TRÚC TRÊN
+
+**Dựa vào những thông tin trên, hãy giúp tôi chuyển dạng Tự luận của câu hỏi đó thành dạng Trắc nghiệm cùng cấp độ cho câu hỏi trên.**
+Yêu cầu chung về chuyển đổi dạng Tự luận sang dạng Trắc nghiệm:
+- Các nội dung phương án phải có độ dài tương đương nhau nếu có thể.
+- KHÔNG ĐƯỢC BAO GỒM  CỤM ```latex, ```, ```json,Không sử dụng bảng
+- Không bao gồm nội dung hay câu từ thừa thãi không liên quan đến câu hỏi. 
+- GIỮ NGUYÊN CÂU HỎI BAN ĐẦU KHI CHUYỂN SANG DẠNG MỚI
+- Đánh dấu vị trí hình ảnh (nếu cần thiết, hạn chế nếu có thể): Trong nội dung câu hỏi hoặc lời giải chi tiết, chỉ khi có bất kỳ công thức phức tạp, đồ thị, sơ đồ, hình vẽ hoặc hình ảnh minh họa nào mà không thể biểu diễn rõ ràng bằng văn bản hoặc LaTeX thuần túy, hãy chèn chuỗi [IMG-stt] vào vị trí đó. Chuỗi này chỉ dùng để đánh dấu vị trí, không thay thế cho nội dung của hình ảnh.
+- Chỉ sử dụng các hình ảnh đã được gửi trong request.
+- Nội dung Lời giải mới khi chuyển dạng phải bám sát theo lời giải gốc. Tuyệt đối chính xác, dựa vào phương pháp giải đã cho.
+- Nội dung kiến thức trong lời giải mới khi chuyển dạng phải hoàn toàn nằm trong chương trình học của **{subject}**. Không được đề cập tới kiến thức nằm ngoài chương trình.
+- Kết quả lời giải trả về là dạng latex đối với các công thức toán học và công thức hóa học của các chất (các chỉ số cần được biểu diễn đúng định dạng) với điều kiện:
++ Các chuỗi latex cần được chuyển đổi về dạng chuẩn , không lỗi và dễ đọc nhất có thể
++ Sử dụng $...$ để bọc các công thức thay vì sử dụng \[...\] hay \(...\), không sử dụng \boxed{{}} trong công thức.
+ 
+- **Lưu ý quan trọng:** GIỮ NGUYÊN CÂU HỎI BAN ĐẦU KHI CHUYỂN SANG DẠNG MỚI, NGOẠI TRỪ CÁC PHẦN LATEXT CẦN ĐƯỢC SỬA ĐỔI
+

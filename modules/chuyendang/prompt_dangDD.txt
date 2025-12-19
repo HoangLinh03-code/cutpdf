@@ -1,0 +1,55 @@
+Bạn là giáo viên môn {subject} dạy lớp {level}, hãy thay đổi câu hỏi dạng **Tự luận** sau đây thành dạng Dropdown với yêu cầu cụ thể như sau: 
+
+1. Nội dung câu hỏi Tự luận kèm lời giải:
+```
+{question}
+```
+(Lời giải chi tiết của dạng Tự luận sẽ đằng sau chuỗi Lời giải, sau ký tự #### sẽ là gợi ý khi làm bài.)
+
+2. Cấu trúc dạng Dropdown:
+```
+Câu number. Nội dung câu hỏi
+Nội dung câu hỏi [1_Đáp án,2_Đáp án,3_Đáp án] (1_, 2_, 3_ Là các thứ tự lựa chọn trong Dropdown đi sau dấu _ sẽ là Đáp án tương ứng của lựa chọn Đáp án không được dùng các dạng khác ngoài plain text)
+Nội dung câu hỏi [1_Đáp án,2_Đáp án,3_Đáp án] nội dung
+Nội dung câu hỏi [1_Đáp án,2_Đáp án,3_Đáp án]
+Lời giải 
+3_Đáp án,1_Đáp án,2_Đáp án (Thứ tự đáp án đúng sau Lời giải chính là lựa chọn đúng của các [] tương ứng)
+####
+Lời giải chi tiết (Tại đây là nội dung hướng dẫn giải cho câu hỏi trên)
+```
+Giải thích chi tiết cấu trúc dạng Dropdown:
+- Sau Lời giải sẽ là 2 phần gồm đáp án và hướng dẫn giải
+  + Phần đầu sẽ là các số 1_Đáp án, 2_Đáp án,.. (Câu hỏi có bao nhiêu [] thì dưới Lời giải phải có bấy nhiêu đáp án, mỗi đáp án của [] sẽ ngăn cách nhau bởi dấu ,)
+  + Sau phần đầu (phần đáp án) sẽ là ký tự #### (Đây là ký tự bắt buộc phải có) để ngăn cách giữa đáp án và hướng dẫn giải
+  + Phần hai sẽ là Hướng dẫn giải cho câu hỏi trên (Lời giải ngắn gọn đủ ý, không lan man quá dài dòng)
+
+3. Cấu trúc kết quả trả về:
+
+
+Câu number. Nội dung câu hỏi
+Nội dung câu hỏi [1_Đáp án,2_Đáp án,3_Đáp án]
+Nội dung câu hỏi [1_Đáp án,2_Đáp án,3_Đáp án] nội dung
+Nội dung câu hỏi [1_Đáp án,2_Đáp án,3_Đáp án]
+Lời giải 
+3_Đáp án,1_Đáp án,2_Đáp án
+####
+Lời giải chi tiết (Lời giải sẽ được trình bày ở đây. KHÔNG CẦN VIẾT LẠI chuỗi "Lời giải chi tiết")
+
+
+Lưu ý: Kết quả trả về phải đúng theo cấu trúc trên. KHÔNG THÊM BẤT TỪ NỘI DUNG NÀO KHÁC VỚI CẤU TRÚC TRÊN
+
+**Dựa vào những thông tin trên, hãy giúp tôi chuyển dạng Tự luận của câu hỏi đó thành dạng Dropdown cùng cấp độ cho câu hỏi trên.**
+Yêu cầu chung về chuyển đổi dạng Tự luận sang dạng Dropdown:
+- KHÔNG ĐƯỢC BAO GỒM  CỤM ```latex, ```, ```json,Không sử dụng bảng
+- Không bao gồm nội dung hay câu từ thừa thãi không liên quan đến câu hỏi. 
+- Đánh dấu vị trí hình ảnh (nếu cần thiết, hạn chế nếu có thể): Trong nội dung câu hỏi hoặc lời giải chi tiết, chỉ khi có bất kỳ công thức phức tạp, đồ thị, sơ đồ, hình vẽ hoặc hình ảnh minh họa nào mà không thể biểu diễn rõ ràng bằng văn bản hoặc LaTeX thuần túy, hãy chèn chuỗi [IMG-stt] vào vị trí đó. Chuỗi này chỉ dùng để đánh dấu vị trí, không thay thế cho nội dung của hình ảnh.
+- Chỉ sử dụng các hình ảnh đã được gửi trong request.
+- GIỮ NGUYÊN CÂU HỎI BAN ĐẦU KHI CHUYỂN SANG DẠNG MỚI
+- Nội dung Lời giải mới khi chuyển dạng phải bám sát theo lời giải gốc. Tuyệt đối chính xác, dựa vào phương pháp giải đã cho hạn chế nhất có thể sử dung latex.
+- Nội dung kiến thức trong lời giải mới khi chuyển dạng phải hoàn toàn nằm trong chương trình học của **{subject}**. Không được đề cập tới kiến thức nằm ngoài chương trình.
+- Kết quả lời giải trả về là dạng latex đối với các công thức toán học và công thức hóa học của các chất (các chỉ số cần được biểu diễn đúng định dạng) với điều kiện:
++ Các chuỗi latex cần được chuyển đổi về dạng chuẩn , không lỗi và dễ đọc nhất có thể
++ Sử dụng $...$ để bọc các công thức thay vì sử dụng \[...\] hay \(...\), không sử dụng \boxed{{}} trong công thức.
+ 
+- **Lưu ý quan trọng:** GIỮ NGUYÊN CÂU HỎI BAN ĐẦU KHI CHUYỂN SANG DẠNG MỚI, NGOẠI TRỪ CÁC PHẦN LATEXT CẦN ĐƯỢC SỬA ĐỔI
+

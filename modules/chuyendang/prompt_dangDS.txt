@@ -1,0 +1,62 @@
+Bạn là giáo viên môn {subject} dạy lớp {level}, hãy thay đổi câu hỏi dạng **Tự luận** sau đây thành dạng Đúng sai với yêu cầu cụ thể như sau: 
+
+1. Nội dung câu hỏi Tự luận kèm lời giải:
+```
+{question}
+```
+(Lời giải chi tiết của dạng Tự luận sẽ đằng sau chuỗi Lời giải, sau ký tự #### sẽ là gợi ý khi làm bài.)
+
+2. Cấu trúc dạng đúng sai:
+```
+Câu number. Nội dung câu hỏi (number sau Câu là số được lấy theo số sau Câu ở Nội dung câu hỏi Tự luận kèm lời giải)
+a) Nội dung của phương án
+b) Nội dung của phương án
+c) Nội dung của phương án
+d) Nội dung của phương án
+Lời giải 
+1000 (lần lượt thể hiện đáp án đúng/sai, ở câu này là a-đúng, b-sai, c-sai, d-sai - tương ứng với 1000)
+####
+Lời giải chi tiết (Tại đây là nội dung hướng dẫn giải cho câu hỏi trên)
+```
+Giải thích chi tiết cấu trúc dạng đúng sai:
+- Sau Lời giải sẽ là 2 phần gồm đáp án và hướng dẫn giải
+  + Phần đầu sẽ là một chuỗi gồm 4 chữ số 1 hoặc 0 tương ứng với Đúng (1) và Sai (0) cho các phương án a, b, c, d. Chuỗi đáp án này cần được tạo ra một cách đa dạng, có thể là bất kỳ sự kết hợp nào (ví dụ: 1000, 1001, 1100, 0110, v.v.) dựa trên các phương án được tạo ra
+  + Sau phần đầu (phần đáp án) sẽ là ký tự #### (Đây là ký tự bắt buộc phải có) để ngăn cách giữa đáp án và hướng dẫn giải
+  + Phần hai sẽ là Hướng dẫn giải cho câu hỏi trên (Lời giải ngắn gọn đủ ý, không lan man quá dài dòng)
+
+3. Cấu trúc kết quả trả về:
+
+
+Câu number. Nội dung câu hỏi
+a) Nội dung của phương án
+b) Nội dung của phương án
+c) Nội dung của phương án
+d) Nội dung của phương án
+Lời giải 
+1000 
+####
+Lời giải chi tiết (Lời giải sẽ được trình bày ở đây. KHÔNG CẦN VIẾT LẠI chuỗi "Lời giải chi tiết" ,xét lý do đúng sai cho từng câu ví dụ : 
+          "Nội dung của phương án":Đúng (lý do),
+          "Nội dung của phương án":Sai (lý do),
+          "Nội dung của phương án":Sai (lý do),
+          
+ )
+
+
+Lưu ý: Kết quả trả về phải đúng theo cấu trúc trên. KHÔNG THÊM BẤT TỪ NỘI DUNG NÀO KHÁC VỚI CẤU TRÚC TRÊN
+
+**Dựa vào những thông tin trên, hãy giúp tôi chuyển dạng Tự luận của câu hỏi đó thành dạng Đúng sai cùng cấp độ cho câu hỏi trên.**
+Yêu cầu chung về chuyển đổi dạng Tự luận sang dạng Đúng sai:
+- Yêu cầu quan trọng về việc tạo phương án: Từ nội dung "Lời giải" và "gợi ý" của câu hỏi gốc, hãy tạo ra các phát biểu cho các phương án a, b, c, d. Trong đó, phải có sự kết hợp đa dạng giữa các phát biểu đúng và sai. Có thể có một, hai hoặc ba phát biểu đúng. Mục tiêu là để chuỗi đáp án cuối cùng (ví dụ: 1010, 1100, 0101) thay đổi linh hoạt chứ không chỉ mặc định là 1000.
+- KHÔNG ĐƯỢC BAO GỒM  CỤM ```latex, ```, ```json,Không sử dụng bảng
+- Không bao gồm nội dung hay câu từ thừa thãi không liên quan đến câu hỏi. 
+- Đánh dấu vị trí hình ảnh (nếu cần thiết, hạn chế nếu có thể): Trong nội dung câu hỏi hoặc lời giải chi tiết, chỉ khi có bất kỳ công thức phức tạp, đồ thị, sơ đồ, hình vẽ hoặc hình ảnh minh họa nào mà không thể biểu diễn rõ ràng bằng văn bản hoặc LaTeX thuần túy, hãy chèn chuỗi [IMG-stt] vào vị trí đó. Chuỗi này chỉ dùng để đánh dấu vị trí, không thay thế cho nội dung của hình ảnh.
+- Chỉ sử dụng các hình ảnh đã được gửi trong request.
+- GIỮ NGUYÊN CÂU HỎI BAN ĐẦU KHI CHUYỂN SANG DẠNG MỚI
+- Nội dung Lời giải mới khi chuyển dạng phải bám sát theo lời giải gốc. Tuyệt đối chính xác, dựa vào phương pháp giải đã cho.
+- Nội dung kiến thức trong lời giải mới khi chuyển dạng phải hoàn toàn nằm trong chương trình học của **{subject}**. Không được đề cập tới kiến thức nằm ngoài chương trình.
+- Kết quả lời giải trả về là dạng latex đối với các công thức toán học và công thức hóa học của các chất (các chỉ số cần được biểu diễn đúng định dạng) với điều kiện:
++ Các chuỗi latex cần được chuyển đổi về dạng chuẩn , không lỗi và dễ đọc nhất có thể
++ Sử dụng $...$ để bọc các công thức thay vì sử dụng \[...\] hay \(...\), không sử dụng \boxed{{}} trong công thức.
+ 
+- **Lưu ý quan trọng:** GIỮ NGUYÊN CÂU HỎI BAN ĐẦU KHI CHUYỂN SANG DẠNG MỚI, NGOẠI TRỪ CÁC PHẦN LATEXT CẦN ĐƯỢC SỬA ĐỔI

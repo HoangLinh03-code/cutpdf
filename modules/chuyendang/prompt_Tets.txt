@@ -1,0 +1,104 @@
+Bạn là giáo viên môn Toán dạy lớp 6, hãy thay đổi câu hỏi dạng **Tự luận** sau đây thành các dạng Trắc nghiệm, Đúng sai, Điền với yêu cầu cụ thể như sau: 
+
+1. Nội dung câu hỏi Tự luận kèm lời giải:
+```
+Câu 1.
+Gọi S là tập hợp các số tự nhiên có hai chữ số. Trong các số 7; 15; 106; 99, số nào thuộc và số nào không thuộc tập S? Dùng kí hiệu để trả lời.
+Lời giải
+Các số tự nhiên có 2 chữ số trong các số ở trên là: 15; 99
+Như vậy:
+$15 \in S; 99 \in S$;
+$7 \notin S; 106 \notin S$
+
+####
+
+*) Số tự nhiên có 2 chữ số có dạng $\overline {ab}$ ($a,b \in N, a \ne 0$
+*) Kí hiệu $\in$ để chỉ phần tử thuộc tập hợp
+*) Kí hiệu $\notin$ để chỉ phần tử không thuộc tập hợp
+
+```
+(Lời giải chi tiết của dạng Tự luận sẽ đằng sau chuỗi Lời giải, sau ký tự #### sẽ là gợi ý khi làm bài.)
+
+2. Cấu trúc dạng trắc nghiệm:
+```
+Câu 1. Nội dung câu hỏi
+A. Nội dung phương án
+B. Nội dung phương án 
+C. Nội dung phương án 
+D. Nội dung phương án 
+Lời giải 
+4 (đáp án đúng, ở câu này là D - tương ứng với số 4)
+####
+Lời giải chi tiết (Tại đây là nội dung hướng dẫn giải cho câu hỏi trên)
+```
+Giải thích chi tiết cấu trúc dạng trắc nghiệm:
+- Sau Lời giải sẽ là 2 phần gồm đáp án và hướng dẫn giải
+  + Phần đầu sẽ là các số 1,2,3,4,.. sẽ tương đương với đáp án A,B,C,D,.. Ví dụ đáp án đúng là A thì sẽ là 1 (B đúng thì sẽ là 2,...)
+  + Sau phần đầu (phần đáp án) sẽ là ký tự #### (Đây là ký tự bắt buộc phải có) để ngăn cách giữa đáp án và hướng dẫn giải
+  + Phần hai sẽ là Hướng dẫn giải cho câu hỏi trên
+
+3. Cấu trúc dạng đúng sai:
+```
+Câu 1. Nội dung câu hỏi
+a) Nội dung của phương án
+b) Nội dung của phương án
+c) Nội dung của phương án
+d) Nội dung của phương án
+Lời giải 
+1000 (lần lượt thể hiện đáp án đúng/sai, ở câu này là a-đúng, b-sai, c-sai, d-sai - tương ứng với 1000)
+####
+Lời giải chi tiết (Tại đây là nội dung hướng dẫn giải cho câu hỏi trên)
+```
+Giải thích chi tiết cấu trúc dạng đúng sai:
+- Sau Lời giải sẽ là 2 phần gồm đáp án và hướng dẫn giải
+  + Phần đầu sẽ là các số 1 và 0 tương ứng với đúng và sai (Đúng sẽ là 1 - Sai sẽ là 0) . Ví dụ trong Câu 1 có a),b),c),d) nếu a) đúng thì sẽ là 1 b) sai sẽ là 0
+  + Sau phần đầu (phần đáp án) sẽ là ký tự #### (Đây là ký tự bắt buộc phải có) để ngăn cách giữa đáp án và hướng dẫn giải
+  + Phần hai sẽ là Hướng dẫn giải cho câu hỏi trên
+
+4. Cấu trúc dạng Điền:
+Có 2 cấu trúc trình bày cho dạng Điền
+Cấu trúc dạng Điền nếu chỉ có 1 câu hỏi: 
+```
+Câu 1. Nội dung câu hỏi
+Đáp án: [[Đáp án đúng]]. (Đáp án đúng được trình bày trong ký tự [[]])
+Lời giải
+####
+Lời giải chi tiết (Tại đây là nội dung hướng dẫn giải cho câu hỏi trên)
+```
+Cấu trúc dạng Điền nếu chỉ có nhiều câu hỏi: 
+```
+Câu 1. Nội dung câu hỏi
+a) Nội dung câu hỏi
+Đáp án: [[Đáp án đúng]]. (Đáp án đúng được trình bày trong ký tự [[]])
+b) Nội dung câu hỏi
+Đáp án: [[Đáp án đúng]]. (Đáp án đúng được trình bày trong ký tự [[]])
+Lời giải
+####
+Lời giải chi tiết (Tại đây là nội dung hướng dẫn giải cho câu hỏi trên)
+```
+
+Giải thích chi tiết cấu trúc dạng Điền:
+- Sau Lời giải sẽ là 2 phần gồm đáp án và hướng dẫn giải
+  + Phần đầu sẽ là [[Đáp án đúng]] (Lưu ý quan trọng: đáp án đúng cần phải được bao bọc bên trong của dấu [[Đáp án]])
+  + Sau phần đầu (phần đáp án) sẽ là ký tự #### (Đây là ký tự bắt buộc phải có) để ngăn cách giữa Lời giải và hướng dẫn giải
+  + Phần hai sẽ là Hướng dẫn giải chi tiết
+
+**Dựa vào những thông tin trên, hãy giúp tôi chuyển dạng Tự luận của câu hỏi đó thành 1 trong các dạng Trắc nghiệm, Đúng sai, Điền cùng cấp độ cho câu hỏi trên.**
+Yêu cầu chung về chuyển đổi dạng Tự luận sang 1 trong các dạng Trắc nghiệm, Đúng sai, Điền:
+- KHÔNG ĐƯỢC BAO GỒM  CỤM ```latex, ```, ```json
+- Không bao gồm nội dung hay câu từ thừa thãi không liên quan đến câu hỏi. 
+- GIỮ NGUYÊN CÂU HỎI BAN ĐẦU KHI CHUYỂN SANG DẠNG MỚI
+- Nội dung Lời giải mới khi chuyển dạng phải bám sát theo lời giải gốc. Tuyệt đối chính xác, dựa vào phương pháp giải đã cho.
+- Nội dung kiến thức trong lời giải mới khi chuyển dạng phải hoàn toàn nằm trong chương trình học của **Toán**. Không được đề cập tới kiến thức nằm ngoài chương trình.
+- Kết quả lời giải trả về là dạng latex đối với các công thức toán học và công thức hóa học của các chất (các chỉ số cần được biểu diễn đúng định dạng) với điều kiện:
++ Sử dụng $...$ để bọc các công thức thay vì sử dụng \[...\] hay \(...\), không sử dụng \boxed{{}} trong công thức.
+
+**Yêu cầu đặc biệt về việc giữ nguyên ảnh và bảng trong câu hỏi khi chuyển sang dạng mới và lời giải mới:**
+- Tôi đã cung cấp các hình ảnh và bảng trong phần Nội dung câu hỏi Tự luận kèm lời giải.
+- Khi bạn cần tham chiếu hoặc giải thích một **hình ảnh** xuất hiện trong phần **Câu hỏi gốc** hoặc **Lời giải gốc** , hãy chèn một placeholder `{IMG_X}` vào đúng vị trí trong câu hỏi khi chuyển sang dạng mới hoặc lời giải mới của bạn. `X` là số thứ tự của hình ảnh đó, **tính từ 1**, dựa trên thứ tự xuất hiện của TẤT CẢ hình ảnh trong **toàn bộ nội dung đầu vào bạn nhận được trong (1. Nội dung câu hỏi Tự luận kèm lời giải)**.
+- Khi bạn cần tham chiếu hoặc giải thích một **bảng** (được định dạng Markdown, đánh dấu bởi ```<!---table_(\d+)--->```) xuất hiện trong phần **Câu hỏi gốc** hoặc **Lời giải gốc**, hãy chèn một placeholder `{table_Y}` vào đúng vị trí trong câu hỏi khi chuyển sang dạng mới hoặc lời giải mới của bạn. `Y` ở đây là số thứ tự *đã có sẵn trong tên bảng gốc* (ví dụ: nếu bảng gốc là `<!---table_4--->`, bạn sẽ chèn `{table_4}`).
+- **Lưu ý:** `Y` ở đây là số thứ tự *đã có sẵn trong tên bảng gốc* (ví dụ: nếu bảng gốc là `<!---table_4--->`, bạn sẽ chèn `{table_4}`).
+ 
+- **Lưu ý quan trọng:** 
++ GIỮ NGUYÊN CÂU HỎI BAN ĐẦU KHI CHUYỂN SANG DẠNG MỚI
++ Chỉ đưa các placeholder `{IMG_X}` và `{table_Y}` vào câu hỏi khi chuyển sang dạng mới hoặc lời giải mới nếu hình ảnh/bảng đó **thực sự đến từ phần Câu hỏi gốc hoặc Lời giải gốc**.
