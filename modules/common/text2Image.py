@@ -16,7 +16,7 @@ def generate_image_from_text(prompt, aspect_ratio="1:1"):
         client = genai.Client(vertexai=True, project=project_id, location=location, credentials=credentials)
         model_name = "gemini-3-pro-image-preview" 
 
-        print(f"🎨 Đang sinh ảnh: {prompt[:30]}...")
+        print(f"🎨 Đang sinh ảnh: {prompt[:100]}...")
         
         # Gọi API với timeout=60s (Đủ cho 1 ảnh)
         response = client.models.generate_content(
@@ -31,7 +31,7 @@ def generate_image_from_text(prompt, aspect_ratio="1:1"):
         )
         for part in response.parts:
             if part.inline_data and part.inline_data.data:
-                print(f"✅ Sinh ảnh thành công ({len(part.inline_data.data)} bytes)")
+                print(f"✅ Sinh ảnh thành công")
                 return part.inline_data.data
 
         print("❌ API không trả về dữ liệu ảnh.")

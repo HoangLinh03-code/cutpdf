@@ -14,7 +14,8 @@ from ui.convert_pdf_widget import ConvertPdfWidget
 from ui.genques_khtn_widget import GenQuesKHTNWidget
 from ui.genques_khxh_widget import GenQuesKHXHWidget
 from ui.sidebar import Sidebar
-
+from modules.chuyendang.multi_process_threads.process_docx_Widget import DocxProcessWidget
+from modules.chuyendang.module_launcher import setup_chuyen_dang_env
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -68,6 +69,7 @@ class MainWindow(QWidget):
         msg.exec_()
 
     def init_ui(self):
+        import uuid
         """Khởi tạo giao diện chính với sidebar và status bar"""
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -99,6 +101,7 @@ class MainWindow(QWidget):
         self.genques_khtn_widget = GenQuesKHTNWidget()
         self.genques_khxh_widget = GenQuesKHXHWidget()
         # -------------------------
+        self.chuyen_dang_widget = DocxProcessWidget(self, str(uuid.uuid4()))
         
         # Connect signals từ widgets để update status
         self.connect_widget_signals()
@@ -108,6 +111,7 @@ class MainWindow(QWidget):
         self.content_area.addWidget(self.convert_pdf_widget)     # Index 1
         self.content_area.addWidget(self.genques_khtn_widget)    # Index 2
         self.content_area.addWidget(self.genques_khxh_widget)    # Index 3
+        self.content_area.addWidget(self.chuyen_dang_widget)
         
         content_layout.addWidget(self.content_area)
         
@@ -323,6 +327,20 @@ class MainWindow(QWidget):
         self.update_memory_usage()
 
     def switch_mode(self, mode):
+        if mode == 4: # Mode Chuyển Dạng
+            if not hasattr(self, 'chuyen_dang_widget'):
+                # Thiết lập môi trường riêng trước khi nạp module
+                setup_chuyen_dang_env()
+                
+                # Import muộn (Lazy Import) để tiết kiệm tài nguyên
+                from multi_process_threads.process_docx_Widget import DocxProcessWidget
+                import uuid
+                
+                self.chuyen_dang_widget = DocxProcessWidget(self, str(uuid.uuid4()))
+                self.content_area.addWidget(self.chuyen_dang_widget)
+                
+                # Quay lại thư mục gốc của CutPDF sau khi khởi tạo để không hỏng các module khác
+                os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         """Chuyển đổi chế độ giữa 4 modules"""
         self.current_mode = mode
         self.content_area.setCurrentIndex(mode)
@@ -331,14 +349,16 @@ class MainWindow(QWidget):
             "CutPDF - Cắt PDF bằng AI",
             "CutPDF - Convert PDF",
             "CutPDF - Sinh Câu Hỏi KHTN",
-            "CutPDF - Sinh Câu Hỏi KHXH"
+            "CutPDF - Sinh Câu Hỏi KHXH",
+            "CutPDF - Chuyển Dạng Câu Hỏi"
         ]
         
         messages = [
             "Switched to Cut PDF mode",
             "Switched to Convert PDF mode",
             "Switched to GenQues KHTN mode",
-            "Switched to GenQues KHXH mode"
+            "Switched to GenQues KHXH mode",
+            "Switched to Chuyen Dang"
         ]
         
         self.setWindowTitle(titles[mode])

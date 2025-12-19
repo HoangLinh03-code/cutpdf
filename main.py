@@ -5,7 +5,7 @@ Hỗ trợ: Cut PDF, Convert PDF, GenQues KHTN, GenQues KHXH
 import sys
 import os
 from dotenv import load_dotenv
-
+import multiprocessing
 # Load environment variables
 load_dotenv()
 
@@ -29,4 +29,11 @@ def main():
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
+    if sys.platform == "win32":
+        try:
+            multiprocessing.set_start_method('spawn', force=True)
+        except RuntimeError:
+            pass
     main()
+    
