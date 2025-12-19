@@ -1,16 +1,58 @@
-import PyPDF2
+import pypdf
+from pypdf.generic import NullObject
 import subprocess
 import os
-
+from PyPDF2.generic import NullObject
+import re
 def cut_pdf_by_pages(input_path, output_path, start_page, end_page):
-    with open(input_path, 'rb') as input_file:
-        reader = PyPDF2.PdfReader(input_file)
-        writer = PyPDF2.PdfWriter()
-        for page_num in range(start_page - 1, end_page):  # 1-indexed
-            writer.add_page(reader.pages[page_num])
-        with open(output_path, 'wb') as output_file:
-            writer.write(output_file)
+    """
+    Cắt PDF với cơ chế xử lý lỗi Null Object và tương thích tiếng Trung.
+    """
+    # 1. Làm sạch tên file đầu ra
+    directory = os.path.dirname(output_path)
+    filename = os.path.basename(output_path)
+    # Giữ lại ký tự tiếng Trung, chỉ loại bỏ ký tự cấm của hệ thống
+    safe_filename = re.sub(r'[\\/:*?"<>|]', '_', filename)
+    final_output_path = os.path.join(directory, safe_filename)
 
+    try:
+        with open(input_path, 'rb') as input_file:
+            reader = pypdf.PdfReader(input_file)
+            writer = pypdf.PdfWriter()
+            
+            total_pages = len(reader.pages)
+            s_page = max(1, int(start_page))
+            e_page = min(total_pages, int(end_page))
+
+            for page_num in range(s_page - 1, e_page):
+                try:
+                    page = reader.pages[page_num]
+                    
+                    # Kiểm tra đối tượng trang
+                    if page is None or isinstance(page, NullObject):
+                        print(f"⚠️ Bỏ qua trang {page_num + 1}: Dữ liệu Null.")
+                        continue
+                    
+                    # Thêm trang vào writer
+                    writer.add_page(page)
+                    
+                except Exception as e:
+                    # Bắt lỗi "Null object" phát sinh bên trong add_page của pypdf
+                    print(f"⚠️ Lỗi tại trang {page_num + 1}: {e}. Đang bỏ qua...")
+                    continue
+
+            # 2. Ghi file nếu có trang hợp lệ
+            if len(writer.pages) > 0:
+                with open(final_output_path, 'wb') as output_file:
+                    writer.write(output_file)
+                return True
+            else:
+                print(f"❌ Không có trang nào hợp lệ cho file: {safe_filename}")
+                return False
+
+    except Exception as e:
+        print(f"❌ Lỗi nghiêm trọng khi đọc file PDF: {e}")
+        return False
 def compress_pdf_ghostscript(input_path, output_path, quality='ebook'):
     """
     Nén PDF bằng Ghostscript

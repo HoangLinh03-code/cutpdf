@@ -181,16 +181,45 @@ class AutoProcessor(QThread):
             raise Exception(f"Lỗi xử lý {os.path.basename(pdf_path)}: {str(e)}")
     
     def _parse_ai_response(self, ai_result):
-        """Parse JSON array from AI response"""
+        """
+        Xử lý chuyên sâu cho tiếng Trung và cấu trúc JSON từ Gemini.
+        """
         try:
-            # Find JSON array in response
-            clean = re.search(r"\[[\s\S]*\]", ai_result)
-            if clean:
-                json_str = clean.group(0)
-                return json.loads(json_str)
-            else:
+            # 1. Loại bỏ các khối code markdown (```json ... ```) nếu có
+            clean_content = re.sub(r"```json|```", "", ai_result).strip()
+            
+            # 2. Tìm mảng JSON [...]
+            match = re.search(r"\[[\s\S]*\]", clean_content)
+            if not match:
+                print("❌ Không tìm thấy mảng JSON trong phản hồi AI.")
                 return None
-        except Exception:
+                
+            json_str = match.group(0)
+            
+            # 3. Parse JSON với strict=False để chấp nhận các ký tự điều khiển (control characters) 
+            # thường xuất hiện khi AI trả về văn bản tiếng Trung
+            data = json.loads(json_str, strict=False)
+            
+            processed_data = []
+            for item in data:
+                name = item.get('name', 'Untitled')
+                start = item.get('start_page')
+                end = item.get('end_page')
+                
+                if start is not None and end is not None:
+                    # 4. Làm sạch tên bài tiếng Trung để dùng làm tên file
+                    # Loại bỏ các ký tự cấm của OS: \ / : * ? " < > | 
+                    clean_name = re.sub(r'[\\/:*?"<>|]', '_', name)
+                    # Loại bỏ các ký tự điều khiển ẩn và chuẩn hóa khoảng trắng
+                    clean_name = "".join(ch for ch in clean_name if ch.isprintable())
+                    clean_name = " ".join(clean_name.split()).strip(". ")
+                    
+                    item['name'] = clean_name
+                    processed_data.append(item)
+                    
+            return processed_data
+        except Exception as e:
+            print(f"❌ Lỗi xử lý JSON/Tiếng Trung: {e}")
             return None
     
     def _cut_pdf_by_ai_result(self, pdf_path, json_data, output_folder, book_name):

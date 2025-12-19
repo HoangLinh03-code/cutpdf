@@ -74,11 +74,16 @@ class ProcessingThread(QThread):
             total = len(data)
             for idx, bai in enumerate(data):
             # Thay tất cả dấu ":" bằng "."
-                safe_name = re.sub(r":", ".", bai['name'])
-                # out_pdf = f"{file_name}_{safe_name}.pdf"
-                out_pdf = os.path.join(output_folder,f"{file_name}_{safe_name}.pdf")
+                safe_name = re.sub(r'[:\\/\"*?<>|]', '.', bai['name'])
+                safe_name = " ".join(safe_name.split()).strip(". ")
+                
+                # Tạo đường dẫn file đầu ra
+                out_pdf = os.path.join(output_folder, f"{file_name}_{safe_name}.pdf")
+                
+                # Gọi hàm cắt
                 cut_pdf_by_pages(self.pdf_file, out_pdf, bai['start_page'], bai['end_page'])
                 output_files.append(out_pdf)
+                
                 percent = 30 + int(70 * (idx + 1) / total)
                 self.progress.emit(f"Đã cắt: {bai['name']}", percent)
             workbook.close()
