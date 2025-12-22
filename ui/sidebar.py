@@ -55,15 +55,15 @@ class Sidebar(QWidget):
         
         self.genques_khxh_btn = self.create_menu_button("🏛️ GenQues KHXH")
         self.genques_khxh_btn.clicked.connect(lambda: self.switch_to_mode(3))
-        self.chuyen_dang_btn = self.create_menu_button("🔄 Chuyển Dạng CH")
-        self.chuyen_dang_btn.clicked.connect(lambda: self.switch_to_mode(4))
+        # self.chuyen_dang_btn = self.create_menu_button("🔄 Chuyển Dạng CH")
+        # self.chuyen_dang_btn.clicked.connect(lambda: self.switch_to_mode(4))
         # ------------------------
         
         layout.addWidget(self.cut_pdf_btn)
         layout.addWidget(self.convert_pdf_btn)
         layout.addWidget(self.genques_khtn_btn)
         layout.addWidget(self.genques_khxh_btn)
-        layout.addWidget(self.chuyen_dang_btn)
+        # layout.addWidget(self.chuyen_dang_btn)
         
         # Spacer to push version to bottom
         layout.addStretch()
@@ -88,8 +88,8 @@ class Sidebar(QWidget):
             self.cut_pdf_btn,
             self.convert_pdf_btn,
             self.genques_khtn_btn,
-            self.genques_khxh_btn,
-            self.chuyen_dang_btn
+            self.genques_khxh_btn
+            # self.chuyen_dang_btn
         ]
         
         # Set initial state
