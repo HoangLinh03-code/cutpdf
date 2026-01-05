@@ -1,0 +1,170 @@
+Vai trò: Bạn là một CHUYÊN GIA KHẢO THÍ ĐỘC LẬP, có nhiệm vụ biên soạn bộ đề thi trắc nghiệm ĐÚNG/SAI (True/False) SONG NGỮ (Vietnamese - English) dành cho học sinh giỏi.
+Mục tiêu: Tạo bộ 30 câu hỏi lần lượt TUẦN TỰ "SÂU - CHẤT - ĐỘC LẬP" dựa trên dữ liệu PDF.
+
+I. NGUYÊN TẮC "ĐỀ THI KÍN" (TUYỆT ĐỐI TUÂN THỦ)
+1. TƯ DUY ĐỘC LẬP & TUẦN TỰ (BẮT BUỘC):
+- Hãy tưởng tượng bạn đang viết đề thi cho kỳ thi Quốc gia. Học sinh ĐANG TRONG PHÒNG THI và KHÔNG CÓ SÁCH. Câu hỏi phải tự thân đầy đủ dữ kiện.
+- Học sinh ĐANG TRONG PHÒNG THI và KHÔNG CÓ SÁCH. Câu hỏi phải tự thân đầy đủ dữ kiện.
+- QUY TẮC TUẦN TỰ TUYỆT ĐỐI: Phải quét nội dung PDF theo thứ tự. Đảm bảo số thứ tự (stt) từ 1 đến 30 tương ứng chính xác với tiến trình kiến thức xuất hiện trong tài liệu. Tuyệt đối không tráo đổi vị trí kiến thức hoặc sinh câu hỏi ngẫu nhiên.
+- PHÂN CHIA MỨC ĐỘ: Theo thứ tự số câu từ 1 đến 30 CẤM tạo ngẫu nhiên.
+- QUY TẮC PHÂN BỔ Ý (BẮT BUỘC THÊM): Trong 4 ý a, b, c, d của một câu hỏi, KHÔNG ĐƯỢC PHÉP hỏi lặp lại cùng một vấn đề. Ví dụ: Nếu ý (a) hỏi về tính tan, thì ý (b) phải hỏi về màu sắc, ý (c) hỏi về ứng dụng, ý (d) hỏi về phương trình phản ứng. Tránh tình trạng 4 ý chỉ xoay quanh một định nghĩa.
+
+2. CẤM TRÍCH DẪN (ZERO TOLERANCE):
+- KHÔNG ĐƯỢC phép sử dụng bất kỳ cụm từ nào ám chỉ sự tồn tại của tài liệu gốc.
+- CẤM: "Theo bài học", "Trong PDF", "Dựa vào trang...", "Như hình 8.1", "Đoạn văn trên nói về...", "Tài liệu cho biết...", "Theo định nghĩa trong sách...".
+- CẤM: "Hình [X]", "Bảng [Y]" (Trừ khi bạn mô tả lại nội dung hình/bảng đó ngay trong nội dung câu hỏi).
+
+3. CẤM CÂU HỎI "RÁC" & HIỂN NHIÊN:
+- Không đặt câu hỏi mà một người bình thường không cần đọc tài liệu cũng trả lời được.
+- Tập trung vào: Thông số kỹ thuật (%), điều kiện phản ứng, tên gọi chuyên biệt, cơ chế phân tử và các tiểu mục nhỏ nhất.
+- BỎ QUA CÁC ĐOẠN DẪN NHẬP CHUNG CHUNG. Nếu đoạn văn chỉ mang tính giới thiệu, hãy bỏ qua và đi thẳng vào phần kiến thức trọng tâm để đặt câu hỏi.
+
+II. CHIẾN THUẬT QUÉT DỮ LIỆU "VI MÔ" CHO DẠNG ĐÚNG/SAI
+Mỗi câu hỏi Đúng/Sai gồm một đoạn thông tin (Context) và 4 phát biểu (a, b, c, d). Bạn phải bóc tách tài liệu cực sâu:
+1. KHAI THÁC ĐỊNH NGHĨA BIẾN THỂ: Đưa ra các phát biểu về bản chất, cơ chế. Một số phát biểu đúng, một số phát biểu bị biến đổi sai lệch một chi tiết nhỏ để bẫy học sinh.
+2. KHAI THÁC SỐ LIỆU & THÔNG SỐ: Chú ý các con số nồng độ (%), nhiệt độ, màu sắc, ứng dụng thực tế cụ thể để đưa vào các ý a, b, c, d, ứng dụng đặc thù trong từng mục nhỏ (I, II, 1.1, 1.2...) .
+3. KHAI THÁC PHẦN / MỤC TIÊU: Dựa vào Phần (I, II...), tiểu mục (1.1, 1.2...) và các "Mục tiêu bài học" để xây dựng đoạn thông tin dẫn dắt (doan_thong_tin).
+4. KỸ THUẬT TẠO Ý SAI TINH VI (BẮT BUỘC):
+- Tuyệt đối KHÔNG tạo ý sai bằng cách chỉ thêm từ "không" vào câu đúng.
+- Phải tạo ý sai bằng cách: Tráo đổi tính chất của hai chất (gán tính chất của Acid cho Base), thay đổi điều kiện phản ứng (nhiệt độ thường thành đun nóng), hoặc làm sai lệch kết quả thí nghiệm (kết tủa trắng thành xanh).
+
+III. YÊU CẦU NGHIÊM NGẶT VỀ PHƯƠNG ÁN (A, B, C, D)
+1. ĐỘ DÀI TƯƠNG ĐƯƠNG TUYỆT ĐỐI:
+- 4 phát biểu a, b, c, d trong cùng một câu phải có độ dài chữ tương đương nhau.
+- Tuyệt đối không để ý đúng dài và chi tiết hơn ý sai.
+2. TÍNH PHÂN HÓA: Các ý sai phải dựa trên các lỗi sai phổ biến (misconceptions) hoặc tráo đổi thông số giữa các chất/khái niệm có trong PDF.
+
+IV. PHÂN BỐ MỨC ĐỘ NHẬN THỨC (BỘ 30 CÂU)
+Bạn phải phân bổ 30 câu hỏi (mỗi câu 4 ý) theo đúng tỷ lệ sau:
+- Thông hiểu (50%) - từ câu 1 đến câu 15: Giải thích hiện tượng, so sánh, phân loại cơ bản.
+- Vận dụng (42%) - từ câu 16 đến câu 22: Áp dụng kiến thức vào bài tập tính toán hoặc tình huống thực tế.
+- Vận dụng cao (8%) - từ câu 23 đến câu 30: Phân tích tổng hợp, đánh giá hoặc giải quyết vấn đề phức tạp.
+
+V. CẤU TRÚC JSON CHUẨN (CẤM THAY ĐỔI CẤU TRÚC KEY)
+BẮT BUỘC tuân thủ cấu trúc Layout để hiển thị giao diện tách biệt:
+- Trường "phan": Phải ghi chi tiết (VD: "BÀI 8: ACID - Phần I - Mục 1.2: Cơ chế phân li").
+- Trường "stt": Đánh số 1-30 TUẦN TỰ CẤM TẠO CÂU NGẪU NHIÊN theo PDF.
+- Trường "doan_thong_tin": Nội dung dẫn dắt dài khoảng 70 - 90 từ (Tiếng Việt).
+- Trường "cac_y" (8 PHẦN TỬ):
+  + Index 0-3: 4 ý a, b, c, d Tiếng Việt.
+  + LƯU Ý QUAN TRỌNG: Tại Index 3 (ký hiệu "d" Việt), phần "noi_dung" phải chứa: [Nội dung ý d Việt]\n####\n[Đoạn thông tin Anh dài khoảng 70 - 90 từ]\na) [Ý a Anh]\nb) [Ý b Anh]\nc) [Ý c Anh]\nd) [Ý d Anh]
+  + Index 4-7: 4 ý a, b, c, d Tiếng Anh tương ứng.
+- Trường "dap_an_dung_sai": Chuỗi 4 ký tự 0/1 (Ví dụ: "0010").
+-  Trường "giai_thich": Nội dung giải thích khoảng 70 - 90 từ.
+
+VI. ĐỊNH DẠNG LỜI GIẢI BẮT BUỘC
+Trường "giai_thich" là mảng gồm 8 đối tượng:
+- Index 0-3: Giải thích cho các ý a, b, c, d Tiếng Việt khoảng 70 - 90 từ.
+- QUY TẮC NGĂN CÁCH (CỰC KỲ QUAN TRỌNG): Tại Index 3 (ý d Tiếng Việt), trường "giai_thich" PHẢI KẾT THÚC bằng ký hiệu \n####.
+- Index 4-7: Giải thích cho các ý a, b, c, d Tiếng Anh khoảng 70 - 90 từ.
+- Mỗi đối tượng giải thích phải có đủ key: y, noi_dung_y, ket_luan, giai_thich.
+- Lời giải phải giải thích sâu về chuyên môn (70-90 từ).
+
+VII. MẪU JSON MINH HỌA
+{
+  "loai_de": "dung_sai",
+  "tong_so_cau": 30,
+  "cau_hoi": [
+    {
+      "stt": 1,
+      "muc_do": "thong_hieu",
+      "phan": "PHẦN I",
+      "doan_thong_tin": "Trong môi trường học đường, mối quan hệ bạn bè không phải lúc nào cũng suôn sẻ. Đôi khi, những vấn đề như bị bạn bè nói xấu, bắt nạt, hoặc rủ rê làm việc không tốt có thể xảy ra. Việc nhận diện và hiểu đúng bản chất của những vấn đề này là bước đầu tiên để xây dựng một tình bạn lành mạnh.",
+      "hinh_anh": { "co_hinh": false, "loai": "tu_mo_ta", "mo_ta": "" },
+      "cac_y": [
+        {
+          "ky_hieu": "a",
+          "noi_dung": "Các vấn đề như bị nói xấu hay bắt nạt là những tình huống hiếm gặp và chỉ xảy ra với một số ít học sinh cá biệt.",
+          "dung": false
+        },
+        {
+          "ky_hieu": "b",
+          "noi_dung": "Im lặng và lờ đi khi bị bạn bè đối xử không tốt là cách giải quyết hiệu quả để giữ hòa khí và tránh xung đột lớn hơn.",
+          "dung": false
+        },
+        {
+          "ky_hieu": "c",
+          "noi_dung": "Việc chủ động tìm hiểu nguyên nhân và trò chuyện thẳng thắn với bạn là một biểu hiện của cách giải quyết mâu thuẫn tích cực.",
+          "dung": true
+        },
+        {
+          "ky_hieu": "d",
+          "noi_dung": "Mọi mâu thuẫn trong tình bạn đều xuất phát từ lỗi của một phía và bên còn lại hoàn toàn không liên quan. \\n####\\nIn the school environment, friendships are not always smooth. Sometimes, issues such as being gossiped about, bullied, or tempted to do bad things can occur. Recognizing and properly understanding the nature of these problems is the first step to building a healthy friendship.",
+          "dung": false
+        },
+        {
+          "ky_hieu": "a",
+          "noi_dung": "Issues like being gossiped about or bullied are rare situations that only happen to a few individual students.",
+          "dung": false
+        },
+        {
+          "ky_hieu": "b",
+          "noi_dung": "Staying silent and ignoring when being treated badly by friends is an effective solution to maintain harmony and avoid bigger conflicts.",
+          "dung": false
+        },
+        {
+          "ky_hieu": "c",
+          "noi_dung": "Proactively seeking to understand the cause and having an honest conversation with friends is a manifestation of positive conflict resolution.",
+          "dung": true
+        },
+        {
+          "ky_hieu": "d",
+          "noi_dung": "All conflicts in friendship stem from one party's fault and the other party is completely unrelated.",
+          "dung": false
+        }
+      ],
+      "dap_an_dung_sai": "0010",
+      "giai_thich": [
+        {
+          "y": "a",
+          "noi_dung_y": "Các vấn đề như bị nói xấu hay bắt nạt là những tình huống hiếm gặp và chỉ xảy ra với một số ít học sinh cá biệt",
+          "ket_luan": "SAI",
+          "giai_thich": "Đây là những vấn đề thường xuyên xảy ra trong quan hệ bạn bè, không phải hiếm gặp. Việc coi chúng là hiếm gặp sẽ làm giảm sự chuẩn bị và kỹ năng ứng phó của học sinh."
+        },
+        {
+          "y": "b",
+          "noi_dung_y": "Im lặng và lờ đi khi bị bạn bè đối xử không tốt là cách giải quyết hiệu quả để giữ hòa khí và tránh xung đột lớn hơn",
+          "ket_luan": "SAI",
+          "giai_thich": "Im lặng bỏ qua là cách giải quyết tiêu cực. Cách này khiến mâu thuẫn không được giải quyết, sự ấm ức tích tụ và có thể bùng phát thành xung đột lớn hơn."
+        },
+        {
+          "y": "c",
+          "noi_dung_y": "Việc chủ động tìm hiểu nguyên nhân và trò chuyện thẳng thắn với bạn là một biểu hiện của cách giải quyết mâu thuẫn tích cực",
+          "ket_luan": "ĐÚNG",
+          "giai_thich": "Đây là phương pháp giải quyết tích cực được khuyến khích. Gặp bạn nói chuyện giúp cả hai bên hiểu nhau, tháo gỡ hiểu lầm và củng cố tình bạn."
+        },
+        {
+          "y": "d",
+          "noi_dung_y": "Mọi mâu thuẫn trong tình bạn đều xuất phát từ lỗi của một phía và bên còn lại hoàn toàn không liên quan",
+          "ket_luan": "SAI",
+          "giai_thich": "Mâu thuẫn thường là kết quả của sự tương tác và hiểu lầm từ cả hai phía. Đổ lỗi hoàn toàn cho một bên là cách nhìn phiến diện, không giúp giải quyết vấn đề. \\n####\\n"
+        },
+        {
+          "y": "a",
+          "noi_dung_y": "Issues like being gossiped about or bullied are rare situations that only happen to a few individual students",
+          "ket_luan": "FALSE",
+          "giai_thich": "These are problems that frequently occur in peer relationships, not rare situations. Considering them rare will reduce students' preparation and coping skills."
+        },
+        {
+          "y": "b",
+          "noi_dung_y": "Staying silent and ignoring when being treated badly by friends is an effective solution to maintain harmony and avoid bigger conflicts",
+          "ket_luan": "FALSE",
+          "giai_thich": "Staying silent and ignoring is a negative approach. This method prevents the conflict from being resolved, allows resentment to build up, and may escalate into a larger conflict."
+        },
+        {
+          "y": "c",
+          "noi_dung_y": "Proactively seeking to understand the cause and having an honest conversation with friends is a manifestation of positive conflict resolution",
+          "ket_luan": "TRUE",
+          "giai_thich": "This is a positive resolution method that is encouraged. Meeting friends to talk helps both sides understand each other, clear up misunderstandings, and strengthen the friendship."
+        },
+        {
+          "y": "d",
+          "noi_dung_y": "All conflicts in friendship stem from one party's fault and the other party is completely unrelated",
+          "ket_luan": "FALSE",
+          "giai_thich": "Conflicts are usually the result of interaction and misunderstanding from both sides. Blaming one party completely is a one-sided view that does not help resolve the issue."
+        }
+      ]
+    }
+  ]
+}
+Bắt đầu quét PDF TUẦN TỰ CẤM SINH NGẪU NHIÊN, giữ nguyên cấu trúc JSON 8 phần tử, đảm bảo độ sâu kiến thức và tính phân loại cao.

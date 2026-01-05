@@ -129,7 +129,11 @@ def process_text_with_latex(text, paragraph, bold=False):
     """
     if not text:
         return
-    
+    text = text.strip()
+    is_entirely_bold = bold
+    if text.startswith("**") and text.endswith("**"):
+        is_entirely_bold = True
+        text = text[2:-2]
     # Làm sạch HTML tags
     text = text.replace("<br>", "\n").replace("<br/>", "\n") \
                .replace("<Br>", "\n").replace("<Br/>", "\n")
@@ -152,14 +156,21 @@ def process_text_with_latex(text, paragraph, bold=False):
             except Exception as e:
                 # Fallback: thêm text thuần
                 run = paragraph.add_run(part)
-                if bold:
-                    run.bold = True
+                run.bold = is_entirely_bold
         # Phần text thường
         else:
-            cleaned_part = re.sub(r'^\s*/', '', part)
-            run = paragraph.add_run(cleaned_part)
-            if bold:
-                run.bold = True
+            # cleaned_part = re.sub(r'^\s*/', '', part)
+            # run = paragraph.add_run(cleaned_part)
+            # if bold:
+            #     run.bold = True
+            sub_parts = re.split(r'(\*\*.*?\*\*)', part)
+            for sp in sub_parts:
+                if sp.startswith("**") and sp.endswith("**"):
+                    run = paragraph.add_run(sp[2:-2])
+                    run.bold = True
+                else:
+                    run = paragraph.add_run(sp)
+                    run.bold = is_entirely_bold
 
 
 def insert_equation_into_paragraph(latex_math_dollar, paragraph):
@@ -770,16 +781,17 @@ class DynamicDocxRenderer:
         for line in giai_thich.split("\n"):
             if line.strip():
                 p_gt = self.doc.add_paragraph()
-                process_text_with_latex(line.strip(), p_gt)  
+                is_conclusion = line.startswith("Vậy") or line.startswith("Therefore") or line.startswith("**")
+                process_text_with_latex(line.strip(), p_gt,bold=is_conclusion)  
         
         # Kết luận - THÊM XỬ LÝ LATEX
-        if "dap_an_dung" in cau:
-            dap_an_num = cau['dap_an_dung']
-            noi_dung_dap_an = cau['dap_an'][dap_an_num-1]['noi_dung']
-            p_ket_luan = self.doc.add_paragraph()
-            run = p_ket_luan.add_run("Vậy đáp án đúng là: ")
-            run.bold = True
-            process_text_with_latex(noi_dung_dap_an, p_ket_luan, bold=True) 
+        # if "dap_an_dung" in cau:
+        #     dap_an_num = cau['dap_an_dung']
+        #     noi_dung_dap_an = cau['dap_an'][dap_an_num-1]['noi_dung']
+        #     p_ket_luan = self.doc.add_paragraph()
+        #     run = p_ket_luan.add_run("Vậy đáp án đúng là: ")
+        #     run.bold = True
+        #     process_text_with_latex(noi_dung_dap_an, p_ket_luan, bold=True) 
     
     def render_question_dung_sai(self, cau: Dict):
         """Render câu hỏi đúng/sai"""
@@ -816,12 +828,12 @@ class DynamicDocxRenderer:
             p_gt = self.doc.add_paragraph()
             p_gt.add_run("+ ")
             process_text_with_latex(gt.get('noi_dung_y', ''), p_gt)  
-            run_kl = p_gt.add_run(f" {gt.get('ket_luan', 'SAI')} - ")
+            run_kl = p_gt.add_run(f" {gt.get('ket_luan', 'SAI')}.")
             run_kl.bold = True
             
             if gt.get('giai_thich'):
-                # p_gt_detail = self.doc.add_paragraph()
-                process_text_with_latex(gt.get('giai_thich', ''), p_gt)  
+                p_gt_detail = self.doc.add_paragraph()
+                process_text_with_latex(gt.get('giai_thich', ''), p_gt_detail)  
     
     def render_question_tra_loi_ngan(self, cau: Dict):
         """Render câu hỏi trả lời ngắn"""
@@ -870,7 +882,7 @@ class DynamicDocxRenderer:
                 is_bold = True
             
             check_text = text.replace('*', '').strip().lower()
-            if check_text.startswith("vậy"):
+            if check_text.startswith("vậy") or check_text.startswith("therefore"):
                 is_bold = True
                 text = text.replace('**', '')
 

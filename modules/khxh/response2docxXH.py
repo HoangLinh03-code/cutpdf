@@ -699,13 +699,13 @@ class DynamicDocxRenderer:
                 process_text_with_latex(line.strip(), p_gt)  
         
         # Kết luận - THÊM XỬ LÝ LATEX
-        if "dap_an_dung" in cau:
-            dap_an_num = cau['dap_an_dung']
-            noi_dung_dap_an = cau['dap_an'][dap_an_num-1]['noi_dung']
-            p_ket_luan = self.doc.add_paragraph()
-            run = p_ket_luan.add_run("Vậy đáp án đúng là: ")
-            run.bold = True
-            process_text_with_latex(noi_dung_dap_an, p_ket_luan, bold=True) 
+        # if "dap_an_dung" in cau:
+        #     dap_an_num = cau['dap_an_dung']
+        #     noi_dung_dap_an = cau['dap_an'][dap_an_num-1]['noi_dung']
+        #     p_ket_luan = self.doc.add_paragraph()
+        #     run = p_ket_luan.add_run("Vậy đáp án đúng là: ")
+        #     run.bold = True
+        #     process_text_with_latex(noi_dung_dap_an, p_ket_luan, bold=True) 
     
     def render_question_dung_sai(self, cau: Dict):
         """Render câu hỏi đúng/sai"""
@@ -796,7 +796,7 @@ class DynamicDocxRenderer:
                 is_bold = True
             
             check_text = text.replace('*', '').strip().lower()
-            if check_text.startswith("vậy"):
+            if check_text.startswith("vậy") or check_text.startswith("therefore,"):
                 is_bold = True
                 text = text.replace('**', '')
 
