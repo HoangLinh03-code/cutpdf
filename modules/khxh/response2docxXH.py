@@ -559,6 +559,23 @@ class PromptBuilder:
   ]
 }
 """
+        elif question_type == "tu_luan":
+            return """
+{
+  "loai_de": "tu_luan",
+  "tong_so_cau": 30,
+  "cau_hoi": [
+    {
+      "stt": 1,
+      "muc_do": "van_dung",
+      "phan": "Phần I",
+      "noi_dung": "Câu hỏi tự luận...",
+      "hinh_anh": { "co_hinh": false, "mo_ta": "" },
+      "giai_thich": "Hướng dẫn trả lời chi tiết..."
+    }
+  ]
+}
+"""
         return "{}"
     
     @staticmethod
@@ -803,6 +820,40 @@ class DynamicDocxRenderer:
             p_gt = self.doc.add_paragraph()
             process_text_with_latex(text, p_gt, bold=is_bold)  
     
+    def render_question_tu_luan(self, cau: Dict):
+        """[MỚI] Render câu hỏi tự luận (Không in đáp án, chỉ in hướng dẫn)"""
+        # 1. Câu hỏi
+        p = self.doc.add_paragraph()
+        p.add_run(f"Câu {cau['stt']}. ").bold = True
+        p_noi_dung = self.doc.add_paragraph()
+        process_text_with_latex(cau['noi_dung'], p_noi_dung)
+        
+        # 2. Hình ảnh (nếu có)
+        hinh_anh = cau.get("hinh_anh", {})
+        if hinh_anh.get("co_hinh"):
+            insert_image_or_placeholder(self.doc, hinh_anh)
+        self.doc.add_paragraph("####")
+        
+        # 4. Nội dung hướng dẫn
+        giai_thich = cau.get("giai_thich", "")
+        # Tách dòng để xử lý in đậm tiêu đề con (Ví dụ: "Bước 1:", "Kết luận:")
+        lines = giai_thich.replace('\\n', '\n').split('\n')
+        
+        for line in lines:
+            text = line.strip()
+            if not text or text == "####": continue
+            is_bold = False
+            if text.startswith("**") and text.endswith("**"):
+                text = text[2:-2]
+                is_bold = True
+            
+            check_text = text.replace('*', '').strip().lower()
+            if check_text.startswith("vậy") or check_text.startswith("therefore,"):
+                is_bold = True
+                text = text.replace('**', '')
+            p_gt = self.doc.add_paragraph()
+            process_text_with_latex(text, p_gt, bold=is_bold)
+    
     def render_all(self, data: Dict):
         """
         Main render function - Có hỗ trợ chia PHẦN (PART) bên trong Mức độ
@@ -848,6 +899,8 @@ class DynamicDocxRenderer:
                     self.render_question_dung_sai(cau)
                 elif loai_de == "tra_loi_ngan":
                     self.render_question_tra_loi_ngan(cau)
+                elif loai_de == "tu_luan":
+                    self.render_question_tu_luan(cau)
                 else:
                     self.render_question_trac_nghiem(cau)
 
@@ -935,6 +988,14 @@ def response2docx_tra_loi_ngan_json(file_path, prompt, file_name, project_id, cr
     return response2docx_flexible(
         file_path, prompt, file_name, project_id, creds, model_name,
         question_type="tra_loi_ngan",
+        batch_name=batch_name
+    )
+
+def response2docx_tu_luan_json(file_path, prompt, file_name, project_id, creds, model_name, batch_name=None):
+    """Wrapper cho tự luận học liệu"""
+    return response2docx_flexible(
+        file_path, prompt, file_name, project_id, creds, model_name,
+        question_type="tu_luan", # Key này sẽ kích hoạt logic trong PromptBuilder và Renderer
         batch_name=batch_name
     )
 

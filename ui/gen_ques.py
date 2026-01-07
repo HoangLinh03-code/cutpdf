@@ -57,7 +57,7 @@ class ProcessingThread(QThread):
 
         # 1. Đọc Prompt
         prompts = {}
-        for key in ["trac_nghiem", "dung_sai", "tra_loi_ngan"]:
+        for key in ["trac_nghiem", "dung_sai", "tra_loi_ngan", "tu_luan"]:
             if key in self.prompt_paths and self.prompt_paths[key]:
                 try:
                     with open(self.prompt_paths[key], "r", encoding="utf-8") as f:
@@ -75,6 +75,8 @@ class ProcessingThread(QThread):
                 all_tasks.append(TaskInfo(output_name, pdf_files, "DS", prompts["dung_sai"]))
             if "tra_loi_ngan" in prompts:
                 all_tasks.append(TaskInfo(output_name, pdf_files, "TLN", prompts["tra_loi_ngan"]))
+            if "tu_luan" in prompts:
+                all_tasks.append(TaskInfo(output_name, pdf_files, "TL", prompts["tu_luan"]))
 
         total_tasks = len(all_tasks)
         if total_tasks == 0:
@@ -133,9 +135,12 @@ class ProcessingThread(QThread):
             elif task.task_type == "DS":
                 func = getattr(self.processor_module, 'response2docx_dung_sai_json', None)
                 suffix = "_DS"
-            else: # TLN
+            elif task.task_type == "TLN":
                 func = getattr(self.processor_module, 'response2docx_tra_loi_ngan_json', None)
                 suffix = "_TLN"
+            else: # [THÊM MỚI] Tự luận
+                func = getattr(self.processor_module, 'response2docx_tu_luan_json', None)
+                suffix = "_TL"
 
             if not func:
                 return None, f"Module không hỗ trợ loại đề {task.task_type}"
@@ -186,6 +191,7 @@ class GenQuesWidget(QWidget):
         self.default_prompt_tn = os.path.join(self.prompt_base_dir, "testTN.txt")
         self.default_prompt_ds = os.path.join(self.prompt_base_dir, "testDS.txt")
         self.default_prompt_tln = os.path.join(self.prompt_base_dir, "testTLN.txt")
+        self.default_prompt_tl = os.path.join(self.prompt_base_dir, "testTL.txt")
 
         # Load nội dung prompt
         self.load_default_prompts()
@@ -278,6 +284,7 @@ class GenQuesWidget(QWidget):
         self.prompt_tn_content = ""
         self.prompt_ds_content = ""
         self.prompt_tln_content = ""
+        self.prompt_tl_content = ""
         
         def read_safe(path):
             if os.path.exists(path):
@@ -288,6 +295,7 @@ class GenQuesWidget(QWidget):
         self.prompt_tn_content = read_safe(self.default_prompt_tn)
         self.prompt_ds_content = read_safe(self.default_prompt_ds)
         self.prompt_tln_content = read_safe(self.default_prompt_tln)
+        self.prompt_tl_content = read_safe(self.default_prompt_tl)
 
     def init_ui(self):
         main_layout = QVBoxLayout()
@@ -445,10 +453,36 @@ class GenQuesWidget(QWidget):
         tln_layout.addWidget(self.prompt_tln_label, 3)
         tln_layout.addWidget(self.btn_select_prompt_tln)
         tln_layout.addWidget(self.btn_edit_tln)
+        
+        tl_container = QWidget()
+        tl_layout = QHBoxLayout(tl_container)
+        tl_layout.setContentsMargins(0, 0, 0, 0)
+        
+        self.chk_tl = QCheckBox("Tự luận học liệu")
+        self.chk_tl.setChecked(True) 
+        self.chk_tl.stateChanged.connect(self.update_process_button_state)
+        
+        self.prompt_tl_label = QLabel(os.path.basename(self.default_prompt_tl))
+        self.prompt_tl_label.setStyleSheet("color: #666; font-style: italic;")
+        
+        self.btn_select_prompt_tl = QPushButton("📂 Chọn")
+        self.btn_select_prompt_tl.setFixedWidth(80)
+        self.btn_select_prompt_tl.clicked.connect(lambda: self.select_prompt_file("tu_luan"))
+        
+        self.btn_edit_tl = QPushButton("✏️ Sửa")
+        self.btn_edit_tl.setFixedWidth(70)
+        self.btn_edit_tl.clicked.connect(lambda: self.edit_prompt("tu_luan"))
+        
+        tl_layout.addWidget(self.chk_tl, 2)
+        tl_layout.addWidget(QLabel("Prompt:"), 0)
+        tl_layout.addWidget(self.prompt_tl_label, 3)
+        tl_layout.addWidget(self.btn_select_prompt_tl)
+        tl_layout.addWidget(self.btn_edit_tl)
 
         conf_layout.addWidget(tn_container)
         conf_layout.addWidget(ds_container)
         conf_layout.addWidget(tln_container)
+        conf_layout.addWidget(tl_container)
         conf_group.setLayout(conf_layout)
 
         # 3. Action
@@ -820,7 +854,14 @@ class GenQuesWidget(QWidget):
                 if is_same_folder:
                     group_name = folder_name
                 elif seed_numbers:
-                    group_name = seed_numbers[-1].title()
+                    match = re.search(distinct_pattern, seed_base)
+                    if match:
+                        # Cắt chuỗi từ vị trí tìm thấy đến hết
+                        # Ví dụ: "SBT_Hoa_10_Bài 3. Cấu trúc..." -> "Bài 3. Cấu trúc..."
+                        group_name = seed_base[match.start():].strip(" _-.")
+                    else:
+                        # Fallback nếu không tìm thấy (giữ logic cũ ở mức tối thiểu)
+                        group_name = seed_numbers[-1].title()
                     if len(group_name) < 10:
                         parent_name = os.path.basename(folder_path)
                         if group_name.lower() not in parent_name.lower():
@@ -873,6 +914,10 @@ class GenQuesWidget(QWidget):
                     self.prompt_tln_content = content
                     self.current_prompt_tln = file_path
                     self.prompt_tln_label.setText(os.path.basename(file_path))
+                elif prompt_type == "tu_luan":
+                    self.prompt_tl_content = content
+                    self.current_prompt_tl = file_path
+                    self.prompt_tl_label.setText(os.path.basename(file_path))
                 
                 self.emit_status(f"Đã chọn prompt: {os.path.basename(file_path)}", "success")
                 
@@ -884,7 +929,8 @@ class GenQuesWidget(QWidget):
         title_map = {
             'trac_nghiem': 'Trắc nghiệm',
             'dung_sai': 'Đúng/Sai',
-            'tra_loi_ngan': 'Trả lời ngắn'
+            'tra_loi_ngan': 'Trả lời ngắn',
+            'tu_luan': 'Tự luận'
         }
         dialog.setWindowTitle(f"Sửa Prompt - {title_map.get(p_type, p_type)}")
         dialog.resize(750, 600)
@@ -901,6 +947,7 @@ class GenQuesWidget(QWidget):
         if p_type == "trac_nghiem": content = self.prompt_tn_content
         elif p_type == "dung_sai": content = self.prompt_ds_content
         elif p_type == "tra_loi_ngan": content = self.prompt_tln_content
+        elif p_type == "tu_luan": content = self.prompt_tl_content
         
         txt_edit.setPlainText(content)
         
@@ -944,6 +991,10 @@ class GenQuesWidget(QWidget):
                 self.prompt_tln_content = new_content
                 file_path = self.current_prompt_tln
                 self.prompt_tln_label.setText("✏️ " + os.path.basename(file_path) + " (đã chỉnh sửa)")
+            elif p_type == "tu_luan":
+                self.prompt_tl_content = new_content
+                file_path = self.current_prompt_tl
+                self.prompt_tl_label.setText("✏️ " + os.path.basename(file_path) + " (đã chỉnh sửa)")
 
             try:
                 if file_path:
@@ -963,7 +1014,8 @@ class GenQuesWidget(QWidget):
             default_files = {
                 'trac_nghiem': self.default_prompt_tn,
                 'dung_sai': self.default_prompt_ds,
-                'tra_loi_ngan': self.default_prompt_tln
+                'tra_loi_ngan': self.default_prompt_tln,
+                'tu_luan': self.default_prompt_tl
             }
             default_file = default_files.get(p_type, self.default_prompt_tn)
             
@@ -983,6 +1035,9 @@ class GenQuesWidget(QWidget):
                     elif p_type == "tra_loi_ngan":
                         self.current_prompt_tln = default_file
                         self.prompt_tln_label.setText(os.path.basename(default_file))
+                    elif p_type == "tu_luan":
+                        self.current_prompt_tl = default_file
+                        self.prompt_tl_label.setText(os.path.basename(default_file))
                     
                     QMessageBox.information(dialog, "Thành công", "Đã reset về prompt mặc định!")
                     self.emit_status(f"Đã reset prompt về mặc định", "info")
@@ -997,7 +1052,7 @@ class GenQuesWidget(QWidget):
 
     def update_process_button_state(self):
         """Cập nhật trạng thái button"""
-        has_selection = (self.chk_tn.isChecked() or self.chk_ds.isChecked() or self.chk_tln.isChecked())
+        has_selection = (self.chk_tn.isChecked() or self.chk_ds.isChecked() or self.chk_tln.isChecked() or self.chk_tl.isChecked())
         self.btn_process.setEnabled(has_selection)
         if not has_selection: 
             self.btn_process.setText("⚠️ Vui lòng chọn ít nhất 1 dạng đề")
@@ -1018,6 +1073,8 @@ class GenQuesWidget(QWidget):
             prompt_paths["dung_sai"] = self.current_prompt_ds
         if self.chk_tln.isChecked(): 
             prompt_paths["tra_loi_ngan"] = self.current_prompt_tln
+        if self.chk_tl.isChecked(): 
+            prompt_paths["tu_luan"] = self.current_prompt_tl
 
         self.btn_process.setEnabled(False)
         self.progress_bar.setVisible(True)
