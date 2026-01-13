@@ -917,6 +917,8 @@ class DynamicDocxRenderer:
         hinh_anh = cau.get("hinh_anh", {})
         if hinh_anh.get("co_hinh"):
             insert_image_or_placeholder(self.doc, hinh_anh)
+        p_lg = self.doc.add_paragraph()
+        p_lg.add_run("Lời giải").bold = True
         self.doc.add_paragraph("####")
         
         # 4. Nội dung hướng dẫn
@@ -1175,8 +1177,8 @@ class ConfigManager:
         },
         "section_order": ["nhan_biet", "thong_hieu", "van_dung", "van_dung_cao"],
         "auto_fix": True,
-        "image_width_inches": 4,
-        "retry_json_parse": 2
+        "image_width_inches": 3.5,
+        "retry_json_parse": 3
     }
     
     @classmethod

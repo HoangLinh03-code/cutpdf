@@ -37,15 +37,15 @@ I. NGUYÊN TẮC "ĐỀ THI KÍN" (TUYỆT ĐỐI TUÂN THỦ) & CHIA KHUNG KI�
   + Nếu AI cố tình sinh câu thứ 3 cho một ý đã hỏi, đó được coi là câu hỏi "RÁC" và vi phạm nguyên tắc.
 
 2. YÊU CẦU ĐẶC BIỆT VỀ HÌNH ẢNH (BẮT BUỘC):
-- Thiết lập số lượng: 0% tổng số câu hỏi (tức là 0 câu).
+- Thiết lập số lượng: 30% tổng số câu hỏi (tức là 12 câu).
 - QUY TẮC XỬ LÝ HÌNH ẢNH (LOGIC NGẮT MẠCH):
     + NẾU SỐ LƯỢNG = 0 (CHẾ ĐỘ KHÔNG ẢNH):
         * BẮT BUỘC 100% câu hỏi có trường "hinh_anh": { "co_hinh": false, "loai": "khong_co", "mo_ta": "" }.
         * NGHIÊM CẤM khai thác dữ liệu từ hình ảnh/biểu đồ để tạo câu hỏi. Nếu thông tin chỉ xuất hiện trong hình ảnh mà không có trong văn bản (text), hãy BỎ QUA thông tin đó.
         * VÔ HIỆU HÓA mọi hướng dẫn về khai thác hình ảnh ở Mục II và Mục IV phía trên.
-    + NẾU SỐ LƯỢNG > 0:
+    + NẾU SỐ LƯỢNG > 0 (Chế độ có ảnh):
         * Phải đảm bảo đúng số lượng câu hỏi có hình minh họa theo yêu cầu.
-        * Định dạng: [HÌNH ẢNH: Hình [X]...]
+        * Nếu không thể sinh được ảnh thì sẽ mô tả theo định dạng: [HÌNH ẢNH: Hình [X]...]
 
 3. LOGIC TỔ HỢP "CỘNG 5" (MA TRẬN 10 GÓC NHÌN TỰ ĐỘNG PHÂN BỔ):
 - 10 góc nhìn chỉ được áp dụng TRONG PHẠM VI ĐOẠN ĐANG ĐỌC.
@@ -208,14 +208,14 @@ Bạn phải phân bổ 40 câu hỏi theo đúng tỷ lệ sau:
   + [Khoa học Tự nhiên]: "Đơn vị của...", "Kí hiệu của...", "Công thức nào sau đây là của...?", "Khái niệm X là gì?".
   + [Khoa học Xã hội]: "Sự kiện X diễn ra vào năm nào?", "Ai là người lãnh đạo...", "Vùng nào sau đây có đặc điểm...".
   + [Toán/Tin]: "Tập xác định của...", "Lệnh nào dùng để...", "Định lý X phát biểu rằng...".
-2. Thông hiểu (Mức 2) - Từ câu 16 đến câu 22:
+2. Thông hiểu (Mức 2) - Từ câu 16 đến câu 30:
 - Định nghĩa: Yêu cầu hiểu ý nghĩa, diễn giải lại, so sánh hoặc giải thích nguyên nhân của các sự kiện/hiện tượng đã nêu.
 - Động từ dấu hiệu: Giải thích, So sánh, Phân biệt, Tóm tắt, Mô tả đặc điểm, Vì sao.
 - Khuôn mẫu câu hỏi:
   + [Khoa học Tự nhiên]: "Đặc điểm nào phân biệt X và Y?", "Nguyên nhân chủ yếu gây ra hiện tượng Z?", "Vì sao công thức X không áp dụng được cho trường hợp Y?".
   + [Khoa học Xã hội]: "Ý nghĩa lịch sử của sự kiện X là...", "So sánh đặc điểm kinh tế giữa vùng A và B".
   + [Toán/Tin]: "Hàm số đồng biến khi nào?", "Đoạn mã trên thực hiện chức năng gì?".
-3. Vận dụng (Mức 3) - Từ câu 23 đến câu 30:
+3. Vận dụng (Mức 3) - Từ câu 31 đến câu 40:
 - Định nghĩa: Áp dụng công thức/quy tắc đã học trong đoạn văn nhưng với SỐ LIỆU MỚI (Khác số liệu trong sách giáo khoa).
 - Yêu cầu bắt buộc:
   + KHÔNG ĐƯỢC hỏi lại ví dụ minh họa của sách.
@@ -223,14 +223,6 @@ Bạn phải phân bổ 40 câu hỏi theo đúng tỷ lệ sau:
 - Khuôn mẫu:
   + [Khoa học Tự nhiên]: "Giả sử nồng độ là X% (sách là Y%), hãy tính...", "Một vật có khối lượng M (khác sách)...".
   + [Toán/Tin]: Thay đổi hệ số phương trình, thay đổi giá trị input của đoạn code.
-4. Vận dụng cao (Mức 4) - Từ câu 31 đến câu 40:
-- Định nghĩa: Bài toán ngược, bài toán phối hợp 2-3 dữ kiện trong cùng một đoạn văn, hoặc suy luận từ quy luật.
-- Yêu cầu bắt buộc:
-  + Dùng kỹ thuật "Bài toán ngược": Cho kết quả, hỏi nguyên nhân/dữ kiện đầu vào.
-  + Dùng kỹ thuật "Tổng hợp cục bộ": Kết hợp 2 công thức gần nhau trong cùng 1 mục để giải quyết vấn đề.
-- Khuôn mẫu:
-  + "Để thu được kết quả X như trong bài, cần thay đổi đại lượng đầu vào Y thành bao nhiêu?"
-  + Bài toán yêu cầu tính toán qua 2 bước trung gian (nhưng các bước này đều nằm trong phạm vi kiến thức đang đọc).
 
 V. QUY TẮC DỊCH THUẬT CHUYÊN NGÀNH & CẤU TRÚC JSON
 1. GIAO THỨC DỊCH THUẬT CHUYÊN NGÀNH (ACADEMIC TRANSLATION PROTOCOL):
