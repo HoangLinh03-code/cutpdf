@@ -201,24 +201,23 @@ III. YÊU CẦU VỀ NỘI DUNG VÀ HƯỚNG DẪN TRẢ LỜI
   + Câu hỏi ĐÚNG: "Trong phòng thí nghiệm, để bảo quản các kim loại kiềm (như Na, K) khỏi bị oxi hóa, người ta thường thực hiện biện pháp nào sau đây?" (Đầy đủ ngữ cảnh).
   + Câu hỏi SAI: "Người ta ngâm kim loại vào đâu?" (Cụt lủn, thiếu chủ ngữ).
 
-IV. PHÂN BỐ MỨC ĐỘ NHẬN THỨC (BỘ 40 CÂU)
-Bạn phải phân bổ 40 câu hỏi theo đúng tỷ lệ sau:
-1. Vận dụng (Mức 3) - Từ câu 1 đến câu 20:
-- Định nghĩa: Áp dụng công thức/quy tắc đã học trong đoạn văn nhưng với SỐ LIỆU MỚI (Khác số liệu trong sách giáo khoa).
+IV. QUY TẮC PHÂN BỔ VÀ SẮP XẾP SỐ THỨ TỰ (STRICT SLOT ORDERING & TAGGING)
+Bạn phải chia bộ đề thành 2 phần rõ rệt và GÁN NHÃN CỨNG (HARD TAGGING) cho trường "muc_do" dựa trên Số thứ tự (stt):
+
+1. SLOT 1: VẬN DỤNG (Mức 3) - BẮT BUỘC từ câu 1 đến câu 20:
+- Yêu cầu logic: Giải thích hiện tượng, So sánh đặc điểm, Tính toán áp dụng công thức (có biện luận).
+- GÁN NHÃN JSON: Bắt buộc điền "muc_do": "van_dung".
 - Yêu cầu bắt buộc:
   + KHÔNG ĐƯỢC hỏi lại ví dụ minh họa của sách.
-  + Phải tự tạo ra bộ số liệu mới (đơn giản, chẵn, dễ tính nhẩm hoặc tính nhanh) và yêu cầu học sinh tính toán.
-- Khuôn mẫu:
-  + [Khoa học Tự nhiên]: "Giả sử nồng độ là X% (sách là Y%), hãy tính...", "Một vật có khối lượng M (khác sách)...".
-  + [Toán/Tin]: Thay đổi hệ số phương trình, thay đổi giá trị input của đoạn code.
-2. Vận dụng cao (Mức 4) - Từ câu 21 đến câu 40:
-- Định nghĩa: Bài toán ngược, bài toán phối hợp 2-3 dữ kiện trong cùng một đoạn văn, hoặc suy luận từ quy luật.
+  + Phải đưa ra tình huống giả định hoặc số liệu mới.
+
+2. SLOT 2: VẬN DỤNG CAO (Mức 4) - BẮT BUỘC từ câu 21 đến câu 40:
+- Yêu cầu logic: Bài toán tổng hợp, Suy luận từ hình ảnh/thí nghiệm, Giải quyết vấn đề thực tiễn phức tạp.
+- GÁN NHÃN JSON: Bắt buộc điền "muc_do": "van_dung_cao".
 - Yêu cầu bắt buộc:
-  + Dùng kỹ thuật "Bài toán ngược": Cho kết quả, hỏi nguyên nhân/dữ kiện đầu vào.
-  + Dùng kỹ thuật "Tổng hợp cục bộ": Kết hợp 2 công thức gần nhau trong cùng 1 mục để giải quyết vấn đề.
-- Khuôn mẫu:
-  + "Để thu được kết quả X như trong bài, cần thay đổi đại lượng đầu vào Y thành bao nhiêu?"
-  + Bài toán yêu cầu tính toán qua 2 bước trung gian (nhưng các bước này đều nằm trong phạm vi kiến thức đang đọc).
+  + Dùng kỹ thuật "Tổng hợp cục bộ": Kết hợp nhiều kiến thức để giải quyết một vấn đề thực tế.
+
+LƯU Ý QUAN TRỌNG: AI phải tự động kiểm tra STT. Nếu STT > 20, BẮT BUỘC chuyển "muc_do" sang "van_dung_cao".
 
 V. QUY TẮC DỊCH THUẬT CHUYÊN NGÀNH & CẤU TRÚC JSON
 1. GIAO THỨC DỊCH THUẬT CHUYÊN NGÀNH (ACADEMIC TRANSLATION PROTOCOL):
@@ -226,20 +225,21 @@ V. QUY TẮC DỊCH THUẬT CHUYÊN NGÀNH & CẤU TRÚC JSON
 A. NGUYÊN TẮC "CONCEPT MAPPING" (DỊCH THEO KHÁI NIỆM):
 - TUYỆT ĐỐI CẤM dịch "Word-by-Word" (Dịch từng từ theo nghĩa đen).
 - Phải xác định "Khái niệm khoa học" tương đương trong tiếng Anh.
-- Ví dụ SAI (Cấm): 
-  + "Vỏ nguyên tử" -> "Atom shell" (Sai)
-  + "Tính chất hóa học" -> "Chemical character" (Không chuẩn)
-- Ví dụ ĐÚNG (Yêu cầu): 
-  + "Vỏ nguyên tử" -> "Electron shell" hoặc "Electron cloud".
-  + "Tính chất hóa học" -> "Chemical properties".
 B. TUÂN THỦ DANH PHÁP QUỐC TẾ (STANDARD NOMENCLATURE):
 - Hóa học: BẮT BUỘC tuân thủ danh pháp IUPAC tiếng Anh hiện hành (Ví dụ: Sắt -> Iron, Đồng -> Copper).
 - Toán/Lý: Dùng thuật ngữ chuẩn (Ví dụ: "Mặt phẳng" -> "Plane", "Đạo hàm" -> "Derivative").
 C. KIỂM TRA NGỮ CẢNH (CONTEXTUAL CHECK):
-- Trước khi chốt đáp án tiếng Anh, hãy tự hỏi: "Một giáo sư bản ngữ có dùng từ này để dạy môn này không?". Nếu từ đó đúng nghĩa đen nhưng sai ngữ cảnh chuyên ngành -> PHẢI ĐỔI NGAY.
+- Trước khi chốt đáp án tiếng Anh, hãy tự hỏi: "Một giáo sư bản ngữ có dùng từ này để dạy môn này không?".
+Nếu từ đó đúng nghĩa đen nhưng sai ngữ cảnh chuyên ngành -> PHẢI ĐỔI NGAY.
 
-2. CẤU TRÚC JSON:
+2. CẤU TRÚC JSON (STRUCTURED OUTPUT):
 BẮT BUỘC tuân thủ cấu trúc Layout để hiển thị đúng trên ứng dụng:
+A. CẤU TRÚC CÂU HỎI:
+- Trường "stt": Số nguyên từ 1 đến 40.
+- Trường "muc_do": 
+  + BẮT BUỘC tuân thủ logic Slot ở phần IV:
+  + Câu 1-20 điền: "van_dung"
+  + Câu 21-40 điền: "van_dung_cao"
 - Trường "phan":
   + CẤU TRÚC: "Tên Bài - Tên Mục (nếu có) (Dạng: [Hành động] [Lớp đối tượng chung])".
   + BỘ LỌC KIỂM TRA LỖI (VALIDATOR):
@@ -256,44 +256,27 @@ BẮT BUỘC tuân thủ cấu trúc Layout để hiển thị đúng trên ứn
   + Nếu nội dung nằm ở phần "Luyện tập", "Vận dụng", hay "Em có biết", phải ghi rõ: "Bài X - Mục Y - Luyện tập 2".
   + KIỂM TRA LẠI: Nếu 5 câu hỏi liên tiếp có trường "phan" giống hệt nhau mà không có sự thay đổi về tiểu mục, bạn đang quét quá nông -> HÃY ĐI SÂU HƠN.
 - TUYỆT ĐỐI PHẢI đảm bảo câu hỏi đi sâu vào từng ngóc ngách của kiến thức.
-- Trường "muc_do": Phải điền chính xác một trong các giá trị: nhan_biet, thong_hieu, van_dung, van_dung_cao.
-- Trường "noi_dung": [Câu hỏi Tiếng Việt dài khoảng 70 - 90 từ]\n(translate_en)\n[Câu hỏi Tiếng Anh sử dụng Thuật ngữ Chuyên ngành chuẩn Quốc tế/IUPAC dài khoảng 70 - 90 từ].
-- Trường "giai_thich" (BẮT BUỘC NGĂN CÁCH): 
-  + Đây là HƯỚNG DẪN TRẢ LỜI CHI TIẾT.
-  + Đối với câu hỏi "Biến thể số liệu" hoặc "Bài toán ngược": Phải trình bày rõ CÔNG THỨC GỐC được lấy từ đâu trong bài, sau đó thay số vào để tính ra kết quả.
-  + Tuyệt đối không chỉ ghi đáp án, phải ghi rõ: "Áp dụng công thức X trong bài học, với số liệu giả định của đề bài, ta có...".
-  + Phải chứa đầy đủ 2 ngôn ngữ dài khoảng 70 - 120 từ, ngăn cách ở giữa bằng dấu \n(translate_en)\n.
+- Trường "noi_dung": [Câu hỏi Tự luận Tiếng Việt dài khoảng 80 - 100 từ].
+- Trường "noi_dung_en": [Câu hỏi Tự luận Tiếng Anh khoảng 80 - 100 từ].
+- Trường "hinh_anh":
+  + Nếu có hình, điền "mo_ta" chi tiết.
+  + Nếu không có hình, để "co_hinh": false.
+- Trường "giai_thich" (Tiếng Việt) và "giai_thich_en" (Tiếng Anh):
+  + ĐÂY LÀ PHẦN QUAN TRỌNG NHẤT: Đóng vai trò là HƯỚNG DẪN CHẤM / LỜI GIẢI MẪU.
+  + ĐỘ DÀI giải thích khoảng 90 - 100 từ.
+  + CẤU TRÚC BẮT BUỘC:
+    * Trình bày các bước giải logic, tách dòng (\n).
+    * Bước 1: Nêu nguyên lý/công thức.
+    * Bước 2: Thay số/Biện luận.
+    * Bước 3: Kết luận.
+  + KẾT LUẬN (BẮT BUỘC):
+    * Tiếng Việt: Kết thúc bằng "\n**(KL.) Vậy [kết quả].**" (In đậm).
+    * Tiếng Anh: Kết thúc bằng "\n**(KL.) Therefore, [result].**" (In đậm).
 
-VI. ĐỊNH DẠNG LỜI GIẢI MẪU (BẮT BUỘC PHẢI LÀM THEO)
-Lời giải phải đóng vai trò là "Đáp án mẫu" cho giáo viên.
-CẤU TRÚC BẮT BUỘC:
-1. Hướng dẫn trả lời Tiếng Việt: 
-   - Phân tích lý do khoa học/công thức dẫn đến kết quả.
-   - Trình bày các bước giải logic (nếu là bài toán).
-2. DẤU NGĂN CÁCH (CỰC KỲ QUAN TRỌNG): Ngay sau câu kết luận Tiếng Việt, PHẢI chèn ký hiệu \n(translate_en)\n trên một dòng riêng hoặc phân cách rõ ràng để hệ thống tách khối.
-3. Hướng dẫn trả lời Tiếng Anh sử dụng Thuật ngữ Chuyên ngành chuẩn Quốc tế/IUPAC: Dịch chính xác phần hướng dẫn và kết luận tương ứng.
-4. KẾT LUẬN (BẮT BUỘC): 
-  1. Hình thức: Phải bọc toàn bộ câu trong dấu hai sao "**" để in đậm.
-  2. Nội dung: Phải nhắc lại đối tượng câu hỏi để tạo thành câu khẳng định trọn vẹn (Không dùng mẫu "Vậy đáp án là...").
-  * Mẫu Tiếng Việt chuẩn: "**(KL.) Vậy [Chủ ngữ + Kết quả trả lời cho câu hỏi].**"
-    -> Ví dụ đúng: "**(KL.) Vậy quãng đường vật đi được là 50m.**"
-    -> Ví dụ SAI: "**(KL.) Vậy đáp án đúng là 50m.**" (Cấm viết kiểu này)
-  * Mẫu Tiếng Anh chuẩn: "**(KL.) Therefore, [Subject + Result].**"
-    -> Ví dụ đúng: "**(KL.) Therefore, the distance traveled is 50m.**"
-
-VII. MẪU JSON MINH HỌA (LÀM THEO CHÍNH XÁC)
-{
-  "loai_de": "tu_luan",
-  "tong_so_cau": 40,
-  "cau_hoi": [
-    {
-      "stt": 1,
-      "muc_do": "van_dung",
-      "phan": "BÀI 4: DUNG DỊCH - Phần I.1: Nhận biết dung dịch, chất tan & dung môi",
-      "noi_dung": "Trong thí nghiệm hòa tan muối ăn, copper(II) sulfate và sữa bột vào nước, hãy giải thích tại sao hỗn hợp trong cốc chứa sữa bột không được coi là dung dịch thực sự?\n(translate_en)\nIn the experiment of dissolving table salt, copper(II) sulfate, and milk powder in water, explain why the mixture in the beaker containing milk powder is not considered a true solution?",
-      "hinh_anh": { "co_hinh": true, "mo_ta": "Hình ảnh minh họa 3 cốc thí nghiệm chứa muối ăn, CuSO4 và sữa bột hòa tan trong nước." },
-      "giai_thich": "Dung dịch là một hỗn hợp lỏng đồng nhất ở cấp độ phân tử, trong đó chất tan đã hòa tan hoàn toàn vào dung môi. Trong thí nghiệm, muối ăn ($NaCl$) và copper(II) sulfate ($CuSO_4$) tan hoàn toàn tạo thành hỗn hợp trong suốt. Ngược lại, sữa bột tạo thành hệ huyền phù hoặc nhũ tương, trong đó các hạt chất béo và protein lơ lửng, không đồng nhất và làm đục nước ($H_2O$).\n**(KL.) Vậy cốc chứa sữa bột không phải là dung dịch vì nó không tạo thành hỗn hợp đồng nhất.**\n(translate_en)\nA solution is a homogeneous liquid mixture at the molecular level, where the solute is completely dissolved in the solvent. In the experiment, table salt ($NaCl$) and copper(II) sulfate ($CuSO_4$) dissolve completely to form transparent mixtures. In contrast, milk powder forms a suspension or emulsion, where fat and protein particles are suspended, non-homogeneous, and make the water ($H_2O$) turbid.\n**(KL.) Therefore, the beaker containing milk powder is not a solution because it does not form a homogeneous mixture.**"
-    }
-  ]
-}
-Bắt đầu quét PDF TUẦN TỰ CẤM SINH NGẪU NHIÊN, giữ nguyên cấu trúc JSON, đảm bảo độ sâu kiến thức và tính phân loại cực cao, ĐỒNG THỜI TUÂN THỦ NGHIÊM NGẶT QUY TẮC MẬT ĐỘ VÀ CHỐNG TRÙNG LẶP.
+Bắt đầu thực hiện:
+1. QUÉT LINH HOẠT đầu bài để tìm "Khung định hướng".
+2. ĐỐI CHIẾU nội dung bài học với Khung định hướng.
+3. PHÂN LOẠI & SẮP XẾP câu hỏi vào 2 SLOT cứng:
+   - Câu 1-20: Vận dụng -> Gán "van_dung".
+   - Câu 21-40: Vận dụng cao -> Gán "van_dung_cao".
+4. XUẤT JSON chuẩn format Schema (Array cho 'phan', Split Vi/En cho 'noi_dung' và 'giai_thich').

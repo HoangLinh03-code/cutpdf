@@ -458,7 +458,7 @@ class GenQuesWidget(QWidget):
         tl_layout = QHBoxLayout(tl_container)
         tl_layout.setContentsMargins(0, 0, 0, 0)
         
-        self.chk_tl = QCheckBox("Tự luận học liệu")
+        self.chk_tl = QCheckBox("Tự luận")
         self.chk_tl.setChecked(True) 
         self.chk_tl.stateChanged.connect(self.update_process_button_state)
         

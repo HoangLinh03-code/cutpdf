@@ -14,6 +14,12 @@ import re
 from tempfile import NamedTemporaryFile
 from docx.oxml import parse_xml
 import traceback
+from modules.common.schema import (
+    schema_trac_nghiem, 
+    schema_dung_sai, 
+    schema_tra_loi_ngan, 
+    schema_tu_luan
+)
 
 _FILE_LOCK = threading.RLock()
 _OUTPUT_DIR_LOCK = threading.RLock()
@@ -267,253 +273,8 @@ def save_document_securely(doc, batch_name, file_name):
         
         print(f"❌ Không thể lưu file sau {max_retries} lần thử")
         return None
-def repair_json_with_ai(broken_json_str: str, client) -> str:
-    """
-    Gửi JSON lỗi cho AI sửa (ĐÃ CẢI TIẾN)
-    Thay vì yêu cầu AI trả về toàn bộ JSON, ta sẽ cố gắng tìm phần hợp lệ
-    hoặc yêu cầu AI sửa phần bị lỗi cụ thể.
-    """
-    print("⚠️ JSON lỗi. Đang cố gắng sửa...")
-    
-    # --- Cải tiến 1: Cố gắng "xén" JSON hợp lệ ---
-    # Đôi khi AI trả về JSON bị thừa văn bản phía sau
-    repaired_by_cutting = extract_valid_json(broken_json_str)
-    if repaired_by_cutting:
-        print("✅ JSON đã được sửa bằng cách xén phần hợp lệ.")
-        return repaired_by_cutting
 
-    # --- Cải tiến 2: Gửi yêu cầu sửa lỗi cụ thể hơn cho AI ---
-    # Thay vì gửi nguyên đoạn lỗi, mô tả rõ hơn lỗi gì
-    error_description = "Đoạn JSON sau bị lỗi cú pháp hoặc bị cắt xén."
-    error_description += " Có thể thiếu dấu phẩy, ngoặc đóng/mở không khớp, hoặc bị ngắt giữa chừng."
-    error_description += " Vui lòng sửa lỗi cú pháp, GIỮ NGUYÊN TOÀN BỘ NỘI DUNG TIẾNG VIỆT VÀ CÔNG THỨC LATEX,"
-    error_description += " và TRẢ VỀ CHỈ CÓ JSON ĐÃ SỬA (không thêm lời dẫn, không thêm markdown)."
-
-    prompt_fix = f"""
-{error_description}
-
-JSON lỗi:
-{broken_json_str}
-
-JSON đã sửa (chỉ JSON, không thêm gì khác):
-"""
-    try:
-        repaired_text = client.send_data_to_check(prompt_fix)
-        # Sau khi AI trả về, thử xén lại lần nữa nếu cần
-        final_repaired = extract_valid_json(repaired_text)
-        if final_repaired:
-            print("✅ JSON đã được sửa bởi AI và xác nhận hợp lệ.")
-            return final_repaired
-        else:
-            print("❌ AI trả về văn bản nhưng vẫn không phải JSON hợp lệ.")
-            return repaired_text # Trả về nguyên văn để thử parse sau
-    except Exception as e:
-        print(f"❌ Gặp lỗi khi yêu cầu AI sửa JSON: {e}")
-        return broken_json_str
-    
-def extract_valid_json(text: str) -> str:
-    """
-    Cố gắng trích xuất phần JSON hợp lệ từ một chuỗi có thể có văn bản thừa.
-    Hỗ trợ cả JSON lồng nhau phức tạp.
-    """
-    text = text.strip()
-    
-    # 1. Tìm tất cả các cặp ngoặc nhọn {} hoặc ngoặc vuông []
-    stack = []
-    start = -1
-    max_depth = 0
-    max_start = -1
-    max_end = -1
-
-    for i, char in enumerate(text):
-        if char == '{':
-            if not stack:
-                start = i
-            stack.append(char)
-        elif char == '[':
-            if not stack:
-                start = i
-            stack.append(char)
-        elif char == '}' and stack and stack[-1] == '{':
-            stack.pop()
-            if not stack and (i - start) > (max_end - max_start):
-                max_start = start
-                max_end = i
-        elif char == ']' and stack and stack[-1] == '[':
-            stack.pop()
-            if not stack and (i - start) > (max_end - max_start):
-                max_start = start
-                max_end = i
-
-    if max_start != -1 and max_end != -1:
-        potential_json = text[max_start : max_end + 1]
-        # 2. Thử parse phần JSON này
-        try:
-            # Dùng strict=False để thư giãn một chút với ký tự đặc biệt
-            json.loads(potential_json, strict=False)
-            print(f"🔍 Đã tìm thấy JSON hợp lệ trong văn bản.")
-            return potential_json
-        except (json.JSONDecodeError, TypeError):
-            pass # Không parse được, thử phương pháp khác
-
-    # Nếu không tìm được JSON hoàn chỉnh, thử phương pháp cũ
-    # "Săn" JSON bằng cách tìm { đầu và } cuối
-    start_brace = text.find('{')
-    end_brace = text.rfind('}')
-    if start_brace != -1 and end_brace != -1 and end_brace > start_brace:
-        potential_json_old_way = text[start_brace : end_brace + 1]
-        try:
-            json.loads(potential_json_old_way, strict=False)
-            print(f"🔍 Đã tìm thấy JSON hợp lệ theo cách cũ.")
-            return potential_json_old_way
-        except (json.JSONDecodeError, TypeError):
-            pass
-
-    # Nếu tất cả đều không thành công
-    return ""
-def sanitize_latex_json(text: str) -> str:
-    VALID_ESCAPES = {
-        '\\\\', '\\"', '\\/', '\\b', '\\f', '\\n', '\\r', '\\t'
-    }
-    
-    def is_already_escaped(s: str, pos: int) -> bool:
-        """Kiểm tra backslash tại vị trí pos đã được escape chưa"""
-        count = 0
-        i = pos - 1
-        while i >= 0 and s[i] == '\\':
-            count += 1
-            i -= 1
-        return count % 2 == 1
-    
-    def fix_string_content(match):
-        full = match.group(0)
-        content = match.group(1)
-        
-        if not content:
-            return full
-        
-        result = []
-        i = 0
-        
-        while i < len(content):
-            char = content[i]
-            
-            if char == '\\' and i + 1 < len(content):
-                next_char = content[i + 1]
-                two_chars = char + next_char
-                
-                # ✅ Case 1: JSON escape hợp lệ → Giữ nguyên
-                if two_chars in VALID_ESCAPES:
-                    result.append(two_chars)
-                    i += 2
-                    continue
-                
-                # ✅ Case 2: Unicode escape (\uXXXX) → Giữ nguyên
-                if next_char == 'u' and i + 5 < len(content):
-                    hex_part = content[i+2:i+6]
-                    if len(hex_part) == 4 and all(c in '0123456789ABCDEFabcdef' for c in hex_part):
-                        result.append(content[i:i+6])
-                        i += 6
-                        continue
-                
-                # ✅ Case 3: Backslash ĐÃ escape (\\) → Giữ nguyên
-                if next_char == '\\':
-                    result.append('\\\\')
-                    i += 2
-                    continue
-                
-                # ❌ Case 4: LaTeX command → CẦN escape
-                result.append('\\\\')
-                i += 1
-            else:
-                result.append(char)
-                i += 1
-        
-        return '"' + ''.join(result) + '"'
-    
-    string_pattern = r'"((?:[^"\\]|\\.)*)"'
-    sanitized = re.sub(string_pattern, fix_string_content, text)
-    return sanitized
-
-def parse_json_safely(json_str: str, client) -> Optional[Dict]:
-    """Parse JSON với 3 lớp bảo vệ - ĐÃ CẢI TIẾN"""
-    
-    # === LỚP 1: Thử parse ngay lập tức ===
-    try:
-        return json.loads(json_str, strict=False)
-    except (json.JSONDecodeError, TypeError):
-        pass
-
-    # === LỚP 2: Clean + Sanitize ===
-    cleaned = clean_json_string(json_str)
-    sanitized = sanitize_latex_json(cleaned)
-    
-    try:
-        return json.loads(sanitized, strict=False)
-    except (json.JSONDecodeError, TypeError) as e:
-        print(f"⚠️ Lỗi JSON sau sanitize (vị trí {getattr(e, 'pos', 'unknown')}): {e.msg}")
-        # Chỉ in context nếu có vị trí lỗi
-        if hasattr(e, 'pos'):
-            start = max(0, e.pos - 30)
-            end = min(len(sanitized), e.pos + 30)
-            print(f"Context: ...{sanitized[start:end]}...")
-
-    # === LỚP 3: Gọi AI sửa ===
-    print("🤖 Gọi AI sửa JSON...")
-    try:
-        # Thay vì gửi 'cleaned', ta gửi 'sanitized' để AI có thể sửa dễ hơn
-        repaired = repair_json_with_ai(sanitized, client)
-        
-        # AI có thể trả về nhiều thứ, cố gắng extract JSON hợp lệ
-        extracted_json = extract_valid_json(repaired)
-        if extracted_json:
-            # Nếu extract được, lại phải sanitize lại vì có thể AI chưa escape đúng
-            final_sanitized = sanitize_latex_json(extracted_json)
-            try:
-                return json.loads(final_sanitized, strict=False)
-            except (json.JSONDecodeError, TypeError) as e:
-                 print(f"❌ AI trả về JSON nhưng vẫn lỗi sau khi sanitize: {e}")
-                 return None
-        else:
-            # Nếu không extract được, thử parse nguyên văn
-            try:
-                return json.loads(repaired, strict=False)
-            except (json.JSONDecodeError, TypeError) as e:
-                 print(f"❌ Không thể parse cả JSON được AI sửa: {e}")
-                 return None
-
-    except Exception as e:
-        print(f"❌ LỖI nghiêm trọng khi gọi AI sửa JSON: {e}")
-        traceback.print_exc()
-        return None
-
-
-def clean_json_string(text: str) -> str:
-    """Xóa markdown wrapper và lấy phần JSON thuần túy"""
-    if not text:
-        return ""
-    
-    text = text.strip()
-    
-    # Xóa markdown code block
-    pattern = r"```(?:json)?(.*?)```"
-    match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
-    if match:
-        text = match.group(1).strip()
-    
-    # "Săn" JSON bằng cách tìm { đầu và } cuối
-    start = text.find('{')
-    end = text.rfind('}')
-    
-    if start != -1 and end != -1 and end > start:
-        return text[start:end + 1]
-    
-    return text
 def generate_or_get_image(hinh_anh_data: Dict) -> tuple:
-    """
-    Xử lý gọi hàm sinh ảnh.
-    Returns: (image_bytes, placeholder_text) - image_bytes là 1 object duy nhất
-    """
     mo_ta = hinh_anh_data.get("mo_ta", hinh_anh_data.get("description", ""))
     mo_ta = str(mo_ta).strip()
     loai = hinh_anh_data.get("loai", "tu_mo_ta")
@@ -563,145 +324,40 @@ def insert_image_or_placeholder(doc: Document, hinh_anh_data: Dict):
 
 class PromptBuilder:
     """
-    Builder tạo prompt động - Đã sửa lỗi xung đột f-string và LaTeX
+    PromptBuilder mới: Gọn nhẹ, chỉ tập trung vào nội dung.
+    Không còn nhồi nhét cấu trúc JSON vào prompt.
     """
-    
     @staticmethod
-    def build_json_structure_hint(question_type: str) -> str:
-        # Hàm này trả về string thường (không phải f-string) nên giữ nguyên 1 dấu {}
-        if question_type == "trac_nghiem_4_dap_an":
-            return """
-{
-  "loai_de": "trac_nghiem_4_dap_an",
-  "tong_so_cau": 80,
-  "cau_hoi": [
-    {
-      "stt": 1,
-      "muc_do": "nhan_biet",
-      "phan": "Phần I",
-      "noi_dung": "Nội dung câu hỏi...",
-      "hinh_anh": { "co_hinh": true, "loai": "tu_mo_ta", "mo_ta": "Mô tả..." },
-      "dap_an": [
-        {"ky_hieu": "A", "noi_dung": "Đáp án A"},
-        {"ky_hieu": "B", "noi_dung": "Đáp án B"},
-        {"ky_hieu": "C", "noi_dung": "Đáp án C"},
-        {"ky_hieu": "D", "noi_dung": "Đáp án D"}
-      ],
-      "dap_an_dung": 2,
-      "giai_thich": "Giải thích..."
-    }
-  ]
-}
-"""
-        elif question_type == "dung_sai":
-            return """
-{
-  "loai_de": "dung_sai",
-  "tong_so_cau": 40,
-  "cau_hoi": [
-    {
-      "stt": 1,
-      "muc_do": "thong_hieu",
-      "phan": "Phần I",
-      "doan_thong_tin": "Nội dung...",
-      "hinh_anh": { "co_hinh": true, "loai": "tu_mo_ta", "mo_ta": "Mô tả..." },
-      "cac_y": [
-        {"ky_hieu": "a", "noi_dung": "...", "dung": false},
-        {"ky_hieu": "b", "noi_dung": "...", "dung": true},
-        {"ky_hieu": "c", "noi_dung": "...", "dung": false},
-        {"ky_hieu": "d", "noi_dung": "...", "dung": true}
-      ],
-      "dap_an_dung_sai": "0101",
-      "giai_thich": [
-        {"y": "a", "noi_dung_y": "...", "ket_luan": "SAI", "giai_thich": "..."},
-        {"y": "b", "noi_dung_y": "...", "ket_luan": "ĐÚNG", "giai_thich": "..."}
-      ]
-    }
-  ]
-}
-"""
-        elif question_type == "tra_loi_ngan":
-            return """
-{
-  "loai_de": "tra_loi_ngan",
-  "tong_so_cau": 30,
-  "cau_hoi": [
-    {
-      "stt": 1,
-      "muc_do": "van_dung",
-      "phan": "Phần I",
-      "noi_dung": "Nội dung...",
-      "hinh_anh": { "co_hinh": true, "loai": "tu_mo_ta", "mo_ta": "..." },
-      "dap_an": "[[kết quả]]",
-      "giai_thich": "..."
-    }
-  ]
-}
-""" 
-        elif question_type == "tu_luan":
-                    return """
-        {
-        "loai_de": "tu_luan",
-        "tong_so_cau": 30,
-        "cau_hoi": [
-            {
-            "stt": 1,
-            "muc_do": "van_dung",
-            "phan": "Phần I",
-            "noi_dung": "Câu hỏi tự luận...",
-            "hinh_anh": { "co_hinh": true, "loai": "tu_mo_ta", "mo_ta": "..." },
-            "giai_thich": "Hướng dẫn trả lời chi tiết..."
-            }
-        ]
-        }
-        """
-        return "{}"
-
-    @staticmethod
-    def wrap_user_prompt(user_prompt: str, question_type: str) -> str:
-        json_hint = PromptBuilder.build_json_structure_hint(question_type)
-        
-        # SỬA LỖI TẠI ĐÂY:
-        # Trong f-string (f"""), dấu ngoặc nhọn của LaTeX phải nhân đôi thành {{ }}
-        # Ví dụ: \frac{1}{2} phải viết là \\frac{{1}}{{2}} để Python không hiểu nhầm là biến
-        
+    def wrap_user_prompt(user_prompt: str) -> str:
+        # Chỉ giữ lại các quy tắc cốt lõi về nội dung
         return f"""{user_prompt}
 
 ----------------
-### YÊU CẦU NGHIÊM NGẶT VỀ DỮ LIỆU (BẮT BUỘC TUÂN THỦ 100%):
+### YÊU CẦU KỸ THUẬT QUAN TRỌNG:
 
-1. **FORMAT ĐẦU RA (QUAN TRỌNG NHẤT)**: 
-   - CHỈ TRẢ VỀ DUY NHẤT MỘT CHUỖI JSON thuần túy.
-   - TUYỆT ĐỐI KHÔNG có lời mở đầu hay kết thúc (như "Here is result...").
-   - **QUAN TRỌNG:** Phải sử dụng dấu ngoặc kép (") cho key và value. KHÔNG dùng dấu ngoặc đơn (').
+1. **TUÂN THỦ SCHEMA:**
+   - Output trả về PHẢI khớp chính xác với cấu trúc JSON Schema đã được định nghĩa trong hệ thống.
+   - Tuyệt đối không thêm lời dẫn, không thêm markdown (```json). Chỉ trả về Raw JSON.
 
-2. **QUY TẮC LATEX (Toán/Lý/Hóa/Sinh):**
- - **KHOA HỌC TỰ NHIÊN:**
-    + BẮT BUỘC dùng dấu $ bao quanh công thức.
-    + Khi viết trong JSON string, dấu gạch chéo phải được escape (nhân đôi).
-    + Ví dụ đúng: "Hàm số $y = x^2$" hoặc "Phân số $\\\\frac{{1}}{{2}}$" (lưu ý dấu gạch chéo kép).
-    + Ví dụ sai: "\\frac{{1}}{{2}}" (thiếu escape) hoặc "$y$" (cho biến đơn lẻ không cần thiết).
+2. **QUY TẮC LATEX (BẮT BUỘC):**
+   - Mọi công thức Toán/Lý/Hóa phải đặt trong dấu `$`.
+   - Ví dụ: $x^2 + 2x$, $H_2SO_4$.
+   - **Lưu ý escape:** Trong chuỗi JSON, ký tự backslash `\\` phải được nhân đôi thành `\\\\`. 
+     Ví dụ: muốn viết $\\frac{{1}}{{2}}$ thì trong JSON phải là "$\\\\frac{{1}}{{2}}$".
 
-- **KHOA HỌC XÃ HỘI:**
-    + VIẾT VĂN BẢN BÌNH THƯỜNG.
-    + KHÔNG dùng `$` cho các con số thông thường, ngày tháng năm, hoặc danh từ riêng.
-    + Ví dụ ĐÚNG: "Ngày 2/9/1945", "Dân số là 90 triệu người".
-    + Ví dụ SAI (Cấm): "$Ngày 2/9/1945$", "$90 triệu$".
-
-3. **HÌNH ẢNH MINH HỌA (QUAN TRỌNG - BẮT BUỘC CHECK)**:
-   - Tư duy: "Nội dung này có cần hình minh họa để học sinh hiểu rõ hơn không?"
-   - Áp dụng cho **MỌI LĨNH VỰC** (Khoa học Tự nhiên & Xã hội):
-     + **Toán/Lý/Hóa**: Nếu có hình học, đồ thị, mạch điện, thí nghiệm, cấu trúc phân tử... -> BẮT BUỘC điền mô tả vào `"mo_ta"`.
-     + **Sử/Địa/Văn**: Nếu có lược đồ trận đánh, bản đồ địa lý, biểu đồ dân số, di tích lịch sử, chân dung nhân vật... -> BẮT BUỘC điền mô tả vào `"mo_ta"`.
-   - **Cách viết mô tả ("mo_ta")**:
-     + Viết chi tiết để công cụ vẽ tranh (AI) có thể tái tạo lại được.
-     + Ví dụ Toán: "Tam giác ABC vuông tại A, đường cao AH..."
-     + Ví dụ Sử: "Lược đồ trận Điện Biên Phủ, các mũi tên tấn công từ vây quanh lòng chảo..."
-     + Ví dụ Địa: "Bản đồ hình chữ S của Việt Nam, đánh dấu vị trí thủ đô Hà Nội..."
-
-### MẪU JSON MONG MUỐN:
-{json_hint}
+3. **HÌNH ẢNH:**
+   - Luôn điền trường "mo_ta" chi tiết nếu câu hỏi cần hình minh họa (đồ thị, thí nghiệm, bản đồ...).
 """
+
+def get_schema_by_type(question_type: str):
+    """Mapping loại câu hỏi sang Schema object"""
+    mapping = {
+        "trac_nghiem_4_dap_an": schema_trac_nghiem,
+        "dung_sai": schema_dung_sai,
+        "tra_loi_ngan": schema_tra_loi_ngan,
+        "tu_luan": schema_tu_luan
+    }
+    return mapping.get(question_type, schema_trac_nghiem)
 class DynamicDocxRenderer:
     """
     Renderer tự động thích ứng với cấu trúc JSON
@@ -767,179 +423,300 @@ class DynamicDocxRenderer:
         return mapping.get(muc_do, muc_do.upper())
     
     def render_question_trac_nghiem(self, cau: Dict):
-        """Render câu hỏi trắc nghiệm 4 đáp án"""
-        # Câu hỏi
         p = self.doc.add_paragraph()
         p.add_run(f"Câu {cau['stt']}. ").bold = True
-        process_text_with_latex(cau['noi_dung'], p)
+        process_text_with_latex(cau.get('noi_dung', ''), p)
         
-        # Hình ảnh
         hinh_anh = cau.get("hinh_anh", {})
         if hinh_anh.get("co_hinh"):
             insert_image_or_placeholder(self.doc, hinh_anh)
         
-        # Đáp án - THÊM XỬ LÝ LATEX
-        for dap_an in cau.get("dap_an", []):
+        for dap_an in cau.get("cac_lua_chon", []):
             p_da = self.doc.add_paragraph()
-            run_ky_hieu = p_da.add_run(f"{dap_an['ky_hieu']}. ")
-            process_text_with_latex(dap_an['noi_dung'], p_da) 
-        
-        # Lời giải
+            p_da.add_run(f"{dap_an['ky_hieu']}. ").bold = True
+            process_text_with_latex(dap_an.get('noi_dung', ''), p_da)
+
+        if cau.get('noi_dung_en'):
+            self.doc.add_paragraph("(translate_en)").italic = True
+            p_en = self.doc.add_paragraph()
+            process_text_with_latex(cau.get('noi_dung_en', ''), p_en)
+            
+            for dap_an in cau.get("cac_lua_chon", []):
+                p_da_en = self.doc.add_paragraph()
+                p_da_en.add_run(f"{dap_an['ky_hieu']}. ").bold = True
+                content_en = dap_an.get('noi_dung_en') or dap_an.get('noi_dung', '')
+                process_text_with_latex(content_en, p_da_en)
+
+        # --- PHẦN 2: LỜI GIẢI CHI TIẾT ---
         p_lg = self.doc.add_paragraph()
-        p_lg.add_run("Lời giải").bold = True
+        p_lg.add_run("Lời giải").bold = True # <-- Header vẫn in đậm
         
         if "dap_an_dung" in cau:
             p_dung = self.doc.add_paragraph()
             p_dung.add_run(f"{cau['dap_an_dung']}").bold = True
-            self.doc.add_paragraph("####")
-        
-        # Giải thích - THÊM XỬ LÝ LATEX
-        giai_thich = cau.get("giai_thich", "")
-        for line in giai_thich.split("\n"):
-            if line.strip():
+            self.doc.add_paragraph("####") 
+
+        # Hàm render từng dòng giải thích
+        def render_explanation_lines(text_block, lang='vi'):
+            if not text_block: return
+            
+            lines = text_block.split("\n")
+            for line in lines:
+                text = line.strip()
+                if not text: continue
+                
                 p_gt = self.doc.add_paragraph()
-                is_conclusion = line.startswith("Vậy") or line.startswith("Therefore") or line.startswith("**")
-                process_text_with_latex(line.strip(), p_gt,bold=is_conclusion)  
+                
+                # --- LOGIC MỚI: CHỈ IN ĐẬM KẾT LUẬN ---
+                is_bold = False
+                text_lower = text.lower()
+                
+                if lang == 'vi':
+                    # Chỉ in đậm dòng bắt đầu bằng "Vậy..."
+                    if text_lower.startswith("vậy đáp án") or text_lower.startswith("vậy, đáp án"):
+                        is_bold = True
+                else: # English
+                    # Chỉ in đậm dòng bắt đầu bằng "Therefore..."
+                    if text_lower.startswith("therefore"):
+                        is_bold = True
+                
+                process_text_with_latex(text, p_gt, bold=is_bold)
+
+        # 2.1 Giải thích Tiếng Việt
+        render_explanation_lines(cau.get("giai_thich", ""), lang='vi')
+
+        # 2.2 Giải thích Tiếng Anh
+        if cau.get("giai_thich_en"):
+            self.doc.add_paragraph("(translate_en)").italic = True
+            render_explanation_lines(cau.get("giai_thich_en", ""), lang='en')
+
+        # --- PHẦN 3: GỢI Ý (Giữ nguyên) ---
+        goi_y_vi = cau.get("goi_y", "")
+        goi_y_en = cau.get("goi_y_en", "")
         
-        # Kết luận - THÊM XỬ LÝ LATEX
-        # if "dap_an_dung" in cau:
-        #     dap_an_num = cau['dap_an_dung']
-        #     noi_dung_dap_an = cau['dap_an'][dap_an_num-1]['noi_dung']
-        #     p_ket_luan = self.doc.add_paragraph()
-        #     run = p_ket_luan.add_run("Vậy đáp án đúng là: ")
-        #     run.bold = True
-        #     process_text_with_latex(noi_dung_dap_an, p_ket_luan, bold=True) 
-    
+        if goi_y_vi or goi_y_en:
+            self.doc.add_paragraph("####")
+            if goi_y_vi:
+                p_title = self.doc.add_paragraph()
+                p_title.add_run("Gợi ý:").bold = True
+                for line in goi_y_vi.split("\n"):
+                    if not line.startswith("Gợi ý"):
+                        process_text_with_latex(line.strip(), self.doc.add_paragraph())
+            
+            if goi_y_en:
+                self.doc.add_paragraph("(translate_en)").italic = True
+                p_title_en = self.doc.add_paragraph()
+                p_title_en.add_run("Hint:").bold = True
+                for line in goi_y_en.split("\n"):
+                    if not line.startswith("Hint"):
+                        process_text_with_latex(line.strip(), self.doc.add_paragraph())
+
     def render_question_dung_sai(self, cau: Dict):
-        """Render câu hỏi đúng/sai"""
-        # Số câu
         p = self.doc.add_paragraph()
-        p.add_run(f"Câu {cau['stt']}.").bold = True
-        
-        # Đoạn thông tin - THÊM XỬ LÝ LATEX
+        p.add_run(f"Câu {cau['stt']}. ").bold = True
         if cau.get("doan_thong_tin"):
-            p_doan = self.doc.add_paragraph()
-            process_text_with_latex(cau.get("doan_thong_tin", ""), p_doan)  
+            process_text_with_latex(cau.get("doan_thong_tin", ""), p)
         
-        # Hình ảnh
         hinh_anh = cau.get("hinh_anh", {})
         if hinh_anh.get("co_hinh"):
             insert_image_or_placeholder(self.doc, hinh_anh)
         
-        # Các ý a, b, c, d - THÊM XỬ LÝ LATEX
         for y in cau.get("cac_y", []):
             p_y = self.doc.add_paragraph()
             p_y.add_run(f"{y['ky_hieu']}) ")
-            process_text_with_latex(y['noi_dung'], p_y)  
-        
-        # Lời giải
+            process_text_with_latex(y.get('noi_dung', ''), p_y)
+
+        # --- BLOCK 2: TIẾNG ANH (Câu hỏi & Ý) ---
+        has_en = cau.get("doan_thong_tin_en") or any(y.get('noi_dung_en') for y in cau.get("cac_y", []))
+        if has_en:
+            self.doc.add_paragraph("(translate_en)").italic = True
+            if cau.get("doan_thong_tin_en"):
+                p_en = self.doc.add_paragraph()
+                process_text_with_latex(cau.get("doan_thong_tin_en", ""), p_en)
+            
+            for y in cau.get("cac_y", []):
+                p_y_en = self.doc.add_paragraph()
+                p_y_en.add_run(f"{y['ky_hieu']}) ")
+                content_en = y.get('noi_dung_en') or y.get('noi_dung', '')
+                process_text_with_latex(content_en, p_y_en)
+
+        # --- BLOCK 3: LỜI GIẢI CHI TIẾT (ARRAY) ---
         p_lg = self.doc.add_paragraph()
         p_lg.add_run("Lời giải").bold = True
         
+        # 3.1 Đáp án bit
         p_da = self.doc.add_paragraph()
-        p_da.add_run(cau.get("dap_an_dung_sai", "")).bold = True
+        p_da.add_run(str(cau.get("dap_an_dung_sai", ""))).bold = True
         self.doc.add_paragraph("####")
-        
-        # Giải thích từng ý - THÊM XỬ LÝ LATEX
-        for gt in cau.get("giai_thich", []):
-            p_gt = self.doc.add_paragraph()
-            p_gt.add_run("+ ")
-            process_text_with_latex(gt.get('noi_dung_y', ''), p_gt)  
-            run_kl = p_gt.add_run(f" {gt.get('ket_luan', 'SAI')}.")
-            run_kl.bold = True
+
+        # Hàm helper để in từng dòng giải thích theo format mới
+        def render_explanation_item(item_data):
+            p_item = self.doc.add_paragraph()
             
-            if gt.get('giai_thich'):
-                p_gt_detail = self.doc.add_paragraph()
-                process_text_with_latex(gt.get('giai_thich', ''), p_gt_detail)  
+            # 1. Dấu cộng và Label (In thường) -> Ví dụ: "+ (A.) "
+            p_item.add_run("+ ")
+            label = item_data.get('y', '')
+            
+            # 2. Nội dung ý (In thường, có xử lý Latex) -> Ví dụ: "Nội dung..."
+            content = item_data.get('noi_dung_y', '')
+            # Nối Label và Content thành 1 chuỗi để xử lý latex liền mạch
+            prefix_text = f"{label} {content} "
+            process_text_with_latex(prefix_text, p_item, bold=False) # <--- QUAN TRỌNG: bold=False
+            
+            # 3. Kết luận (IN ĐẬM) -> Ví dụ: "SAI"
+            result = item_data.get('ket_luan', '').upper()
+            if result:
+                # Thêm khoảng trắng trước kết luận nếu cần
+                run_res = p_item.add_run(result)
+                run_res.bold = True  # <--- CHỈ IN ĐẬM CHỖ NÀY
+            
+            # 4. Phần giải thích chi tiết (Xuống dòng)
+            explanation = item_data.get('giai_thich', '')
+            if explanation:
+                for line in explanation.split('\n'):
+                    if line.strip():
+                        p_exp = self.doc.add_paragraph()
+                        process_text_with_latex(line.strip(), p_exp)
+
+        # 3.2 Giải thích Tiếng Việt
+        list_giai_thich_vi = cau.get("giai_thich", [])
+        if isinstance(list_giai_thich_vi, list):
+            for item in list_giai_thich_vi:
+                render_explanation_item(item)
+
+        # 3.3 Giải thích Tiếng Anh
+        list_giai_thich_en = cau.get("giai_thich_en", [])
+        if isinstance(list_giai_thich_en, list) and list_giai_thich_en:
+            self.doc.add_paragraph("(translate_en)").italic = True
+            for item in list_giai_thich_en:
+                render_explanation_item(item)  
     
     def render_question_tra_loi_ngan(self, cau: Dict):
-        """Render câu hỏi trả lời ngắn"""
-        # Câu hỏi
+        """Render câu hỏi trả lời ngắn (Schema mới: Phan=Array, Content=Split Vi/En)"""
+        # 1. Câu hỏi Tiếng Việt
         p = self.doc.add_paragraph()
         p.add_run(f"Câu {cau['stt']}. ").bold = True
-        p_noi_dung = self.doc.add_paragraph()
-        process_text_with_latex(cau['noi_dung'], p_noi_dung)  
+        process_text_with_latex(cau.get('noi_dung', ''), p)  
         
-        # Hình ảnh (nếu có)
+        # 2. Câu hỏi Tiếng Anh (Lấy từ trường riêng)
+        if cau.get('noi_dung_en'):
+            self.doc.add_paragraph("(translate_en)").italic = True
+            p_en = self.doc.add_paragraph()
+            process_text_with_latex(cau.get('noi_dung_en', ''), p_en)
+
+        # 3. Hình ảnh
         hinh_anh = cau.get("hinh_anh", {})
         if hinh_anh.get("co_hinh"):
             insert_image_or_placeholder(self.doc, hinh_anh)
         
-        # Đáp án - THÊM XỬ LÝ LATEX
+        # 4. Đáp án
         p_da = self.doc.add_paragraph()
         run_label = p_da.add_run("Đáp án: ")
         run_label.bold = True
         
         raw_ans = str(cau.get('dap_an', '')).strip()
-        if raw_ans.startswith("[[") and raw_ans.endswith("]]"):
-            final_ans = raw_ans
-        else:
+        # Tự động đóng ngoặc vuông nếu thiếu
+        if not (raw_ans.startswith("[[") and raw_ans.endswith("]]")):
             final_ans = f"[[{raw_ans}]]"
-        
-        # XỬ LÝ LATEX TRONG ĐÁP ÁN
+        else:
+            final_ans = raw_ans
         process_text_with_latex(final_ans, p_da, bold=True)  
         
-        # Lời giải header
+        # 5. Lời giải Header
         p_lg = self.doc.add_paragraph()
         p_lg.add_run("Lời giải").bold = True
         self.doc.add_paragraph("####")
         
-        # Giải thích chi tiết - ĐÃ CÓ XỬ LÝ LATEX
-        giai_thich = cau.get("giai_thich", "")
-        lines = giai_thich.replace('\\n', '\n').split('\n')
-        
-        for line in lines:
-            text = line.strip()
-            if not text or text == "####":
-                continue
+        # Hàm helper render block lời giải (Dùng chung logic in đậm)
+        def render_explanation_block(text_content, lang='vi'):
+            if not text_content: return
+            lines = text_content.replace('\\n', '\n').split('\n')
             
-            is_bold = False
-            if text.startswith("**") and text.endswith("**"):
-                text = text[2:-2]
-                is_bold = True
-            
-            check_text = text.replace('*', '').strip().lower()
-            if check_text.startswith("vậy") or check_text.startswith("therefore"):
-                is_bold = True
-                text = text.replace('**', '')
+            for line in lines:
+                text = line.strip()
+                if not text or text == "####": continue
+                
+                is_bold = False
+                # Xử lý markdown bold thủ công từ AI (nếu có)
+                if text.startswith("**") and text.endswith("**"):
+                    text = text[2:-2]
+                    is_bold = True
+                
+                # Auto-detect dòng kết luận để in đậm
+                text_lower = text.lower()
+                if lang == 'vi' and (text_lower.startswith("vậy") or text_lower.startswith("kết luận")):
+                    is_bold = True
+                elif lang == 'en' and (text_lower.startswith("therefore") or text_lower.startswith("conclusion")):
+                    is_bold = True
+                
+                text = text.replace('**', '') # Clean up
+                p_gt = self.doc.add_paragraph()
+                process_text_with_latex(text, p_gt, bold=is_bold)
 
-            p_gt = self.doc.add_paragraph()
-            process_text_with_latex(text, p_gt, bold=is_bold)  
+        # 6. Render Giải thích Tiếng Việt
+        render_explanation_block(cau.get("giai_thich", ""), lang='vi')
+
+        # 7. Render Giải thích Tiếng Anh
+        if cau.get("giai_thich_en"):
+            self.doc.add_paragraph("(translate_en)").italic = True
+            render_explanation_block(cau.get("giai_thich_en", ""), lang='en')  
     
     def render_question_tu_luan(self, cau: Dict):
-        # 1. Câu hỏi
+        """Render câu hỏi Tự luận (Schema mới tách Vi/En)"""
+        # 1. Câu hỏi Tiếng Việt
         p = self.doc.add_paragraph()
         p.add_run(f"Câu {cau['stt']}. ").bold = True
-        p_noi_dung = self.doc.add_paragraph()
-        process_text_with_latex(cau['noi_dung'], p_noi_dung)
+        process_text_with_latex(cau.get('noi_dung', ''), p)
         
-        # 2. Hình ảnh (nếu có)
+        # 2. Câu hỏi Tiếng Anh
+        if cau.get('noi_dung_en'):
+            self.doc.add_paragraph("(translate_en)").italic = True
+            p_en = self.doc.add_paragraph()
+            process_text_with_latex(cau.get('noi_dung_en', ''), p_en)
+        
+        # 3. Hình ảnh
         hinh_anh = cau.get("hinh_anh", {})
         if hinh_anh.get("co_hinh"):
             insert_image_or_placeholder(self.doc, hinh_anh)
+            
+        # 4. Header Lời giải
         p_lg = self.doc.add_paragraph()
         p_lg.add_run("Lời giải").bold = True
-        self.doc.add_paragraph("####")
+        # self.doc.add_paragraph("####")
         
-        # 4. Nội dung hướng dẫn
-        giai_thich = cau.get("giai_thich", "")
-        # Tách dòng để xử lý in đậm tiêu đề con (Ví dụ: "Bước 1:", "Kết luận:")
-        lines = giai_thich.replace('\\n', '\n').split('\n')
-        
-        for line in lines:
-            text = line.strip()
-            if not text or text == "####": continue
-            is_bold = False
-            if text.startswith("**") and text.endswith("**"):
-                text = text[2:-2]
-                is_bold = True
+        # Hàm helper render block lời giải
+        def render_essay_solution(text_content, lang='vi'):
+            if not text_content: return
+            lines = text_content.replace('\\n', '\n').split('\n')
             
-            check_text = text.replace('*', '').strip().lower()
-            if check_text.startswith("vậy") or check_text.startswith("therefore"):
-                is_bold = True
+            for line in lines:
+                text = line.strip()
+                # if not text or text == "####": continue
+                
+                # Logic in đậm thông minh
+                is_bold = False
+                text_lower = text.lower()
+                
+                # In đậm các bước (Bước 1:, Step 1:) hoặc Kết luận
+                if (text.startswith("**") and text.endswith("**")):
+                    text = text[2:-2]
+                    is_bold = True
+                elif lang == 'vi' and text_lower.startswith("vậy"):
+                    is_bold = True
+                elif lang == 'en' and text_lower.startswith("therefore"):
+                    is_bold = True
+                
                 text = text.replace('**', '')
-            p_gt = self.doc.add_paragraph()
-            process_text_with_latex(text, p_gt, bold=is_bold) 
+                p_gt = self.doc.add_paragraph()
+                process_text_with_latex(text, p_gt, bold=is_bold)
+
+        # 5. Render Giải thích Tiếng Việt
+        render_essay_solution(cau.get("giai_thich", ""), lang='vi')
+
+        # 6. Render Giải thích Tiếng Anh
+        if cau.get("giai_thich_en"):
+            self.doc.add_paragraph("(translate_en)").italic = True
+            render_essay_solution(cau.get("giai_thich_en", ""), lang='en') 
     
     def render_all(self, data: Dict):
         """
@@ -971,7 +748,15 @@ class DynamicDocxRenderer:
 
             for cau in questions:
                 # Lấy tên phần của câu hiện tại
-                phan_cua_cau = str(cau.get("phan", "")).strip()
+                raw_phan = cau.get("phan", [])
+                
+                # Xử lý: Nếu là List thì nối lại thành chuỗi để hiển thị đẹp
+                if isinstance(raw_phan, list):
+                    # Ví dụ: "Bài 1 - Phần 2 - Dạng bài..."
+                    phan_cua_cau = " - ".join([str(x) for x in raw_phan if x])
+                else:
+                    # Fallback nếu AI lỡ trả về string cũ
+                    phan_cua_cau = str(raw_phan).strip()
                 
                 # Nếu câu này thuộc một phần mới -> In Header Phần
                 if phan_cua_cau and phan_cua_cau != current_phan:
@@ -999,113 +784,80 @@ def response2docx_flexible(
     creds: str,
     model_name: str,
     question_type: str = "trac_nghiem_4_dap_an",
-    batch_name: Optional[str] = None
-) -> Optional[str]:
-    """
-    Phiên bản cải tiến với cơ chế fail-safe triệt để.
-    Luôn luôn trả về 1 file .docx, dù AI có lỗi hay không.
-    """
+    batch_name: str = None
+):
     try:
         from modules.common.callAPI import VertexClient
-        from docx import Document # Import ở đây để đảm bảo nếu lỗi ở mức import thì vẫn bắt được
         
+        # 1. Khởi tạo Client
         client = VertexClient(project_id, creds, model_name)
-        
         if not batch_name:
             batch_name = file_name.replace("_TN", "").replace("_DS", "").replace("_TLN", "")
+            
+        # 2. Chọn Schema phù hợp
+        target_schema = get_schema_by_type(question_type)
         
-        # 1. Wrap prompt với JSON structure hint
-        final_prompt = PromptBuilder.wrap_user_prompt(prompt, question_type)
+        # 3. Tạo Prompt tối giản
+        final_prompt = PromptBuilder.wrap_user_prompt(prompt)
         
-        # 2. Gửi request AI
-        print("📤 Đang gửi request tới AI...")
-        ai_response = client.send_data_to_AI(final_prompt, file_path)
+        # 4. Gửi request AI với Schema
+        print(f"📤 Đang gửi request (Schema: {question_type})...")
+        # QUAN TRỌNG: Truyền response_schema vào đây
+        ai_response_text = client.send_data_to_AI(
+            final_prompt, 
+            file_path, 
+            response_schema=target_schema,
+            max_output_tokens=65534
+        )
         
-        # 3. Parse JSON với cơ chế an toàn
+        if not ai_response_text:
+            print("❌ AI không trả về dữ liệu.")
+            return None
+
+        # 5. Parse JSON (Đơn giản hóa cực đại)
         print("🔄 Đang parse JSON...")
-        data = parse_json_safely(ai_response, client)
-        
-        if not data:
-            print("❌ Không thể parse JSON từ AI. Sử dụng chế độ FAIL-SAFE.")
-            # --- BƯỚC FAIL-SAFE TRIỆT ĐỂ ---
-            # Tạo một file .docx tối thiểu với nội dung phản hồi thô từ AI
-            doc = Document()
-            doc.add_heading(f'ĐỀ {question_type.upper()}', level=1).alignment = WD_ALIGN_PARAGRAPH.CENTER
-            
-            doc.add_heading('PHẢN HỒI TỪ AI (RAW)', level=2)
-            # Thêm phản hồi thô để người dùng biết AI đã trả về gì
-            doc.add_paragraph(ai_response)
-            
-            doc.add_heading('LỖI', level=3)
-            doc.add_paragraph('Dữ liệu từ AI không ở định dạng JSON hợp lệ và không thể xử lý.')
-            doc.add_paragraph('Vui lòng kiểm tra lại prompt hoặc nội dung file đầu vào.')
-            
-            print("📝 Đang lưu file FAIL-SAFE...")
-            output_path = save_document_securely(doc, batch_name, f"{file_name}_loi_parse")
-            if output_path:
-                print(f"✅ Đã lưu file FAIL-SAFE: {output_path}")
+        try:
+            # Vì Gemini Structured Output đảm bảo JSON valid, ta parse thẳng.
+            data = json.loads(ai_response_text)
+        except json.JSONDecodeError as e:
+            print(f"❌ Lỗi JSON bất ngờ (dù đã dùng Schema): {e}")
+            print(f"Raw response: {ai_response_text[:500]}...")
+            # Fallback nhẹ: Cố gắng tìm JSON nếu AI lỡ bọc trong markdown (hiếm khi xảy ra với Schema mod   e)
+            if "```json" in ai_response_text:
+                clean_text = ai_response_text.split("```json")[1].split("```")[0]
+                data = json.loads(clean_text)
             else:
-                print("❌ Không thể lưu file FAIL-SAFE.")
-            return output_path # Trả về đường dẫn file fail-safe
+                return None
 
         print(f"✅ Parse thành công: {data.get('tong_so_cau', 0)} câu hỏi")
+
+        print("In dữ liệu JSON đã nhận được:")
+        # print(json.dumps(data, indent=2, ensure_ascii=False))
+        with open("debug_received_data.json", "w", encoding="utf-8") as debug_file:
+            json.dump(data, debug_file, ensure_ascii=False, indent=2)
         
-        # 4. Render DOCX động (cũng có thể gây lỗi)
+
+        # 6. Render DOCX
         print("📝 Đang tạo DOCX...")
         doc = Document()
-        renderer = DynamicDocxRenderer(doc)
+        renderer = DynamicDocxRenderer(doc) # Class này bạn đã có ở code cũ
         
         try:
             renderer.render_all(data)
-            print("✅ Render DOCX thành công")
-        except Exception as e_render:
-            print(f"❌ Lỗi khi render DOCX: {e_render}")
-            print("📝 Đang chuyển sang chế độ FAIL-SAFE (dữ liệu thô)...")
-            traceback.print_exc() # Ghi log lỗi chi tiết
-            
-            # --- BƯỚC FAIL-SAFE CHO RENDER ---
-            # Tạo lại document mới từ đầu, chỉ ghi dữ liệu thô
-            doc = Document()
-            doc.add_heading(f'ĐỀ {question_type.upper()}', level=1).alignment = WD_ALIGN_PARAGRAPH.CENTER
-            
-            doc.add_heading('DỮ LIỆU TỪ AI (RAW - JSON)', level=2)
-            # Chuyển dữ liệu sang string và thêm vào doc
-            raw_data_str = json.dumps(data, ensure_ascii=False, indent=2)
-            doc.add_paragraph(raw_data_str)
-            
-            doc.add_heading('LỖI KHI XỬ LÝ', level=3)
-            doc.add_paragraph(f'Lỗi render: {e_render}')
-            doc.add_paragraph('Dữ liệu thô đã được lưu. Vui lòng kiểm tra lại cấu trúc JSON.')
-            
-            print("📝 Đang lưu file FAIL-SAFE (render lỗi)...")
-            output_path = save_document_securely(doc, batch_name, f"{file_name}_loi_render")
-            if output_path:
-                print(f"✅ Đã lưu file FAIL-SAFE (render lỗi): {output_path}")
-            else:
-                print("❌ Không thể lưu file FAIL-SAFE (render lỗi).")
-            return output_path # Trả về đường dẫn file fail-safe
+        except Exception as render_err:
+             print(f"❌ Lỗi Render: {render_err}")
+             traceback.print_exc()
+             # Logic Fail-safe render cũ có thể giữ lại ở đây nếu muốn
 
-        # 5. Lưu file (có thể lỗi do quyền truy cập, ổ đĩa đầy, v.v.)
+        # 7. Lưu file
         print("💾 Đang lưu file...")
-        output_path = save_document_securely(doc, batch_name, file_name)
-        
-        if output_path:
-            print(f"✅ Hoàn thành: {output_path}")
-        else:
-            print("❌ Không thể lưu file (lỗi từ hàm save_document_securely).")
-            # --- BƯỚC FAIL-SAFE CHO LƯU FILE ---
-            # Không thể lưu theo tên gốc, thử lưu với tên lỗi
-            print("📝 Đang chuyển sang chế độ FAIL-SAFE (lỗi lưu file)...")
-            fallback_doc_path = os.path.join(ensure_output_folder_for_batch(batch_name), f"{file_name}_loi_luu.docx")
-            try:
-                doc.save(fallback_doc_path)
-                print(f"✅ Đã lưu file FAIL-SAFE (lỗi lưu file): {fallback_doc_path}")
-                return fallback_doc_path
-            except Exception as e_save:
-                print(f"❌ FAIL-SAFE cũng thất bại khi lưu: {e_save}")
-                return None # Cuối cùng vẫn thất bại
-            
+        output_path = save_document_securely(doc, batch_name, file_name) # Hàm cũ
         return output_path
+
+    except Exception as e:
+        print(f"❌ Lỗi hệ thống: {e}")
+        traceback.print_exc()
+        return None
 
     except Exception as e_main:
         # BƯỚC FAIL-SAFE CUỐI CÙNG CHO TOÀN BỘ HÀM
@@ -1161,36 +913,3 @@ def response2docx_tu_luan_json(file_path, prompt, file_name, project_id, creds, 
         question_type="tu_luan", # Key này sẽ kích hoạt logic trong PromptBuilder và Renderer
         batch_name=batch_name
     )
-
-class ConfigManager:
-    """
-    Quản lý cấu hình qua file JSON
-    Cho phép thay đổi TOÀN BỘ behavior mà không sửa code
-    """
-    
-    DEFAULT_CONFIG = {
-        "section_mapping": {
-            "nhan_biet": "I. CÂU HỎI NHẬN BIẾT",
-            "thong_hieu": "II. CÂU HỎI THÔNG HIỂU",
-            "van_dung": "III. CÂU HỎI VẬN DỤNG",
-            "van_dung_cao": "IV. CÂU HỎI VẬN DỤNG CAO" 
-        },
-        "section_order": ["nhan_biet", "thong_hieu", "van_dung", "van_dung_cao"],
-        "auto_fix": True,
-        "image_width_inches": 3.5,
-        "retry_json_parse": 3
-    }
-    
-    @classmethod
-    def load_config(cls, config_path: str = "config.json") -> Dict:
-        """Load config từ file hoặc dùng default"""
-        if os.path.exists(config_path):
-            with open(config_path, "r", encoding="utf-8") as f:
-                return json.load(f)
-        return cls.DEFAULT_CONFIG
-    
-    @classmethod
-    def save_config(cls, config: Dict, config_path: str = "config.json"):
-        """Lưu config để tái sử dụng"""
-        with open(config_path, "w", encoding="utf-8") as f:
-            json.dump(config, f, ensure_ascii=False, indent=2)

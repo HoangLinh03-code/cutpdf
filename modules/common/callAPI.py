@@ -13,13 +13,13 @@ project_root = os.path.abspath(os.path.join(current_dir, "../.."))
 env_path = os.path.join(project_root, ".env.gen")
 
 # 3. Load file .env.gen
-print(f"🔌 [API] Đang nạp cấu hình từ: {env_path}")
+print(f"[API] Đang nạp cấu hình")
 if os.path.exists(env_path):
     load_dotenv(env_path, override=True)
-    print("✅ [API] Đã nạp thành công .env.gen")
+    print("✅ [API] Đã nạp thành công")
 else:
     print(f"❌ [API] CẢNH BÁO: Không tìm thấy file tại {env_path}")
-
+ 
 # ============================================================
 # 2. HÀM TẠO CREDENTIALS (PUBLIC HELPER)
 # ============================================================
@@ -83,7 +83,7 @@ class VertexClient:
             print(f"Lỗi init GenAI Client: {e}")
             self.client = None
 
-    def send_data_to_AI(self, prompt, file_paths=None, temperature=0.4, top_p=0.8):
+    def send_data_to_AI(self, prompt, file_paths=None, temperature=0.2, top_p=0.8, response_schema=None,max_output_tokens=65535):
         if not self.client:
             return "❌ Lỗi: Client chưa được khởi tạo."
 
@@ -116,10 +116,18 @@ class VertexClient:
         contents.append(types.Content(role="user", parts=[text_part]))
 
         # 3. Cấu hình sinh nội dung
-        generate_config = types.GenerateContentConfig(
-            temperature=temperature,
-            top_p=top_p
-        )
+        config_args = {
+            "temperature": temperature,
+            "top_p": top_p,
+            "max_output_tokens": max_output_tokens
+        }
+
+        # Nếu có schema, ép kiểu về JSON
+        if response_schema:
+            config_args["response_mime_type"] = "application/json"
+            config_args["response_schema"] = response_schema
+
+        generate_config = types.GenerateContentConfig(**config_args)    
 
         try:
             # Gọi API
@@ -138,22 +146,3 @@ class VertexClient:
         except Exception as e:
             print(f"❌ Lỗi khi gọi AI generate_content: {e}")
             raise e
-    
-    def send_data_to_check(self, prompt, temperature=0.45, top_p=0.8):
-        # Hàm check nhanh chỉ dùng text
-        if not self.client:
-             return "ERROR_NO_CREDS"
-
-        try:
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    temperature=temperature,
-                    top_p=top_p
-                )
-            )
-            return response.text if response.text else "EMPTY_RESPONSE"
-        except Exception as e:
-            print(f"❌ Lỗi khi check data: {e}")
-            return str(e)

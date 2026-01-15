@@ -41,15 +41,10 @@ I. NGUYÊN TẮC "ĐỀ THI KÍN" (TUYỆT ĐỐI TUÂN THỦ) & CHIA KHUNG KI�
     + Nếu AI cố tình sinh câu tiếp theo cho cùng một ý đã hỏi, đó được coi là câu hỏi "RÁC" và vi phạm nguyên tắc.
 
 2. YÊU CẦU ĐẶC BIỆT VỀ HÌNH ẢNH (BẮT BUỘC):
-- Thiết lập số lượng: 30% tổng số câu hỏi (tức là 12 câu).
 - QUY TẮC XỬ LÝ HÌNH ẢNH (LOGIC NGẮT MẠCH):
-  + NẾU SỐ LƯỢNG = 0 (CHẾ ĐỘ KHÔNG ẢNH):
-    * BẮT BUỘC 100% câu hỏi có trường "hinh_anh": { "co_hinh": false, "loai": "khong_co", "mo_ta": "" }.
-    * NGHIÊM CẤM khai thác dữ liệu từ hình ảnh/biểu đồ để tạo câu hỏi. Nếu thông tin chỉ xuất hiện trong hình ảnh mà không có trong văn bản (text), hãy BỎ QUA thông tin đó.
-    * VÔ HIỆU HÓA mọi hướng dẫn về khai thác hình ảnh.
-  + NẾU SỐ LƯỢNG > 0:
-    * Phải đảm bảo đúng số lượng câu hỏi có hình minh họa theo yêu cầu.
-    * Nếu không thể sinh được ảnh thì sẽ mô tả theo định dạng: [HÌNH ẢNH: Hình [X]...]
+  * BẮT BUỘC 30% tổng số câu hỏi (tức là 12 câu có hình ảnh) có trường "hinh_anh": { "co_hinh": true, "loai": "tu_mo_ta", "mo_ta": "[Mô tả chi tiết hình ảnh cần vẽ bằng lời văn]" }.
+  * Lưu ý: Trường "mo_ta" phải mô tả cụ thể hình ảnh (Ví dụ: "Sơ đồ bình điện phân với 2 cực...", "Đồ thị biểu diễn sự biến thiên..."). 
+  * TUYỆT ĐỐI KHÔNG để trống trường này.
 
 3. LOGIC TỔ HỢP "CỘNG 5" (MA TRẬN 10 GÓC NHÌN TỰ ĐỘNG PHÂN BỔ):
 - 10 góc nhìn chỉ được áp dụng TRONG PHẠM VI ĐOẠN ĐANG ĐỌC.
@@ -206,14 +201,14 @@ Chấp nhận 2 hình thức câu hỏi trong trường "noi_dung":
 
 IV. PHÂN BỐ MỨC ĐỘ NHẬN THỨC (BỘ 40 CÂU)
 Bạn phải phân bổ 40 câu hỏi (mỗi câu 4 ý) theo đúng tỷ lệ sau:
-1. Thông hiểu (Mức 2) - Từ câu 1 đến câu 15:
+1. Thông hiểu (Mức 2) - 40% câu đầu:
 - Định nghĩa: Yêu cầu hiểu ý nghĩa, diễn giải lại, so sánh hoặc giải thích nguyên nhân của các sự kiện/hiện tượng đã nêu.
 - Động từ dấu hiệu: Giải thích, So sánh, Phân biệt, Tóm tắt, Mô tả đặc điểm, Vì sao.
 - Khuôn mẫu câu hỏi:
   + [Khoa học Tự nhiên]: "Đặc điểm nào phân biệt X và Y?", "Nguyên nhân chủ yếu gây ra hiện tượng Z?", "Vì sao công thức X không áp dụng được cho trường hợp Y?".
   + [Khoa học Xã hội]: "Ý nghĩa lịch sử của sự kiện X là...", "So sánh đặc điểm kinh tế giữa vùng A và B".
   + [Toán/Tin]: "Hàm số đồng biến khi nào?", "Đoạn mã trên thực hiện chức năng gì?".
-2. Vận dụng (Mức 3) - từ câu 16 đến câu 30:
+2. Vận dụng (Mức 3) - 30% câu tiếp theo:
 - Định nghĩa: Áp dụng công thức/quy tắc đã học trong đoạn văn nhưng với SỐ LIỆU MỚI (Khác số liệu trong sách giáo khoa).
 - Yêu cầu bắt buộc:
   + KHÔNG ĐƯỢC hỏi lại ví dụ minh họa của sách.
@@ -221,7 +216,7 @@ Bạn phải phân bổ 40 câu hỏi (mỗi câu 4 ý) theo đúng tỷ lệ sa
 - Khuôn mẫu:
   + [Khoa học Tự nhiên]: "Giả sử nồng độ là X% (sách là Y%), hãy tính...", "Một vật có khối lượng M (khác sách)...".
   + [Toán/Tin]: Thay đổi hệ số phương trình, thay đổi giá trị input của đoạn code.
-3. Vận dụng cao (Mức 4) - từ câu 31 đến câu 40: 
+3. Vận dụng cao (Mức 4) - 30% câu cuối cùng: 
 - Định nghĩa: Bài toán ngược, bài toán phối hợp 2-3 dữ kiện trong cùng một đoạn văn, hoặc suy luận từ quy luật.
 - Yêu cầu bắt buộc:
   + Dùng kỹ thuật "Bài toán ngược": Cho kết quả, hỏi nguyên nhân/dữ kiện đầu vào.
@@ -248,153 +243,63 @@ B. TUÂN THỦ DANH PHÁP QUỐC TẾ (STANDARD NOMENCLATURE):
 C. KIỂM TRA NGỮ CẢNH (CONTEXTUAL CHECK):
 - Trước khi chốt đáp án tiếng Anh, hãy tự hỏi: "Một giáo sư bản ngữ có dùng từ này để dạy môn này không?". Nếu từ đó đúng nghĩa đen nhưng sai ngữ cảnh chuyên ngành -> PHẢI ĐỔI NGAY.
 
-2. CẤU TRÚC JSON:
-BẮT BUỘC tuân thủ cấu trúc Layout để hiển thị đúng trên ứng dụng:
-- Trường "phan":
-  + CẤU TRÚC: "Tên Bài - Tên Mục (nếu có) (Dạng: [Hành động] [Lớp đối tượng chung])".
-  + BỘ LỌC KIỂM TRA LỖI (VALIDATOR):
-    * Trước khi ghi vào JSON, hãy tự kiểm tra: Trong chuỗi này còn dấu ngoặc vuông `[` hoặc `]` không? Còn từ `[A]`, `[B]` không?
-    * Nếu CÒN -> Phải sửa ngay thành tên chất/hạt cụ thể.
-  + VÍ DỤ ĐÚNG (GENERALIZED):
-    * "Bài 3 - Phần III (Dạng: Viết cấu hình electron nguyên tử)" (Đúng, bao quát được Al, Fe, Na...).
-    * "Bài 3 - Phần I (Dạng: So sánh các mô hình nguyên tử)" (Đúng, bao quát được Rutherford, Bohr...).
-  + VÍ DỤ SAI (TOO SPECIFIC - CẤM):
-    * "Bài 3 - Phần III (Dạng: Viết cấu hình electron của Aluminium)" (Sai, quá chi tiết).
-    * "Bài 3 - Phần I (Dạng: So sánh mô hình Rutherford và Bohr)" (Hơi chi tiết -> Nên sửa thành "So sánh các mô hình").
-  + LƯU Ý QUAN TRỌNG: Phần trong ngoặc đơn "(Dạng: ...)" là BẮT BUỘC. Nó giúp người dùng biết câu hỏi này đang kiểm tra mục tiêu nào của bài học. Nếu đoạn văn không thuộc mục tiêu nào rõ ràng, hãy ghi "(Dạng: Lý thuyết bổ trợ)".
-  + TUYỆT ĐỐI KHÔNG được cắt bớt chỉ còn Tên Bài.
-  + Nếu nội dung nằm ở phần "Luyện tập", "Vận dụng", hay "Em có biết", phải ghi rõ: "Bài X - Mục Y - Luyện tập 2".
-  + KIỂM TRA LẠI: Nếu 5 câu hỏi liên tiếp có trường "phan" giống hệt nhau mà không có sự thay đổi về tiểu mục, bạn đang quét quá nông -> HÃY ĐI SÂU HƠN.
-- TUYỆT ĐỐI PHẢI đảm bảo câu hỏi đi sâu vào từng ngóc ngách của kiến thức.
-- Trường "stt": Đánh số 1-40 TUẦN TỰ CẤM TẠO CÂU NGẪU NHIÊN theo PDF.
-- Trường "doan_thong_tin": Nội dung dẫn dắt dài khoảng 70 - 90 từ (Tiếng Việt).
-- Trường "cac_y" (8 PHẦN TỬ):
-  + Index 0-3: 4 ý a, b, c, d Tiếng Việt.
-  + LƯU Ý QUAN TRỌNG: Tại Index 3 (ký hiệu "d" Việt), phần "noi_dung" phải chứa: [Nội dung ý d Việt]\n(translate_en)\n[Đoạn thông tin Tiếng Anh sử dụng Thuật ngữ Chuyên ngành chuẩn Quốc tế/IUPAC dài khoảng 80 - 100 từ]\na) [Ý a Anh sử dụng Thuật ngữ Chuyên ngành chuẩn Quốc tế/IUPAC]\nb) [Ý b Anh sử dụng Thuật ngữ Chuyên ngành chuẩn Quốc tế/IUPAC]\nc) [Ý c Anh sử dụng Thuật ngữ Chuyên ngành chuẩn Quốc tế/IUPAC]\nd) [Ý d Anh sử dụng Thuật ngữ Chuyên ngành chuẩn Quốc tế/IUPAC]
-  + Index 4-7: 4 ý a, b, c, d Tiếng Anh sử dụng Thuật ngữ Chuyên ngành chuẩn Quốc tế/IUPAC tương ứng.
-- Trường "dap_an_dung_sai": Chuỗi 4 ký tự 0/1 (Ví dụ: "0010").
--  Trường "giai_thich": 
-  + Nội dung giải thích khoảng 80 - 100 từ.
-  + Đối với câu hỏi "Biến thể số liệu" hoặc "Bài toán ngược": Phải trình bày rõ CÔNG THỨC GỐC được lấy từ đâu trong bài, sau đó thay số vào để tính ra kết quả.
-  + Tuyệt đối không chỉ ghi đáp án, phải ghi rõ: "Áp dụng công thức X trong bài học, với số liệu giả định của đề bài, ta có...".
+2. CẤU TRÚC JSON OUTPUT (DẠNG ĐÚNG/SAI SONG NGỮ):
+BẮT BUỘC tuân thủ cấu trúc Layout tách biệt Tiếng Việt và Tiếng Anh:
 
-VI. ĐỊNH DẠNG LỜI GIẢI BẮT BUỘC
-Trường "giai_thich" là mảng gồm 8 đối tượng:
-- Index 0-3: Giải thích cho các ý a, b, c, d Tiếng Việt khoảng 80 - 100 từ.
-- QUY TẮC NGĂN CÁCH (CỰC KỲ QUAN TRỌNG): Tại Index 3 (ý d Tiếng Việt), trường "giai_thich" PHẢI KẾT THÚC bằng ký hiệu \n(translate_en).
-- Index 4-7: Giải thích cho các ý a, b, c, d Tiếng Anh sử dụng Thuật ngữ Chuyên ngành chuẩn Quốc tế/IUPAC dài khoảng 80 - 100 từ.
-- Mỗi đối tượng giải thích phải có đủ key: y, noi_dung_y, ket_luan, giai_thich.
-- QUY TẮC GẮN CỜ (LABELING):
-  + Tại trường "noi_dung_y": BẮT BUỘC phải bắt đầu bằng nhãn ý (a), (b), (c), (d) đặt trong ngoặc đơn để tạo cờ nhận diện rõ ràng.
-  + Ví dụ ĐÚNG: "(A.) Các vấn đề như bị nói xấu..."
-  + Ví dụ SAI: "Các vấn đề như bị nói xấu..." (Thiếu cờ).
-- Lời giải phải giải thích sâu về chuyên môn dài khoảng 80 - 100 từ.
+A. CẤU TRÚC PHÂN LOẠI (Trường "phan"):
+   - Kiểu dữ liệu: ARRAY (Mảng 3 phần tử).
+   - Cấu trúc: ["Tên Bài...", "Tên Phần/Mục...", "Dạng: [Hành động] [Lớp đối tượng]"]
+   - YÊU CẦU:
+     + Phần tử cuối cùng BẮT BUỘC phải bắt đầu bằng "Dạng:".
+     + Ví dụ ĐÚNG: ["Bài 3: Cấu tạo vỏ", "Phần 1: Lớp electron", "Dạng: Viết cấu hình electron nguyên tử"]
+     + Ví dụ SAI: "Bài 3 - Phần 1 - Dạng..." (Không được trả về chuỗi gộp).
 
-VII. MẪU JSON MINH HỌA
-{
-  "loai_de": "dung_sai",
-  "tong_so_cau": 40,
-  "cau_hoi": [
-    {
-      "stt": 1,
-      "muc_do": "thong_hieu",
-      "phan": "PHẦN I",
-      "doan_thong_tin": "Trong môi trường học đường, mối quan hệ bạn bè không phải lúc nào cũng suôn sẻ. Đôi khi, những vấn đề như bị bạn bè nói xấu, bắt nạt, hoặc rủ rê làm việc không tốt có thể xảy ra. Việc nhận diện và hiểu đúng bản chất của những vấn đề này là bước đầu tiên để xây dựng một tình bạn lành mạnh.",
-      "hinh_anh": { "co_hinh": false, "loai": "tu_mo_ta", "mo_ta": "" },
-      "cac_y": [
-        {
-          "ky_hieu": "a",
-          "noi_dung": "Các vấn đề như bị nói xấu hay bắt nạt là những tình huống hiếm gặp và chỉ xảy ra với một số ít học sinh cá biệt.",
-          "dung": false
-        },
-        {
-          "ky_hieu": "b",
-          "noi_dung": "Im lặng và lờ đi khi bị bạn bè đối xử không tốt là cách giải quyết hiệu quả để giữ hòa khí và tránh xung đột lớn hơn.",
-          "dung": false
-        },
-        {
-          "ky_hieu": "c",
-          "noi_dung": "Việc chủ động tìm hiểu nguyên nhân và trò chuyện thẳng thắn với bạn là một biểu hiện của cách giải quyết mâu thuẫn tích cực.",
-          "dung": true
-        },
-        {
-          "ky_hieu": "d",
-          "noi_dung": "Mọi mâu thuẫn trong tình bạn đều xuất phát từ lỗi của một phía và bên còn lại hoàn toàn không liên quan. \n(translate_en)\nIn the school environment, friendships are not always smooth. Sometimes, issues such as being gossiped about, bullied, or tempted to do bad things can occur. Recognizing and properly understanding the nature of these problems is the first step to building a healthy friendship.",
-          "dung": false
-        },
-        {
-          "ky_hieu": "a",
-          "noi_dung": "Issues like being gossiped about or bullied are rare situations that only happen to a few individual students.",
-          "dung": false
-        },
-        {
-          "ky_hieu": "b",
-          "noi_dung": "Staying silent and ignoring when being treated badly by friends is an effective solution to maintain harmony and avoid bigger conflicts.",
-          "dung": false
-        },
-        {
-          "ky_hieu": "c",
-          "noi_dung": "Proactively seeking to understand the cause and having an honest conversation with friends is a manifestation of positive conflict resolution.",
-          "dung": true
-        },
-        {
-          "ky_hieu": "d",
-          "noi_dung": "All conflicts in friendship stem from one party's fault and the other party is completely unrelated.",
-          "dung": false
-        }
-      ],
-      "dap_an_dung_sai": "0010",
-      "giai_thich": [
-        {
-          "y": "a",
-          "noi_dung_y": "(A.) Các vấn đề như bị nói xấu hay bắt nạt là những tình huống hiếm gặp và chỉ xảy ra với một số ít học sinh cá biệt",
-          "ket_luan": "SAI",
-          "giai_thich": "Đây là những vấn đề thường xuyên xảy ra trong quan hệ bạn bè, không phải hiếm gặp. Việc coi chúng là hiếm gặp sẽ làm giảm sự chuẩn bị và kỹ năng ứng phó của học sinh."
-        },
-        {
-          "y": "b",
-          "noi_dung_y": "(B.) Im lặng và lờ đi khi bị bạn bè đối xử không tốt là cách giải quyết hiệu quả để giữ hòa khí và tránh xung đột lớn hơn",
-          "ket_luan": "SAI",
-          "giai_thich": "Im lặng bỏ qua là cách giải quyết tiêu cực. Cách này khiến mâu thuẫn không được giải quyết, sự ấm ức tích tụ và có thể bùng phát thành xung đột lớn hơn."
-        },
-        {
-          "y": "c",
-          "noi_dung_y": "(C.) Việc chủ động tìm hiểu nguyên nhân và trò chuyện thẳng thắn với bạn là một biểu hiện của cách giải quyết mâu thuẫn tích cực",
-          "ket_luan": "ĐÚNG",
-          "giai_thich": "Đây là phương pháp giải quyết tích cực được khuyến khích. Gặp bạn nói chuyện giúp cả hai bên hiểu nhau, tháo gỡ hiểu lầm và củng cố tình bạn."
-        },
-        {
-          "y": "d",
-          "noi_dung_y": "(D.) Mọi mâu thuẫn trong tình bạn đều xuất phát từ lỗi của một phía và bên còn lại hoàn toàn không liên quan",
-          "ket_luan": "SAI",
-          "giai_thich": "Mâu thuẫn thường là kết quả của sự tương tác và hiểu lầm từ cả hai phía. Đổ lỗi hoàn toàn cho một bên là cách nhìn phiến diện, không giúp giải quyết vấn đề. \(translate_en)\n"
-        },
-        {
-          "y": "a",
-          "noi_dung_y": "(A.) Issues like being gossiped about or bullied are rare situations that only happen to a few individual students",
-          "ket_luan": "FALSE",
-          "giai_thich": "These are problems that frequently occur in peer relationships, not rare situations. Considering them rare will reduce students' preparation and coping skills."
-        },
-        {
-          "y": "b",
-          "noi_dung_y": "(B.) Staying silent and ignoring when being treated badly by friends is an effective solution to maintain harmony and avoid bigger conflicts",
-          "ket_luan": "FALSE",
-          "giai_thich": "Staying silent and ignoring is a negative approach. This method prevents the conflict from being resolved, allows resentment to build up, and may escalate into a larger conflict."
-        },
-        {
-          "y": "c",
-          "noi_dung_y": "(C.) Proactively seeking to understand the cause and having an honest conversation with friends is a manifestation of positive conflict resolution",
-          "ket_luan": "TRUE",
-          "giai_thich": "This is a positive resolution method that is encouraged. Meeting friends to talk helps both sides understand each other, clear up misunderstandings, and strengthen the friendship."
-        },
-        {
-          "y": "d",
-          "noi_dung_y": "(D.) All conflicts in friendship stem from one party's fault and the other party is completely unrelated",
-          "ket_luan": "FALSE",
-          "giai_thich": "Conflicts are usually the result of interaction and misunderstanding from both sides. Blaming one party completely is a one-sided view that does not help resolve the issue."
-        }
-      ]
-    }
-  ]
-}
+B. CẤU TRÚC NỘI DUNG CÂU HỎI:
+   - "stt": Số thứ tự 1-40 tuần tự.
+   - "doan_thong_tin": [Đoạn văn dẫn nhập ngữ cảnh bằng Tiếng Việt, dài 90 - 100 từ].
+   - "doan_thong_tin_en": [Đoạn văn dẫn nhập dịch sang Tiếng Anh chuẩn thuật ngữ chuẩn IUPAC].
+
+C. CẤU TRÚC CÁC Ý (Trường "cac_y"):
+   - Kiểu dữ liệu: Mảng gồm ĐÚNG 4 PHẦN TỬ (tương ứng a, b, c, d).
+   - Cấu trúc mỗi phần tử con:
+     {
+       "ky_hieu": "a" (hoặc b, c, d),
+       "noi_dung": "[Nội dung phát biểu Tiếng Việt]",
+       "noi_dung_en": "[Nội dung phát biểu Tiếng Anh chuẩn IUPAC]",
+       "dung": true (hoặc false)
+     }
+   - LƯU Ý QUAN TRỌNG: 
+     + TUYỆT ĐỐI KHÔNG gộp tiếng Anh vào trường tiếng Việt.
+     + TUYỆT ĐỐI KHÔNG tạo mảng 8 phần tử. Chỉ 4 phần tử, mỗi phần tử chứa cả 2 ngôn ngữ.
+
+D. CẤU TRÚC ĐÁP ÁN:
+   - "dap_an_dung_sai": Chuỗi bit nhị phân (Ví dụ: "0100" nghĩa là a Sai, b Đúng, c Sai, d Sai).
+
+E. CẤU TRÚC GIẢI THÍCH (2 MẢNG RIÊNG BIỆT):
+
+1. Trường "giai_thich" (Mảng cho Tiếng Việt):
+   - Gồm 4 phần tử tương ứng 4 ý. Mỗi phần tử:
+     + "y": Nhãn ý BẮT BUỘC PHẢI THEO CẤU TRÚC: (A.).
+     + "noi_dung_y": [Nhắc lại nội dung ý đó].
+     + "ket_luan": "ĐÚNG" hoặc "SAI".
+     + "giai_thich": [Giải thích chi tiết kiến thức khoa học dài khoảng 80 - 100 từ].
+     + LUẬT CẤM (NEGATIVE CONSTRAINTS):
+       * TUYỆT ĐỐI CẤM các cụm từ nhận xét thừa thãi như: "Phát biểu này sai vì...", "Đây là nhận định đúng...", "Ý kiến này không chính xác...", "Lỗi sai nằm ở...".
+       * HÃY ĐI THẲNG VÀO KIẾN THỨC. 
+       * Ví dụ SAI: "Phát biểu này sai. Proton mang điện tích dương."
+       * Ví dụ ĐÚNG: "Proton mang điện tích dương (+1), trong khi electron mới mang điện tích âm (-1)."
+
+2. Trường "giai_thich_en" (Mảng cho Tiếng Anh):
+   - YÊU CẦU CỐT LÕI: Phải là bản DỊCH CHUẨN XÁC (Translation) từ trường "giai_thich" tiếng Việt tương ứng ở trên.
+   - CHUẨN MỰC DỊCH THUẬT:
+     + BẮT BUỘC sử dụng danh pháp IUPAC (Ví dụ: "Sắt" dịch là "Iron", "Axit" dịch là "Acid", "Liên kết" dịch là "Bond").
+     + CẤM dịch word-by-word (Ví dụ: "Vỏ nguyên tử" phải dịch là "Electron shell", không dịch là "Atom shell").
+   - Cấu trúc mỗi phần tử:
+     + "y": "(A.)" (Giữ nguyên định dạng này).
+     + "noi_dung_y": [Content summary English].
+     + "ket_luan": "CORRECT" hoặc "INCORRECT".
+     + "giai_thich": [Bản dịch tiếng Anh của phần giải thích tiếng Việt, dài khoảng 80 - 100 từ].
+   - LUẬT CẤM (NEGATIVE CONSTRAINTS):
+     + Giống như tiếng Việt, TUYỆT ĐỐI KHÔNG dịch các cụm từ thừa thãi như: "This statement is false because...", "The correct answer is...", "It is incorrect to say...".
+     + Hãy bắt đầu ngay vào kiến thức. (Ví dụ: Thay vì nói "This is wrong because protons are positive", hãy viết "Protons are positively charged (+1)...").
 Bắt đầu quét PDF TUẦN TỰ CẤM SINH NGẪU NHIÊN, giữ nguyên cấu trúc JSON, đảm bảo độ sâu kiến thức và tính phân loại cực cao, ĐỒNG THỜI TUÂN THỦ NGHIÊM NGẶT QUY TẮC MẬT ĐỘ VÀ CHỐNG TRÙNG LẶP.

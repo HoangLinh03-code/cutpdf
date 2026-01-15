@@ -37,15 +37,10 @@ I. NGUYÊN TẮC "ĐỀ THI KÍN" (TUYỆT ĐỐI TUÂN THỦ) & CHIA KHUNG KI�
   + Nếu AI cố tình sinh câu thứ 3 cho một ý đã hỏi, đó được coi là câu hỏi "RÁC" và vi phạm nguyên tắc.
 
 2. YÊU CẦU ĐẶC BIỆT VỀ HÌNH ẢNH (BẮT BUỘC):
-- Thiết lập số lượng: 30% tổng số câu hỏi (tức là 12 câu).
 - QUY TẮC XỬ LÝ HÌNH ẢNH (LOGIC NGẮT MẠCH):
-    + NẾU SỐ LƯỢNG = 0 (CHẾ ĐỘ KHÔNG ẢNH):
-        * BẮT BUỘC 100% câu hỏi có trường "hinh_anh": { "co_hinh": false, "loai": "khong_co", "mo_ta": "" }.
-        * NGHIÊM CẤM khai thác dữ liệu từ hình ảnh/biểu đồ để tạo câu hỏi. Nếu thông tin chỉ xuất hiện trong hình ảnh mà không có trong văn bản (text), hãy BỎ QUA thông tin đó.
-        * VÔ HIỆU HÓA mọi hướng dẫn về khai thác hình ảnh ở Mục II và Mục IV phía trên.
-    + NẾU SỐ LƯỢNG > 0 (Chế độ có ảnh):
-        * Phải đảm bảo đúng số lượng câu hỏi có hình minh họa theo yêu cầu.
-        * Nếu không thể sinh được ảnh thì sẽ mô tả theo định dạng: [HÌNH ẢNH: Hình [X]...]
+  * BẮT BUỘC 30% tổng số câu hỏi (tức là 12 câu có hình ảnh) có trường "hinh_anh": { "co_hinh": true, "loai": "tu_mo_ta", "mo_ta": "[Mô tả chi tiết hình ảnh cần vẽ bằng lời văn]" }.
+  * Lưu ý: Trường "mo_ta" phải mô tả cụ thể hình ảnh (Ví dụ: "Sơ đồ bình điện phân với 2 cực...", "Đồ thị biểu diễn sự biến thiên..."). 
+  * TUYỆT ĐỐI KHÔNG để trống trường này.
 
 3. LOGIC TỔ HỢP "CỘNG 5" (MA TRẬN 10 GÓC NHÌN TỰ ĐỘNG PHÂN BỔ):
 - 10 góc nhìn chỉ được áp dụng TRONG PHẠM VI ĐOẠN ĐANG ĐỌC.
@@ -86,69 +81,86 @@ II. CHIẾN THUẬT QUÉT DỮ LIỆU & ĐỊNH DANH DẠNG BÀI (SMART TAGGING 
 Bạn phải đặt tên Dạng bài sao cho có thể tái sử dụng cho nhiều câu hỏi tương tự, tránh quá chi tiết vào một ví dụ cụ thể.
 
 1. NGUYÊN TẮC "KHÁI QUÁT HÓA" (GENERALIZATION RULE - BẮT BUỘC):
-- Công thức chuẩn: (Dạng: [Hành động] + [Lớp đối tượng chung]).
+- Công thức chuẩn: Dạng: [Hành động] + [Lớp đối tượng chung].
 - QUY TẮC CẤM TÊN RIÊNG (SPECIFIC INSTANCE BAN):
   + TUYỆT ĐỐI KHÔNG đưa tên riêng của các chất, nguyên tố, hoặc con số cụ thể vào trong tên Dạng (trừ khi bài học đó chỉ dành riêng cho chất đó).
   + Phải quy đổi về "Lớp đối tượng" (Class).
 - VÍ DỤ MINH HỌA QUY ĐỔI:
-  + Thấy sách hỏi: "Viết cấu hình của Aluminium, Carbon..." -> Quy đổi thành Tag: (Dạng: Viết cấu hình electron nguyên tử). (Dùng từ "nguyên tử" thay vì tên chất).
-  + Thấy sách hỏi: "So sánh hạt Proton và Electron..." -> Quy đổi thành Tag: (Dạng: So sánh các loại hạt cơ bản).
-  + Thấy sách hỏi: "Orbital s hình cầu, p hình số 8..." -> Quy đổi thành Tag: (Dạng: Hình dạng các Orbital). (Không liệt kê s, p, cầu, số 8).
+  + Thấy sách hỏi: "Viết cấu hình của Aluminium, Carbon..." -> Quy đổi thành Tag: Dạng: Viết cấu hình electron nguyên tử. (Dùng từ "nguyên tử" thay vì tên chất).
+  + Thấy sách hỏi: "So sánh hạt Proton và Electron..." -> Quy đổi thành Tag: Dạng: So sánh các loại hạt cơ bản.
+  + Thấy sách hỏi: "Orbital s hình cầu, p hình số 8..." -> Quy đổi thành Tag: Dạng: Hình dạng các Orbital. (Không liệt kê s, p, cầu, số 8).
 
 2. BẢNG MẪU TÊN DẠNG CHUẨN (Dùng để tham khảo mức độ chi tiết):
 Hãy sử dụng độ rộng (scope) tương đương các mẫu sau:
 
 A. NHÓM LÝ THUYẾT:
-- (Dạng: Khái niệm và Định nghĩa [Đối tượng chung]) -> VD: Khái niệm Orbital, Khái niệm Lớp vỏ.
-- (Dạng: Đặc điểm/Tính chất của [Đối tượng chung]) -> VD: Đặc điểm hạt nhân, Tính chất hạt cơ bản.
-- (Dạng: Nội dung [Tên Nguyên lý/Quy tắc]) -> VD: Nội dung Nguyên lý Pauli.
+- Dạng: Khái niệm và Định nghĩa [Đối tượng chung] -> VD: Khái niệm Orbital, Khái niệm Lớp vỏ.
+- Dạng: Đặc điểm/Tính chất của [Đối tượng chung] -> VD: Đặc điểm hạt nhân, Tính chất hạt cơ bản.
+- Dạng: Nội dung [Tên Nguyên lý/Quy tắc] -> VD: Nội dung Nguyên lý Pauli.
 
 B. NHÓM KỸ NĂNG/BÀI TẬP:
-- (Dạng: Viết cấu hình electron [Đối tượng chung]) -> VD: Viết cấu hình electron nguyên tử/ion.
-- (Dạng: Xác định số lượng [Hạt/Thành phần]) -> VD: Xác định số lượng hạt dưới nguyên tử.
-- (Dạng: Tính toán [Đại lượng vật lý]) -> VD: Tính toán khối lượng nguyên tử.
-- (Dạng: Dự đoán tính chất [Nhóm chất]) -> VD: Dự đoán tính chất hóa học cơ bản.
+- Dạng: Viết cấu hình electron [Đối tượng chung] -> VD: Viết cấu hình electron nguyên tử/ion.
+- Dạng: Xác định số lượng [Hạt/Thành phần] -> VD: Xác định số lượng hạt dưới nguyên tử.
+- Dạng: Tính toán [Đại lượng vật lý] -> VD: Tính toán khối lượng nguyên tử.
+- Dạng: Dự đoán tính chất [Nhóm chất] -> VD: Dự đoán tính chất hóa học cơ bản.
 
 C. CHIẾN THUẬT GOM NHÓM:
 - Nếu một mục có nhiều câu hỏi về "Cấu hình Al", "Cấu hình Fe", "Cấu hình O":
-  -> TẤT CẢ đều phải chung một Tag là: (Dạng: Viết cấu hình electron nguyên tử).
+  -> TẤT CẢ đều phải chung một Tag là: Dạng: Viết cấu hình electron nguyên tử.
   -> Tuyệt đối không đẻ ra 3 tag khác nhau cho 3 nguyên tố.
 
 3. BẢNG TỪ KHÓA DẠNG BÀI CHUẨN (Dùng để điền vào phần Dạng):
 Hãy chọn 1 trong các công thức sau và ĐIỀN NỘI DUNG VÀO:
 
 A. NHÓM LÝ THUYẾT CƠ BẢN:
-- (Dạng: Khái niệm [Tên khái niệm])
-- (Dạng: Ký hiệu và Tên gọi của [Đối tượng])
-- (Dạng: Đặc điểm cấu tạo [Đối tượng])
-- (Dạng: Hình dạng/Trạng thái của [Đối tượng])
+- Dạng: Khái niệm [Tên khái niệm]
+- Dạng: Ký hiệu và Tên gọi của [Đối tượng]
+- Dạng: Đặc điểm cấu tạo [Đối tượng]
+- Dạng: Hình dạng/Trạng thái của [Đối tượng]
 
 B. NHÓM QUY LUẬT & NGUYÊN LÝ:
-- (Dạng: Nội dung [Tên Nguyên lý/Quy tắc])
-- (Dạng: Điều kiện áp dụng [Tên quy tắc])
-- (Dạng: Ý nghĩa của [Đại lượng/Chỉ số])
+- Dạng: Nội dung [Tên Nguyên lý/Quy tắc]
+- Dạng: Điều kiện áp dụng [Tên quy tắc]
+- Dạng: Ý nghĩa của [Đại lượng/Chỉ số]
 
 C. NHÓM TƯ DUY & SO SÁNH:
-- (Dạng: So sánh [Đối tượng 1] và [Đối tượng 2])
-- (Dạng: Phân loại [Đối tượng])
-- (Dạng: Giải thích nguyên nhân [Hiện tượng])
-- (Dạng: Mối liên hệ giữa [A] và [B])
+- Dạng: So sánh [Đối tượng 1] và [Đối tượng 2]
+- Dạng: Phân loại [Đối tượng]
+- Dạng: Giải thích nguyên nhân [Hiện tượng]
+- Dạng: Mối liên hệ giữa [A] và [B]
 
 D. NHÓM KỸ NĂNG & TÍNH TOÁN:
-- (Dạng: Viết cấu hình/Công thức [Đối tượng])
-- (Dạng: Xác định vị trí/Thành phần)
-- (Dạng: Tính toán [Tên đại lượng cụ thể])
-- (Dạng: Dự đoán tính chất [Chất/Nguyên tố])
+- Dạng: Viết cấu hình/Công thức [Đối tượng]
+- Dạng: Xác định vị trí/Thành phần
+- Dạng: Tính toán [Tên đại lượng cụ thể]
+- Dạng: Dự đoán tính chất [Chất/Nguyên tố]
 
-4. QUÉT VÀ PHÂN TÍCH "MỤC TIÊU" (LEARNING OBJECTIVES MAPPING)
-- Ngay khi bắt đầu một Bài mới, bạn phải tìm ngay khung "Mục tiêu" (thường nằm đầu bài, sau tên bài).
-- Thực hiện "Ánh xạ động từ" (Verb Mapping) để xác định giới hạn kiến thức:
-  + Nếu Mục tiêu dùng từ "Nêu", "Kể tên", "Trình bày": Chỉ được hỏi ở mức Nhận biết (định nghĩa, liệt kê).
-  + Nếu Mục tiêu dùng từ "Giải thích", "So sánh", "Phân biệt": Được phép hỏi sâu vào bản chất, lý do (Thông hiểu).
-  + Nếu Mục tiêu dùng từ "Tính toán", "Xác định", "Thực hiện": Phải có bài tập áp dụng công thức hoặc quy trình (Vận dụng).
-- QUY TẮC "BỘ LỌC PHẠM VI":
-  + Chỉ sinh câu hỏi cho các nội dung CÓ ĐƯỢC NHẮC ĐẾN hoặc HỖ TRỢ TRỰC TIẾP cho các ý trong "Mục tiêu".
-  + Các đoạn văn mang tính kể chuyện lịch sử, giới thiệu rườm rà không phục vụ cho Mục tiêu bài học -> Lướt qua, không đặt câu hỏi hoặc chỉ đặt tối đa 1 câu ngữ cảnh.
+4. CƠ CHẾ "ĐỊNH VỊ MỤC TIÊU LINH HOẠT" (DYNAMIC TARGET MAPPING):
+Do mỗi môn học và bộ sách có cách trình bày khác nhau, bạn KHÔNG ĐƯỢC tìm cố định cụm từ "Mục tiêu bài học". Thay vào đó, bạn phải kích hoạt chế độ "QUÉT ĐA TỪ KHÓA" ở ngay phần đầu bài học để tìm "KHUNG ĐỊNH HƯỚNG".
+
+A. BỘ TỪ KHÓA NHẬN DIỆN (KEYWORD SET):
+Hãy tìm bất kỳ box hoặc đoạn văn nào chứa một trong các tiêu đề sau:
+- Nhóm 1 (Định hướng chung): "Mục tiêu", "Yêu cầu cần đạt", "Học xong bài này em sẽ", "Em đã học".
+- Nhóm 2 (Định hướng nội dung): "Kiến thức, kĩ năng", "Kiến thức trọng tâm", "Nội dung chính".
+- Nhóm 3 (Định hướng từ vựng/khái niệm): "Thuật ngữ", "Khái niệm", "Từ khóa" (Thường gặp trong Toán/Tin).
+
+B. CHIẾN THUẬT ÁNH XẠ MỨC ĐỘ (LEVEL MAPPING STRATEGY):
+Sau khi tìm thấy "Khung định hướng", hãy phân tích nội dung bên trong để quyết định mức độ câu hỏi sẽ sinh ra:
+
+- TRƯỜNG HỢP 1: Gặp mục "Thuật ngữ", "Từ khóa", "Khái niệm":
+  -> Dấu hiệu: Chứa các danh từ (Ví dụ: "Hàm số", "Biến cố", "Liên kết ion").
+  -> Hành động: BẮT BUỘC sinh câu hỏi mức NHẬN BIẾT (Mức 1).
+  -> Template câu hỏi: "Thuật ngữ X được hiểu là...", "Khái niệm nào sau đây mô tả...", "Định nghĩa của X là...".
+
+- TRƯỜNG HỢP 2: Gặp mục "Kiến thức, kĩ năng", "Yêu cầu cần đạt":
+  -> Dấu hiệu: Chứa các động từ. Bạn phải phân loại dựa trên động từ đó:
+     + Động từ cấp thấp (Nêu, Kể tên, Phát biểu, Nhận biết): -> Sinh câu NHẬN BIẾT (Mức 1).
+     + Động từ cấp trung (Giải thích, So sánh, Phân biệt, Mô tả đặc điểm): -> Sinh câu THÔNG HIỂU (Mức 2).
+     + Động từ cấp cao (Tính toán, Vận dụng, Giải quyết, Thực hiện, Vẽ, Lập trình): -> Sinh câu VẬN DỤNG (Mức 3).
+
+C. QUY TẮC "BÁM SÁT KHUNG":
+- Chỉ sinh câu hỏi nằm trong phạm vi mà các mục trên quy định.
+- Nếu nội dung trong bài có phần mở rộng (Em có biết) không nằm trong "Thuật ngữ" hay "Yêu cầu cần đạt" -> Chỉ được hỏi tối đa 1 câu hoặc BỎ QUA nếu không quan trọng.
 5. PHÂN TÁCH LỚP CẤU TRÚC (DEEP HIERARCHY TRACKING):
 Bạn phải duy trì một "con trỏ vị trí" (location pointer) ảo, luôn biết mình đang ở mục nhỏ nào của SGK.
 - CẤM chỉ ghi tên BÀI LỚN.
@@ -199,30 +211,26 @@ Chấp nhận 2 hình thức câu hỏi trong trường "noi_dung":
   + Câu hỏi ĐÚNG: "Trong phòng thí nghiệm, để bảo quản các kim loại kiềm (như Na, K) khỏi bị oxi hóa, người ta thường thực hiện biện pháp nào sau đây?" (Đầy đủ ngữ cảnh).
   + Câu hỏi SAI: "Người ta ngâm kim loại vào đâu?" (Cụt lủn, thiếu chủ ngữ).
 
-IV. PHÂN BỐ MỨC ĐỘ NHẬN THỨC
-Bạn phải phân bổ 40 câu hỏi theo đúng tỷ lệ sau:
-1. Nhận biết (Mức 1) - Từ câu 1 đến câu 15:
-- Định nghĩa: Yêu cầu học sinh nhắc lại, nhận ra, hoặc liệt kê thông tin có sẵn trong văn bản mà không cần suy luận.
+IV. QUY TẮC PHÂN BỔ VÀ SẮP XẾP SỐ THỨ TỰ (STRICT SLOT ORDERING)
+Bạn thực hiện quy trình "QUÉT TỔNG HỢP - SẮP XẾP LẠI". Tức là quét toàn bộ nội dung cần thiết, sau đó PHÂN LOẠI và ĐIỀN VÀO JSON theo đúng trật tự cứng sau đây (Tuyệt đối không trộn lẫn):
+
+1. SLOT 1: NHẬN BIẾT (Mức 1) - BẮT BUỘC từ câu 1 đến câu 16 (40%):
+- Yêu cầu: Quét rải rác toàn bộ nội dung để tìm các ý cơ bản nhất phục vụ mục tiêu "Nhắc lại/Nhận ra".
 - Động từ dấu hiệu: Nêu, Trình bày, Kể tên, Liệt kê, Phát biểu, Viết công thức, Xác định vị trí/thời gian.
-- Khuôn mẫu câu hỏi (General Templates):
-  + [Khoa học Tự nhiên]: "Đơn vị của...", "Kí hiệu của...", "Công thức nào sau đây là của...?", "Khái niệm X là gì?".
-  + [Khoa học Xã hội]: "Sự kiện X diễn ra vào năm nào?", "Ai là người lãnh đạo...", "Vùng nào sau đây có đặc điểm...".
-  + [Toán/Tin]: "Tập xác định của...", "Lệnh nào dùng để...", "Định lý X phát biểu rằng...".
-2. Thông hiểu (Mức 2) - Từ câu 16 đến câu 30:
-- Định nghĩa: Yêu cầu hiểu ý nghĩa, diễn giải lại, so sánh hoặc giải thích nguyên nhân của các sự kiện/hiện tượng đã nêu.
+- Khuôn mẫu: "Đơn vị của...", "Kí hiệu của...", "Công thức nào sau đây là của...", "Khái niệm X là gì?".
+
+2. SLOT 2: THÔNG HIỂU (Mức 2) - BẮT BUỘC từ câu 17 đến câu 28 (30%):
+- Yêu cầu: Lọc ra các nội dung cần tư duy logic, mối liên hệ nhân quả từ các mục đã quét.
 - Động từ dấu hiệu: Giải thích, So sánh, Phân biệt, Tóm tắt, Mô tả đặc điểm, Vì sao.
-- Khuôn mẫu câu hỏi:
-  + [Khoa học Tự nhiên]: "Đặc điểm nào phân biệt X và Y?", "Nguyên nhân chủ yếu gây ra hiện tượng Z?", "Vì sao công thức X không áp dụng được cho trường hợp Y?".
-  + [Khoa học Xã hội]: "Ý nghĩa lịch sử của sự kiện X là...", "So sánh đặc điểm kinh tế giữa vùng A và B".
-  + [Toán/Tin]: "Hàm số đồng biến khi nào?", "Đoạn mã trên thực hiện chức năng gì?".
-3. Vận dụng (Mức 3) - Từ câu 31 đến câu 40:
-- Định nghĩa: Áp dụng công thức/quy tắc đã học trong đoạn văn nhưng với SỐ LIỆU MỚI (Khác số liệu trong sách giáo khoa).
-- Yêu cầu bắt buộc:
+- Khuôn mẫu: "Đặc điểm nào phân biệt X và Y?", "Nguyên nhân chủ yếu...", "Vì sao công thức X không áp dụng được...".
+
+3. SLOT 3: VẬN DỤNG (Mức 3) - BẮT BUỘC từ câu 29 đến câu 40 (30%):
+- Yêu cầu:
   + KHÔNG ĐƯỢC hỏi lại ví dụ minh họa của sách.
-  + Phải tự tạo ra bộ số liệu mới (đơn giản, chẵn, dễ tính nhẩm hoặc tính nhanh) và yêu cầu học sinh tính toán.
-- Khuôn mẫu:
-  + [Khoa học Tự nhiên]: "Giả sử nồng độ là X% (sách là Y%), hãy tính...", "Một vật có khối lượng M (khác sách)...".
-  + [Toán/Tin]: Thay đổi hệ số phương trình, thay đổi giá trị input của đoạn code.
+  + BẮT BUỘC tự tạo ra bộ số liệu mới (đơn giản, chẵn, dễ tính nhẩm) dựa trên công thức/quy tắc trong sách.
+- Khuôn mẫu: "Giả sử nồng độ là X% (khác sách), hãy tính...", "Một vật có khối lượng M (khác sách)...", Đoạn code mới thực hiện việc gì...
+
+LƯU Ý QUAN TRỌNG: Dù trong sách, bài tập tính toán (Vận dụng) có thể xuất hiện ngay sau định nghĩa (Nhận biết), nhưng khi đưa vào JSON, bạn PHẢI TÁCH CHÚNG RA và đưa câu Vận dụng xuống nhóm cuối (câu 29-40).
 
 V. QUY TẮC DỊCH THUẬT CHUYÊN NGÀNH & CẤU TRÚC JSON
 1. GIAO THỨC DỊCH THUẬT CHUYÊN NGÀNH (ACADEMIC TRANSLATION PROTOCOL):
@@ -244,99 +252,67 @@ C. KIỂM TRA NGỮ CẢNH (CONTEXTUAL CHECK):
 
 2. CẤU TRÚC JSON:
 BẮT BUỘC tuân thủ cấu trúc Layout để hiển thị đúng trên ứng dụng:
+A. CẤU TRÚC CÂU HỎI:
 - Trường "phan":
-  + CẤU TRÚC: "Tên Bài - Tên Mục (nếu có) (Dạng: [Hành động] [Lớp đối tượng chung])".
+  + CẤU TRÚC: Trả về một mảng gồm 3 phần tử theo thứ tự phân cấp:
+    ["Tên Bài...", "Tên Chương/Phần/Mục...", "Dạng: [Hành động] [Lớp đối tượng]"]
+    * Tuyệt đối không ghi muc_do vào trường "phan"
   + BỘ LỌC KIỂM TRA LỖI (VALIDATOR):
     * Trước khi ghi vào JSON, hãy tự kiểm tra: Trong chuỗi này còn dấu ngoặc vuông `[` hoặc `]` không? Còn từ `[A]`, `[B]` không?
     * Nếu CÒN -> Phải sửa ngay thành tên chất/hạt cụ thể.
-  + VÍ DỤ ĐÚNG (GENERALIZED):
-    * "Bài 3 - Phần III (Dạng: Viết cấu hình electron nguyên tử)" (Đúng, bao quát được Al, Fe, Na...).
-    * "Bài 3 - Phần I (Dạng: So sánh các mô hình nguyên tử)" (Đúng, bao quát được Rutherford, Bohr...).
+  + VÍ DỤ ĐÚNG:
+    * ["Bài 3: Cấu trúc nguyên tử", "Phần I: Thành phần nguyên tử", "Dạng: Xác định số lượng hạt cơ bản"]
+    * ["Bài 5: Phân tử", "Mục 2: Liên kết hóa học", "Dạng: So sánh liên kết ion và cộng hóa trị"]
+  + YÊU CẦU:
+    * Phần tử cuối cùng của mảng BẮT BUỘC phải là "Dạng: ..." tuân thủ quy tắc đặt tên dạng bài ở trên.
+    * Không được gộp chung thành 1 chuỗi.
   + VÍ DỤ SAI (TOO SPECIFIC - CẤM):
     * "Bài 3 - Phần III (Dạng: Viết cấu hình electron của Aluminium)" (Sai, quá chi tiết).
-    * "Bài 3 - Phần I (Dạng: So sánh mô hình Rutherford và Bohr)" (Hơi chi tiết -> Nên sửa thành "So sánh các mô hình").
-  + LƯU Ý QUAN TRỌNG: Phần trong ngoặc đơn "(Dạng: ...)" là BẮT BUỘC. Nó giúp người dùng biết câu hỏi này đang kiểm tra mục tiêu nào của bài học. Nếu đoạn văn không thuộc mục tiêu nào rõ ràng, hãy ghi "(Dạng: Lý thuyết bổ trợ)".
+    * "Bài 3 - Phần I (Dạng: So sánh mô hình Rutherford và Bohr)" (Hơi chi tiết -> Nên sửa thành "So sánh các mô hình"). 
+  + Nếu đoạn văn không thuộc mục tiêu nào rõ ràng, hãy ghi "Dạng: Lý thuyết bổ trợ".
   + TUYỆT ĐỐI KHÔNG được cắt bớt chỉ còn Tên Bài.
   + Nếu nội dung nằm ở phần "Luyện tập", "Vận dụng", hay "Em có biết", phải ghi rõ: "Bài X - Mục Y - Luyện tập 2".
   + KIỂM TRA LẠI: Nếu 5 câu hỏi liên tiếp có trường "phan" giống hệt nhau mà không có sự thay đổi về tiểu mục, bạn đang quét quá nông -> HÃY ĐI SÂU HƠN.
 - TUYỆT ĐỐI PHẢI đảm bảo câu hỏi đi sâu vào từng ngóc ngách của kiến thức.
 - Trường "muc_do": Phải điền chính xác một trong các giá trị: nhan_biet, thong_hieu, van_dung, van_dung_cao.
-- Trường "noi_dung": [Câu hỏi Tiếng Việt dài khoảng 70 - 90 từ]
-- Trường "dap_an_dung": BẮT BUỘC là số nguyên từ 1 đến 4.
-TUYỆT ĐỐI KHÔNG trả về 0 hoặc các giá trị index mảng (0-3).
-- Mảng "dap_an": 8 phần tử.
-    + Index 0-3: Đáp án A, B, C, D Tiếng Việt.
-    + Index 3 (D Tiếng Việt): Phải chứa \n(translate_en)\n + [Câu hỏi Tiếng Anh sử dụng Thuật ngữ Chuyên ngành chuẩn Quốc tế/IUPAC dài khoảng 70 - 90 từ].
-    + Index 4 (A Tiếng Anh): Là điểm bắt đầu của khối Tiếng Anh sử dụng Thuật ngữ Chuyên ngành chuẩn Quốc tế/IUPAC.
-- Trường "giai_thich": 
-  + Định dạng bắt buộc: Đưa Đáp án ĐÚNG lên đầu tiên (kèm cờ A./B./...) -> Giải thích khoa học (dài 100 - 120 từ) -> Sau đó mới liệt kê các Đáp án SAI (kèm cờ) -> Giải thích ngắn gọn.
-  + Đối với câu hỏi "Biến thể số liệu" hoặc "Bài toán ngược": Phải trình bày rõ CÔNG THỨC GỐC được lấy từ đâu trong bài, sau đó thay số vào để tính ra kết quả.
-  + Tuyệt đối không chỉ ghi đáp án, phải ghi rõ: "Áp dụng công thức X trong bài học, với số liệu giả định của đề bài, ta có...".
+- Trường "noi_dung": [Câu hỏi hoàn chỉnh bằng Tiếng Việt dài khoảng 70 - 90 từ].
+- Trường "noi_dung_en": [Câu hỏi được dịch sang Tiếng Anh chuẩn thuật ngữ khoảng 70 - 90 từ]. 
+B. CẤU TRÚC LỰA CHỌN (Mảng "cac_lua_chon"):
+Mỗi phần tử trong mảng phải có đủ:
+- "ky_hieu": "A", "B", "C", "D".
+- "noi_dung": [Nội dung lựa chọn Tiếng Việt].
+- "noi_dung_en": [Nội dung lựa chọn Tiếng Anh].
+- "dap_an_dung": chỉ được phép 1/2/3/4 (1=A, 2=B, 3=C, 4=D)
 
-VI. ĐỊNH DẠNG LỜI GIẢI (CHUYÊN SÂU)
-Lời giải phải tuân thủ cấu trúc 4 phần rõ rệt, NGHIÊM NGẶT sử dụng dấu phân cách "\n####\n":
-1. Phần 1: Giải thích chi tiết (Tiếng Việt):
-- QUY TẮC SẮP XẾP: BẮT BUỘC đưa ĐÁP ÁN ĐÚNG lên vị trí đầu tiên, sau đó mới liệt kê các ĐÁP ÁN SAI.
-- QUY ĐỊNH ĐỘ DÀI GIẢI THÍCH (THEO MỨC ĐỘ):
-  + Với mức độ "nhan_biet": Giải thích ngắn gọn, súc tích (1 - 3 dòng, khoảng 30 - 50 từ), đi thẳng vào vấn đề.
-  + Với mức độ "thong_hieu", "van_dung", "van_dung_cao": Giải thích chi tiết, sâu sắc (100 - 120 từ).
-- Đối với ĐÁP ÁN ĐÚNG (Luôn đứng đầu):
-    + Định dạng: ([Ký hiệu phương án].) [Trích dẫn nội dung phương án] ĐÚNG\n
-    + Sau đó: Phân tích khoa học tại sao đúng (tuân thủ quy định độ dài ở trên).
-- Đối với ĐÁP ÁN SAI:
-    + Định dạng: - ([Ký hiệu phương án].) [Trích dẫn nội dung phương án] SAI\n[Giải thích ngắn gọn tại sao sai.]
-    + CẤM GỘP các đáp án sai.
-- Câu kết luận (BẮT BUỘC): Xuống dòng và ghi: "Vậy đáp án đúng là: [Nội dung đáp án]."
-2. DẤU PHÂN CÁCH: \n(translate_en)\n
-3. Phần 3: Giải thích chi tiết (Tiếng Anh sử dụng Thuật ngữ Chuyên ngành chuẩn Quốc tế/IUPAC)
-- Dịch chuẩn xác Phần 1 sang tiếng Anh, tuân thủ đúng thứ tự ĐÚNG TRƯỚC - SAI SAU và format:
-    + Correct Answer format: ([Label].) [Content] CORRECT\n[Explanation]
-    + Distractor format: - ([Label].) [Content] INCORRECT\n[Explanation]
-    + Conclusion: "Therefore, the correct answer is: [Content]."
-4. DẤU PHÂN CÁCH: \n####\n
-5. Phần 2: Gợi ý giải (Tiếng Việt)
-- Nội dung: Hướng dẫn tư duy từng bước (Step-by-step thinking) để học sinh tự tìm ra đáp án. Không chỉ đưa từ khóa, hãy chỉ dẫn cách suy luận.
-- Định dạng:
-Gợi ý:
-+ Bước 1: [Hướng dẫn...]
-+ Bước 2: [Hướng dẫn...]
-+ Kết luận: [Gợi ý kết quả...]
-6. DẤU PHÂN CÁCH: \n(translate_en)\n
-7. Phần 4: Gợi ý giải (Tiếng Anh sử dụng Thuật ngữ Chuyên ngành chuẩn Quốc tế/IUPAC)
-- Dịch chuẩn xác Phần 2 sang tiếng Anh sử dụng Thuật ngữ Chuyên ngành chuẩn Quốc tế/IUPAC.
-- Định dạng:
-Hint:
-+ Step 1: [Instruction...]
-+ Step 2: [Instruction...]
-+ Conclusion: [Hint at result...]
+C. CẤU TRÚC ĐÁP ÁN & LỜI GIẢI (BẮT BUỘC TUÂN THỦ):
 
-VII. MẪU JSON CHUẨN
-{
-  "loai_de": "trac_nghiem_4_dap_an",
-  "tong_so_cau": 40,
-  "cau_hoi": [
-    {
-      "stt": 1,
-      "muc_do": "nhan_biet",
-      "phan": "BÀI 8: ACID - Phần I - Mục 1: Khái niệm & Bản chất ion",
-      "noi_dung": "Trong dung dịch nước, phân tử hợp chất nào sau đây phân li tạo ra cation H+?",
-      "hinh_anh": { "co_hinh": false, "loai": "tu_mo_ta", "mo_ta": "" },
-      "dap_an": [
-        { "ky_hieu": "A", "noi_dung": "Hydrochloric acid ($HCl$)" },
-        { "ky_hieu": "B", "noi_dung": "Sodium hydroxide ($NaOH$)" },
-        { "ky_hieu": "C", "noi_dung": "Sodium chloride ($NaCl$)" },
-        {
-          "ky_hieu": "D",
-          "noi_dung": "Ammonia ($NH_3$)\n(translate_en)\nIn an aqueous solution, which of the following compounds dissociates to produce H+ cations?"
-        },
-        { "ky_hieu": "A", "noi_dung": "Hydrochloric acid ($HCl$)" },
-        { "ky_hieu": "B", "noi_dung": "Sodium hydroxide ($NaOH$)" },
-        { "ky_hieu": "C", "noi_dung": "Sodium chloride ($NaCl$)" },
-        { "ky_hieu": "D", "noi_dung": "Ammonia ($NH_3$)" }
-      ],
-      "dap_an_dung": 1,
-      "giai_thich": "(A.) Hydrochloric acid ($HCl$) ĐÚNG\nAcid là những hợp chất mà trong phân tử có nguyên tử hydrogen liên kết với gốc acid. Khi tan trong nước, các phân tử này giải phóng ion H+. Trong các chất liệt kê, chỉ có HCl là acid mạnh phân li hoàn toàn ra cation hydrogen.\n- (B.) Sodium hydroxide ($NaOH$) SAI\nĐây là Base, phân li ra ion OH-.\n- (C.) Sodium chloride ($NaCl$) SAI\nĐây là Muối trung hòa, phân li ra Na+ và Cl-, không sinh ra H+.\n- (D.) Ammonia ($NH_3$) SAI\nĐây là Base yếu, nhận H+ từ nước tạo NH4+ và OH-.\nVậy đáp án đúng là: Hydrochloric acid ($HCl$).\n(translate_en)\n(A.) Hydrochloric acid ($HCl$) CORRECT\nAcids are compounds whose molecules contain hydrogen atoms bonded to acid radicals. When dissolved in water, these molecules release H+ ions. Among the listed substances, only HCl is a strong acid that completely dissociates into hydrogen cations.\n- (B.) Sodium hydroxide ($NaOH$) INCORRECT\nIt is a Base, dissociating into OH- ions.\n- (C.) Sodium chloride ($NaCl$) INCORRECT\nIt is a neutral Salt, dissociating into Na+ and Cl-, not producing H+.\n- (D.) Ammonia ($NH_3$) INCORRECT\nIt is a weak Base, accepting H+ from water to form NH4+ and OH-.\nTherefore, the correct answer is: Hydrochloric acid ($HCl$).\n####\nGợi ý:\n+ Bước 1: Nhớ lại định nghĩa của Acid là hợp chất tạo ra ion H+ khi tan trong nước.\n+ Bước 2: Kiểm tra công thức hóa học của các chất: NaOH (Base), NaCl (Muối), NH3 (Base), HCl (Acid).\n+ Kết luận: Chọn chất có khả năng phân li ra H+.\n(translate_en)\nHint:\n+ Step 1: Recall the definition of an Acid as a compound that produces H+ ions when dissolved in water.\n+ Step 2: Check the chemical formulas: NaOH (Base), NaCl (Salt), NH3 (Base), HCl (Acid).\n+ Conclusion: Select the substance capable of dissociating into H+."
-    }
-  ]
-}
-Bắt đầu quét PDF TUẦN TỰ CẤM SINH NGẪU NHIÊN, giữ nguyên cấu trúc JSON, đảm bảo độ sâu kiến thức và tính phân loại cực cao, ĐỒNG THỜI TUÂN THỦ NGHIÊM NGẶT QUY TẮC MẬT ĐỘ VÀ CHỐNG TRÙNG LẶP.
+1. Quy tắc sắp xếp vị trí (Reordering Rule):
+   - Trong trường "giai_thich" và "giai_thich_en", BẮT BUỘC đưa phương án ĐÚNG lên vị trí dòng ĐẦU TIÊN.
+   - Sau đó mới liệt kê lần lượt 3 phương án SAI còn lại.
+   - Tuyệt đối không viết theo thứ tự A, B, C, D nếu đáp án đúng không phải là A.
+
+2. Định dạng trường "giai_thich" (Tiếng Việt) (BẮT BUỘC PHẢI TUÂN THỦ):
+   Viết thành các đoạn văn, cách nhau bởi dấu xuống dòng (\n):
+   - ([Ký hiệu phương án.].) [Nội dung rút gọn] ĐÚNG\n[Giải thích chi tiết tại sao đúng dài khoảng 90 - 100 từ]
+   - - ([Ký hiệu phương án.].) [Nội dung rút gọn] SAI\n[Giải thích tại sao sai]
+   - - ([Ký hiệu phương án.].) [Nội dung rút gọn] SAI\n[Giải thích tại sao sai]
+   - - ([Ký hiệu phương án.].) [Nội dung rút gọn] SAI\n[Giải thích tại sao sai]
+   - Vậy đáp án đúng là:[Nội dung đầy đủ của đáp án đúng].
+
+3. Định dạng trường "giai_thich_en" (Tiếng Anh) (BẮT BUỘC TUÂN THỦ):
+   Dịch tương ứng logic trên:
+   - - ([Label.].) [Content] CORRECT\n[Explanation about 90 - 100 character]
+   - - ([Label.].) [Content] INCORRECT\n[Explanation]
+   ...
+   - Therefore, the correct answer is:[Full content].
+
+LƯU Ý: AI phải tự động trích xuất nội dung của phương án để điền vào chỗ [Nội dung rút gọn], không được chỉ ghi "Đáp án A đúng".
+
+Bắt đầu thực hiện:
+1. QUÉT LINH HOẠT đầu bài để tìm "Khung định hướng" (dựa trên các từ khóa: Mục tiêu/Yêu cầu/Thuật ngữ/Kiến thức...).
+2. ĐỐI CHIẾU nội dung bài học với Khung định hướng để lọc ý chính.
+3. PHÂN LOẠI & SẮP XẾP câu hỏi vào 3 SLOT cứng:
+   - Slot 1 (Câu 1-16): Nhận biết (Ưu tiên khai thác phần "Thuật ngữ", "Khái niệm", "Nêu/Kể tên").
+   - Slot 2 (Câu 17-28): Thông hiểu (Ưu tiên phần "Giải thích", "So sánh").
+   - Slot 3 (Câu 29-40): Vận dụng (Ưu tiên phần "Tính toán", "Kĩ năng", tạo số liệu mới).
+4. XUẤT JSON chuẩn format.
