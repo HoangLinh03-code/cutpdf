@@ -277,7 +277,7 @@ def save_document_securely(doc, batch_name, file_name):
                 doc.save(output_path)
                 if os.path.exists(output_path):
                     file_size = os.path.getsize(output_path)
-                    print(f"✅ Đã lưu file: {output_path} ({file_size} bytes)")
+                    print(f"✅ Đã lưu file: {output_path}")
                     return output_path
             except Exception as e:
                 print(f"⚠️ Lỗi lưu file lần {retry_count + 1}: {e}")
@@ -539,24 +539,29 @@ class DynamicDocxRenderer:
                         process_text_with_latex(line.strip(), self.doc.add_paragraph())
 
     def render_question_dung_sai(self, cau: Dict):
+        # 1. Render Header câu hỏi
         p = self.doc.add_paragraph()
         p.add_run(f"Câu {cau['stt']}. ").bold = True
+        
+        # 2. Render Đoạn thông tin ngữ cảnh
         if cau.get("doan_thong_tin"):
             process_text_with_latex(cau.get("doan_thong_tin", ""), p)
         
+        # 3. Render Hình ảnh (nếu có)
         hinh_anh = cau.get("hinh_anh", {})
         if hinh_anh.get("co_hinh"):
             insert_image_or_placeholder(self.doc, hinh_anh)
         
+        # 4. Render các ý a, b, c, d
         for y in cau.get("cac_y", []):
             p_y = self.doc.add_paragraph()
             p_y.add_run(f"{y['ky_hieu']}) ")
             process_text_with_latex(y.get('noi_dung', ''), p_y)
 
-        # --- BLOCK 2: TIẾNG ANH (Câu hỏi & Ý) ---
+        # 5. Render Tiếng Anh (nếu có)
         has_en = cau.get("doan_thong_tin_en") or any(y.get('noi_dung_en') for y in cau.get("cac_y", []))
         if has_en:
-            self.doc.add_paragraph("(translate_en)").italic = True
+            self.doc.add_paragraph("(translate_en)")
             if cau.get("doan_thong_tin_en"):
                 p_en = self.doc.add_paragraph()
                 process_text_with_latex(cau.get("doan_thong_tin_en", ""), p_en)
@@ -567,56 +572,66 @@ class DynamicDocxRenderer:
                 content_en = y.get('noi_dung_en') or y.get('noi_dung', '')
                 process_text_with_latex(content_en, p_y_en)
 
-        # --- BLOCK 3: LỜI GIẢI CHI TIẾT (ARRAY) ---
+        # --- PHẦN LỜI GIẢI CHI TIẾT (NEW LOGIC) ---
         p_lg = self.doc.add_paragraph()
         p_lg.add_run("Lời giải").bold = True
         
-        # 3.1 Đáp án bit
+        # 6. Đáp án bit (VD: 1001)
         p_da = self.doc.add_paragraph()
         p_da.add_run(str(cau.get("dap_an_dung_sai", ""))).bold = True
         self.doc.add_paragraph("####")
 
-        # Hàm helper để in từng dòng giải thích theo format mới
-        def render_explanation_item(item_data):
-            p_item = self.doc.add_paragraph()
+        # HÀM RENDER STRING GIẢI THÍCH (MỚI)
+        def render_explanation_string(text_content):
+            if not text_content: return
             
-            # 1. Dấu cộng và Label (In thường) -> Ví dụ: "+ (A.) "
-            p_item.add_run("+ ")
-            label = item_data.get('y', '')
+            # Tách dòng dựa trên ký tự xuống dòng
+            lines = text_content.replace('\\n', '\n').split('\n')
             
-            # 2. Nội dung ý (In thường, có xử lý Latex) -> Ví dụ: "Nội dung..."
-            content = item_data.get('noi_dung_y', '')
-            # Nối Label và Content thành 1 chuỗi để xử lý latex liền mạch
-            prefix_text = f"{label} {content} "
-            process_text_with_latex(prefix_text, p_item, bold=False) # <--- QUAN TRỌNG: bold=False
-            
-            # 3. Kết luận (IN ĐẬM) -> Ví dụ: "SAI"
-            result = item_data.get('ket_luan', '').upper()
-            if result:
-                # Thêm khoảng trắng trước kết luận nếu cần
-                run_res = p_item.add_run(result)
-                run_res.bold = True  # <--- CHỈ IN ĐẬM CHỖ NÀY
-            
-            # 4. Phần giải thích chi tiết (Xuống dòng)
-            explanation = item_data.get('giai_thich', '')
-            if explanation:
-                for line in explanation.split('\n'):
-                    if line.strip():
-                        p_exp = self.doc.add_paragraph()
-                        process_text_with_latex(line.strip(), p_exp)
+            # Regex để bắt pattern: "+ (label) text... KẾT_LUẬN"
+            # Pattern này tìm dấu + ở đầu, và các từ khóa kết luận ở CUỐI dòng
+            pattern_result = re.compile(r'(.*)\b(ĐÚNG|SAI|TRUE|FALSE|CORRECT|INCORRECT)\s*$', re.IGNORECASE)
 
-        # 3.2 Giải thích Tiếng Việt
-        list_giai_thich_vi = cau.get("giai_thich", [])
-        if isinstance(list_giai_thich_vi, list):
-            for item in list_giai_thich_vi:
-                render_explanation_item(item)
+            for line in lines:
+                text = line.strip()
+                if not text: continue
+                
+                p_exp = self.doc.add_paragraph()
+                
+                # Kiểm tra nếu dòng bắt đầu bằng dấu "+" (Dấu hiệu của dòng nhận định)
+                if text.startswith("+"):
+                    # Thử match regex để tách phần nội dung và phần Kết luận
+                    match = pattern_result.match(text)
+                    if match:
+                        # Phần trước kết luận (VD: "+ (a.) Nước sôi 100 độ. ")
+                        prefix = match.group(1) 
+                        # Phần kết luận (VD: "ĐÚNG")
+                        result_word = match.group(2)
+                        
+                        # Render phần trước bình thường
+                        process_text_with_latex(prefix, p_exp, bold=False)
+                        
+                        # Render phần kết luận IN ĐẬM
+                        run_res = p_exp.add_run(result_word)
+                        run_res.bold = True
+                    else:
+                        # Nếu có dấu + mà không tìm thấy từ khóa ĐÚNG/SAI ở cuối
+                        # Thì cứ render bình thường (fallback)
+                        process_text_with_latex(text, p_exp, bold=False)
+                else:
+                    # Dòng giải thích chi tiết (không có dấu +) -> Render bình thường
+                    process_text_with_latex(text, p_exp, bold=False)
 
-        # 3.3 Giải thích Tiếng Anh
-        list_giai_thich_en = cau.get("giai_thich_en", [])
-        if isinstance(list_giai_thich_en, list) and list_giai_thich_en:
-            self.doc.add_paragraph("(translate_en)").italic = True
-            for item in list_giai_thich_en:
-                render_explanation_item(item)  
+        # 7. Render Giải thích Tiếng Việt
+        giai_thich_vi = cau.get("giai_thich", "")
+        if giai_thich_vi:
+            render_explanation_string(giai_thich_vi)
+
+        # 8. Render Giải thích Tiếng Anh
+        giai_thich_en = cau.get("giai_thich_en", "")
+        if giai_thich_en:
+            self.doc.add_paragraph("(translate_en)")
+            render_explanation_string(giai_thich_en)  
     
     def render_question_tra_loi_ngan(self, cau: Dict):
         """Render câu hỏi trả lời ngắn (Schema mới: Phan=Array, Content=Split Vi/En)"""

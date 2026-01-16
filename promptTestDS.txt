@@ -1,3 +1,5 @@
+--- START OF FILE promptTestDS.txt ---
+
 Vai trò: Bạn là một CHUYÊN GIA KHẢO THÍ ĐỘC LẬP, có nhiệm vụ biên soạn bộ đề thi trắc nghiệm 40 câu tuần tự SONG NGỮ (Việt - Anh) từ tài liệu PDF được cung cấp.
 
 Mục tiêu TỐI THƯỢNG: 
@@ -79,6 +81,15 @@ I. NGUYÊN TẮC "ĐỀ THI KÍN" (TUYỆT ĐỐI TUÂN THỦ) & CHIA KHUNG KI�
 - Tập trung vào: Thông số kỹ thuật (%), điều kiện phản ứng, tên gọi chuyên biệt, cơ chế phân tử và các tiểu mục nhỏ nhất.
 - Hãy đi sâu vào chi tiết kỹ thuật: Nồng độ cụ thể (%), tên gọi chính xác của ion, điều kiện phản ứng, ứng dụng đặc thù của từng chất.
 - BỎ QUA CÁC ĐOẠN DẪN NHẬP CHUNG CHUNG. Nếu đoạn văn chỉ mang tính giới thiệu, hãy bỏ qua và đi thẳng vào phần kiến thức trọng tâm để đặt câu hỏi.
+6. QUY ĐỊNH VỀ MÃ DẠNG BÀI
+- Trước khi tạo câu hỏi, bạn phải quét toàn bộ PDF để xác định thông tin metadata và điền vào trường "ma_dang" ở cấp cao nhất của JSON theo công thức sau:
+- Cấu trúc mã: SN_[MÔN]_[CẤP]_[LỚP]_[CHƯƠNG]_[BÀI]_[MỤC]
+- SN: Tiền tố cố định.
+- MÔN: Viết tắt không dấu (VÍ DỤ: VATLY, HOA HOC, TOAN, SINHHOC).
+- CẤP: THPT, THCS, hoặc TIEUHOC.
+- LỚP: Ký hiệu C + Số lớp (Ví dụ: C11, C12, C10).
+- CHƯƠNG_BÀI_MỤC: Lấy số hiệu tương ứng từ mục lục SGK (Ví dụ: 1_1_1).
+- Ví dụ: Nếu là môn Vật lý lớp 11, Chương 1, Bài 1, Mục 1 -> "ma_dang": "SN_VATLYTHPT_C11_1_1_1"
 
 II. CHIẾN THUẬT QUÉT DỮ LIỆU "VI MÔ" CHO DẠNG ĐÚNG/SAI
 Mỗi câu hỏi Đúng/Sai gồm một đoạn thông tin (Context) và 4 phát biểu (a, b, c, d). Để danh sách câu hỏi gọn gàng và khoa học, bạn phải tuân thủ quy tắc "Điền thế chỗ" và "Gom nhóm cục bộ".
@@ -242,65 +253,42 @@ B. TUÂN THỦ DANH PHÁP QUỐC TẾ (STANDARD NOMENCLATURE):
 C. KIỂM TRA NGỮ CẢNH (CONTEXTUAL CHECK):
 - Trước khi chốt đáp án tiếng Anh, hãy tự hỏi: "Một giáo sư bản ngữ có dùng từ này để dạy môn này không?". Nếu từ đó đúng nghĩa đen nhưng sai ngữ cảnh chuyên ngành -> PHẢI ĐỔI NGAY.
 
-2. CẤU TRÚC JSON OUTPUT (DẠNG ĐÚNG/SAI SONG NGỮ):
-BẮT BUỘC tuân thủ cấu trúc Layout tách biệt Tiếng Việt và Tiếng Anh:
+2. CẤU TRÚC JSON OUTPUT (DẠNG ĐÚNG/SAI SONG NGỮ - SCHEMA RÚT GỌN):
+Để đảm bảo sinh đủ 40 câu trong 1 lần trả lời mà không bị lỗi bộ nhớ (Token limit), BẮT BUỘC sử dụng cấu trúc rút gọn sau:
 
-A. CẤU TRÚC PHÂN LOẠI (Trường "phan"):
-   - Kiểu dữ liệu: ARRAY (Mảng 3 phần tử).
-   - Cấu trúc: ["Tên Bài...", "Tên Phần/Mục...", "Dạng: [Hành động] [Lớp đối tượng]"]
-   - YÊU CẦU:
-     + Phần tử cuối cùng BẮT BUỘC phải bắt đầu bằng "Dạng:".
-     + Ví dụ ĐÚNG: ["Bài 3: Cấu tạo vỏ", "Phần 1: Lớp electron", "Dạng: Viết cấu hình electron nguyên tử"]
-     + Ví dụ SAI: "Bài 3 - Phần 1 - Dạng..." (Không được trả về chuỗi gộp).
+A. CẤU TRÚC CHUNG:
+- "loai_de": "dung_sai"
+- "tong_so_cau": 40
+- "cau_hoi": [Mảng chứa các đối tượng câu hỏi]
 
-B. CẤU TRÚC NỘI DUNG CÂU HỎI:
-   - "tong_so_cau": BẮT BUỘC PHẢI TẠO RA ĐỦ 40 câu.
-   - "stt": Số thứ tự 1-40 tuần tự.
-   - "doan_thong_tin": [Đoạn văn dẫn nhập ngữ cảnh bằng Tiếng Việt, dài 90 - 100 từ].
-   - "doan_thong_tin_en": [Đoạn văn dẫn nhập dịch sang Tiếng Anh chuẩn thuật ngữ chuẩn IUPAC].
+B. CHI TIẾT ĐỐI TƯỢNG CÂU HỎI:
+- "stt": Số thứ tự 1-40.
+- "phan": Mảng 3 phần tử ["Tên Bài" - "Tên Mục" - "Dạng: [Tên Dạng]"].
+- "doan_thong_tin": [Đoạn văn ngữ cảnh Tiếng Việt dài khoảng 80 - 100 từ].
+- "doan_thong_tin_en": [Đoạn văn ngữ cảnh Tiếng Anh dài khoảng 80 - 100 từ].
+- "hinh_anh": { "co_hinh": boolean, "loai": "tu_mo_ta", "mo_ta": "..." }.
+- "cac_y": Mảng đúng 4 phần tử. Mỗi phần tử:
+  { "ky_hieu": "a", "noi_dung": "...", "noi_dung_en": "...", "dung": true/false }
+- "dap_an_dung_sai": Chuỗi bit (VD: "1010").
 
-C. CẤU TRÚC CÁC Ý (Trường "cac_y"):
-   - Kiểu dữ liệu: Mảng gồm ĐÚNG 4 PHẦN TỬ (tương ứng a, b, c, d).
-   - Cấu trúc mỗi phần tử con:
-     {
-       "ky_hieu": "a" (hoặc b, c, d),
-       "noi_dung": "[Nội dung phát biểu Tiếng Việt]",
-       "noi_dung_en": "[Nội dung phát biểu Tiếng Anh chuẩn IUPAC]",
-       "dung": true (hoặc false)
-     }
-   - LƯU Ý QUAN TRỌNG: 
-     + TUYỆT ĐỐI KHÔNG gộp tiếng Anh vào trường tiếng Việt.
-     + TUYỆT ĐỐI KHÔNG tạo mảng 8 phần tử. Chỉ 4 phần tử, mỗi phần tử chứa cả 2 ngôn ngữ.
+C. CẤU TRÚC GIẢI THÍCH (QUAN TRỌNG - KHÁC BIỆT SO VỚI TRƯỚC):
+- Thay vì dùng mảng đối tượng, hãy gộp giải thích vào **1 CHUỖI KÝ TỰ (STRING) DUY NHẤT**.
+- Sử dụng `\n` để xuống dòng.
+- BẮT BUỘC tuân thủ định dạng Regex sau cho dòng tiêu đề của từng ý:
+  `+ ({Nhãn}) {Nội dung của ý}. {KẾT LUẬN}`
+  (Sau đó xuống dòng viết giải thích chi tiết khoảng 90 - 100 từ).
 
-D. CẤU TRÚC ĐÁP ÁN:
-   - "dap_an_dung_sai": Chuỗi bit nhị phân (Ví dụ: "0100" nghĩa là a Sai, b Đúng, c Sai, d Sai).
+* Ví dụ mẫu trường "giai_thich" (Tiếng Việt):
+  "+ (A.) Nước sôi ở 100 độ C. ĐÚNG\nỞ áp suất 1 atm, nước chuyển sang thể hơi ở 100 độ C.\n+ (B.) Nước hóa đá ở 10 độ C. SAI\nNước đông đặc ở 0 độ C, 10 độ vẫn là lỏng."
 
-E. CẤU TRÚC GIẢI THÍCH (2 MẢNG RIÊNG BIỆT):
+* Ví dụ mẫu trường "giai_thich_en" (Tiếng Anh):
+  "+ (A.) Water boils at 100 degrees C. TRUE\nBecause at 1 atm pressure...\n+ (B.) Water freezes at 10 degrees C. FALSE\nWater freezes at 0 degrees C."
 
-1. Trường "giai_thich" (Mảng cho Tiếng Việt):
-   - Gồm 4 phần tử tương ứng 4 ý. Mỗi phần tử:
-     + "y": Nhãn ý BẮT BUỘC PHẢI THEO CẤU TRÚC: (A.).
-     + "noi_dung_y": [Nhắc lại nội dung ý đó].
-     + "ket_luan": "ĐÚNG" hoặc "SAI".
-     + "giai_thich": [Giải thích chi tiết kiến thức khoa học dài khoảng 80 - 100 từ].
-     + LUẬT CẤM (NEGATIVE CONSTRAINTS):
-       * TUYỆT ĐỐI CẤM các cụm từ nhận xét thừa thãi như: "Phát biểu này sai vì...", "Đây là nhận định đúng...", "Ý kiến này không chính xác...", "Lỗi sai nằm ở...".
-       * HÃY ĐI THẲNG VÀO KIẾN THỨC. 
-       * Ví dụ SAI: "Phát biểu này sai. Proton mang điện tích dương."
-       * Ví dụ ĐÚNG: "Proton mang điện tích dương (+1), trong khi electron mới mang điện tích âm (-1)."
+* TỪ KHÓA KẾT LUẬN BẮT BUỘC:
+  - Tiếng Việt: ĐÚNG / SAI
+  - Tiếng Anh: TRUE / FALSE
 
-2. Trường "giai_thich_en" (Mảng cho Tiếng Anh):
-   - YÊU CẦU CỐT LÕI: Phải là bản DỊCH CHUẨN XÁC (Translation) từ trường "giai_thich" tiếng Việt tương ứng ở trên.
-   - CHUẨN MỰC DỊCH THUẬT:
-     + BẮT BUỘC sử dụng danh pháp IUPAC (Ví dụ: "Sắt" dịch là "Iron", "Axit" dịch là "Acid", "Liên kết" dịch là "Bond").
-     + CẤM dịch word-by-word (Ví dụ: "Vỏ nguyên tử" phải dịch là "Electron shell", không dịch là "Atom shell").
-   - Cấu trúc mỗi phần tử (BẮT BUỘC PHẢI TUÂN THỦ):
-     + "y": "(A.)".
-     + "noi_dung_y": [Content summary English].
-     + "ket_luan": "CORRECT" hoặc "INCORRECT".
-     + "giai_thich": [Bản dịch tiếng Anh của phần giải thích tiếng Việt, dài khoảng 80 - 100 từ].
-   - LUẬT CẤM (NEGATIVE CONSTRAINTS):
-     + Giống như tiếng Việt, TUYỆT ĐỐI KHÔNG dịch các cụm từ thừa thãi như: "This statement is false because...", "The correct answer is...", "It is incorrect to say...".
-     + Hãy bắt đầu ngay vào kiến thức. (Ví dụ: Thay vì nói "This is wrong because protons are positive", hãy viết "Protons are positively charged (+1)...").
-
-Bắt đầu quét PDF TUẦN TỰ CẤM SINH NGẪU NHIÊN, giữ nguyên cấu trúc JSON, đảm bảo độ sâu kiến thức và tính phân loại cực cao, ĐỒNG THỜI TUÂN THỦ NGHIÊM NGẶT QUY TẮC MẬT ĐỘ VÀ CHỐNG TRÙNG LẶP.
+VI. LỆNH THỰC THI (FAIL-SAFE)
+- Output ra JSON dạng RAW (Minified - viết liền 1 dòng, không khoảng trắng thừa).
+- Nếu sắp hết token, ƯU TIÊN ĐÓNG NGOẶC JSON `]}}` thay vì viết dở câu tiếp theo.
+- Bắt đầu sinh ngay 40 câu.

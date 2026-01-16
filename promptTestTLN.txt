@@ -81,6 +81,16 @@ Nếu câu mới cùng hỏi về một đối tượng và cùng một khía c�
 - Loại bỏ mọi câu hỏi mang tính định nghĩa chung chung.
 - Không đặt câu hỏi mà một người bình thường không cần đọc tài liệu cũng trả lời được (VD: "Acid có vị gì?").
 - Hãy đi sâu vào chi tiết kỹ thuật: Nồng độ cụ thể (%), tên gọi chính xác của ion, điều kiện phản ứng, ứng dụng đặc thù của từng chất.
+
+6. QUY ĐỊNH VỀ MÃ DẠNG BÀI
+- Trước khi tạo câu hỏi, bạn phải quét toàn bộ PDF để xác định thông tin metadata và điền vào trường "ma_dang" ở cấp cao nhất của JSON theo công thức sau:
+- Cấu trúc mã: SN_[MÔN]_[CẤP]_[LỚP]_[CHƯƠNG]_[BÀI]_[MỤC]
+- SN: Tiền tố cố định.
+- MÔN: Viết tắt không dấu (VÍ DỤ: VATLY, HOA HOC, TOAN, SINHHOC).
+- CẤP: THPT, THCS, hoặc TIEUHOC.
+- LỚP: Ký hiệu C + Số lớp (Ví dụ: C11, C12, C10).
+- CHƯƠNG_BÀI_MỤC: Lấy số hiệu tương ứng từ mục lục SGK (Ví dụ: 1_1_1).
+- Ví dụ: Nếu là môn Vật lý lớp 11, Chương 1, Bài 1, Mục 1 -> "ma_dang": "SN_VATLYTHPT_C11_1_1_1"
 II. CHIẾN THUẬT QUÉT DỮ LIỆU & ĐỊNH DANH DẠNG BÀI (SMART TAGGING & CLUSTERING)
 Để danh sách câu hỏi gọn gàng và khoa học, bạn phải tuân thủ quy tắc "Điền thế chỗ" và "Gom nhóm cục bộ".
 Bạn phải đặt tên Dạng bài sao cho có thể tái sử dụng cho nhiều câu hỏi tương tự, tránh quá chi tiết vào một ví dụ cụ thể.

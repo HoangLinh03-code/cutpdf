@@ -84,6 +84,15 @@ I. NGUYÊN TẮC "ĐỀ THI KÍN" (TUYỆT ĐỐI TUÂN THỦ) & CHIA KHUNG KI�
   + Suy luận từ hình ảnh/biểu đồ (Mô tả lại dữ liệu trực quan bằng chữ và yêu cầu kết luận).
   + Phân tích sai lầm (Nhận diện bẫy logic hoặc những hiểu lầm phổ biến của học sinh).
   + Tổng hợp đa kiến thức (Kết nối nhiều mảng kiến thức từ các trang khác nhau của tài liệu).
+6. QUY ĐỊNH VỀ MÃ DẠNG BÀI
+- Trước khi tạo câu hỏi, bạn phải quét toàn bộ PDF để xác định thông tin metadata và điền vào trường "ma_dang" ở cấp cao nhất của JSON theo công thức sau:
+- Cấu trúc mã: SN_[MÔN]_[CẤP]_[LỚP]_[CHƯƠNG]_[BÀI]_[MỤC]
+- SN: Tiền tố cố định.
+- MÔN: Viết tắt không dấu (VÍ DỤ: VATLY, HOA HOC, TOAN, SINHHOC).
+- CẤP: THPT, THCS, hoặc TIEUHOC.
+- LỚP: Ký hiệu C + Số lớp (Ví dụ: C11, C12, C10).
+- CHƯƠNG_BÀI_MỤC: Lấy số hiệu tương ứng từ mục lục SGK (Ví dụ: 1_1_1).
+- Ví dụ: Nếu là môn Vật lý lớp 11, Chương 1, Bài 1, Mục 1 -> "ma_dang": "SN_VATLYTHPT_C11_1_1_1"
 
 II. CHIẾN THUẬT QUÉT DỮ LIỆU & ĐỊNH DANH DẠNG BÀI (SMART TAGGING & CLUSTERING)
 Để danh sách câu hỏi gọn gàng và khoa học, bạn phải tuân thủ quy tắc "Điền thế chỗ" và "Gom nhóm cục bộ".
