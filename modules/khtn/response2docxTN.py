@@ -91,7 +91,7 @@ def latex_to_omml_via_pandoc(latex_math_dollar):
  
         if result.returncode != 0:
             error_msg = result.stderr.strip() if result.stderr else "Unknown error"
-            print(f"⚠️ Pandoc error (code {result.returncode}): {error_msg}")
+            # print(f"⚠️ Pandoc error (code {result.returncode}): {error_msg}")
             
             # Kiểm tra lỗi phổ biến
             if "not found" in error_msg.lower() or "cannot find" in error_msg.lower():
@@ -103,7 +103,7 @@ def latex_to_omml_via_pandoc(latex_math_dollar):
         
         # Kiểm tra file output có tồn tại không
         if not os.path.exists(temp_path) or os.path.getsize(temp_path) == 0:
-            print(f"⚠️ Pandoc không tạo file output hợp lệ")
+            # print(f"⚠️ Pandoc không tạo file output hợp lệ")
             return None
            
         # Đọc XML từ DOCX
@@ -120,7 +120,7 @@ def latex_to_omml_via_pandoc(latex_math_dollar):
         match = re.search(r'(<m:oMath[^>]*>.*?</m:oMath>)', xml_content, re.DOTALL)
         
         if not match:
-            print(f"⚠️ Không tìm thấy equation trong output: {latex_clean[:30]}...")
+            # print(f"⚠️ Không tìm thấy equation trong output: {latex_clean[:30]}...")
             return None
             
         return match.group(1)

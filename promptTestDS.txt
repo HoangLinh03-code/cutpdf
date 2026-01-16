@@ -36,9 +36,8 @@ I. NGUYÊN TẮC "ĐỀ THI KÍN" (TUYỆT ĐỐI TUÂN THỦ) & CHIA KHUNG KI�
 - QUY TẮC PHÂN BỔ Ý: Trong 4 ý a, b, c, d của một câu hỏi, KHÔNG ĐƯỢC PHÉP hỏi lặp lại cùng một vấn đề. Ví dụ: Nếu ý (a) hỏi về tính tan, thì ý (b) phải hỏi về màu sắc, ý (c) hỏi về ứng dụng, ý (d) hỏi về phương trình phản ứng. Tránh tình trạng 4 ý chỉ xoay quanh một định nghĩa.
 - LOẠI BỎ CÂU HỎI VÔ NGHĨA: Chỉ tạo câu hỏi khi kiến thức đó thực sự có giá trị kiểm tra. Nếu đoạn văn quá vụn vặt, hãy bỏ qua thay vì cố sinh ra câu hỏi "rác" để đủ số lượng.
 - QUY TẮC "ĐỊNH MỨC MẬT ĐỘ" (DENSITY QUOTA):
-    + Tuyệt đối KHÔNG cố ép sinh nhiều câu hỏi cho các mục tiêu đề, đoạn giới thiệu ngắn, hoặc các ý phụ.
-    + Với các đoạn văn ngắn (< 60 từ) hoặc chỉ chứa 1-2 thông tin: CHỈ ĐƯỢC PHÉP sinh tối đa 1 câu hỏi (4 ý). Sau đó BẮT BUỘC phải chuyển ngay sang đoạn kế tiếp.
-    + Nếu AI cố tình sinh câu tiếp theo cho cùng một ý đã hỏi, đó được coi là câu hỏi "RÁC" và vi phạm nguyên tắc.
+  + Tuyệt đối KHÔNG cố ép sinh nhiều câu hỏi cho các mục tiêu đề, đoạn giới thiệu ngắn, hoặc các ý phụ.
+  + Nếu AI cố tình sinh câu tiếp theo cho cùng một ý đã hỏi, đó được coi là câu hỏi "RÁC" và vi phạm nguyên tắc.
 
 2. YÊU CẦU ĐẶC BIỆT VỀ HÌNH ẢNH (BẮT BUỘC):
 - QUY TẮC XỬ LÝ HÌNH ẢNH (LOGIC NGẮT MẠCH):
@@ -255,6 +254,7 @@ A. CẤU TRÚC PHÂN LOẠI (Trường "phan"):
      + Ví dụ SAI: "Bài 3 - Phần 1 - Dạng..." (Không được trả về chuỗi gộp).
 
 B. CẤU TRÚC NỘI DUNG CÂU HỎI:
+   - "tong_so_cau": BẮT BUỘC PHẢI TẠO RA ĐỦ 40 câu.
    - "stt": Số thứ tự 1-40 tuần tự.
    - "doan_thong_tin": [Đoạn văn dẫn nhập ngữ cảnh bằng Tiếng Việt, dài 90 - 100 từ].
    - "doan_thong_tin_en": [Đoạn văn dẫn nhập dịch sang Tiếng Anh chuẩn thuật ngữ chuẩn IUPAC].
@@ -294,12 +294,13 @@ E. CẤU TRÚC GIẢI THÍCH (2 MẢNG RIÊNG BIỆT):
    - CHUẨN MỰC DỊCH THUẬT:
      + BẮT BUỘC sử dụng danh pháp IUPAC (Ví dụ: "Sắt" dịch là "Iron", "Axit" dịch là "Acid", "Liên kết" dịch là "Bond").
      + CẤM dịch word-by-word (Ví dụ: "Vỏ nguyên tử" phải dịch là "Electron shell", không dịch là "Atom shell").
-   - Cấu trúc mỗi phần tử:
-     + "y": "(A.)" (Giữ nguyên định dạng này).
+   - Cấu trúc mỗi phần tử (BẮT BUỘC PHẢI TUÂN THỦ):
+     + "y": "(A.)".
      + "noi_dung_y": [Content summary English].
      + "ket_luan": "CORRECT" hoặc "INCORRECT".
      + "giai_thich": [Bản dịch tiếng Anh của phần giải thích tiếng Việt, dài khoảng 80 - 100 từ].
    - LUẬT CẤM (NEGATIVE CONSTRAINTS):
      + Giống như tiếng Việt, TUYỆT ĐỐI KHÔNG dịch các cụm từ thừa thãi như: "This statement is false because...", "The correct answer is...", "It is incorrect to say...".
      + Hãy bắt đầu ngay vào kiến thức. (Ví dụ: Thay vì nói "This is wrong because protons are positive", hãy viết "Protons are positively charged (+1)...").
+
 Bắt đầu quét PDF TUẦN TỰ CẤM SINH NGẪU NHIÊN, giữ nguyên cấu trúc JSON, đảm bảo độ sâu kiến thức và tính phân loại cực cao, ĐỒNG THỜI TUÂN THỦ NGHIÊM NGẶT QUY TẮC MẬT ĐỘ VÀ CHỐNG TRÙNG LẶP.

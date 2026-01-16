@@ -16,6 +16,7 @@ schema_trac_nghiem = {
                         "items": {"type": "STRING"},
                         "description": "Mảng chứa phân cấp: [Tên Bài, Tên Phần/Mục, Tên Dạng]"
                     },
+                    
                     # --- CẬP NHẬT: Tách riêng Tiếng Việt và Tiếng Anh ---
                     "noi_dung": {"type": "STRING"},      # Câu hỏi Tiếng Việt
                     "noi_dung_en": {"type": "STRING"},   # Câu hỏi Tiếng Anh (translate_en)
@@ -60,7 +61,7 @@ schema_dung_sai = {
     "type": "OBJECT",
     "properties": {
         "loai_de": {"type": "STRING", "enum": ["dung_sai"]},
-        "tong_so_cau": {"type": "INTEGER"},
+        "tong_so_cau": {"type": "INTEGER", "description": "Tổng số câu hỏi cần tạo bắt buộc phải đủ số câu hỏi."},
         "cau_hoi": {
             "type": "ARRAY",
             "items": {
@@ -106,7 +107,7 @@ schema_dung_sai = {
                         "items": {
                             "type": "OBJECT",
                             "properties": {
-                                "y": {"type": "STRING"},
+                                "y": {"type": "STRING", "description": "Ký hiệu ý (A.,B.,C.,D.)"},
                                 "noi_dung_y": {"type": "STRING"},
                                 "ket_luan": {"type": "STRING", "enum": ["ĐÚNG", "SAI"]},
                                 "giai_thich": {"type": "STRING"}
