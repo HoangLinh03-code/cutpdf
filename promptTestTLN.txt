@@ -276,8 +276,8 @@ A. CẤU TRÚC CÂU HỎI:
   + BẮT BUỘC phải tách riêng 2 trường này.
 + Giải thích chi tiết các bước tính toán/suy luận.
 + KẾT LUẬN (BẮT BUỘC):
-    * Tiếng Việt: Kết thúc bằng "\n**(KL.) Vậy [kết quả].**" (In đậm).
-* Tiếng Anh: Kết thúc bằng "\n**(KL.) Therefore, [result].**" (In đậm).
+    * Tiếng Việt: Kết thúc bằng "**(KL.) Vậy [kết quả].**" (In đậm).
+* Tiếng Anh: Kết thúc bằng "**(KL.) Therefore, [result].**" (In đậm).
 
 Bắt đầu thực hiện:
 1. QUÉT LINH HOẠT đầu bài để tìm "Khung định hướng".

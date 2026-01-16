@@ -29,6 +29,14 @@ def get_app_path():
     if getattr(sys, 'frozen', False):
         return os.path.dirname(sys.executable)
     return os.path.dirname(os.path.abspath(__file__))
+def sanitize_xml_string(text):
+    """
+    Loại bỏ các ký tự điều khiển không hợp lệ trong XML (ASCII 0-31, trừ 9, 10, 13).
+    """
+    if not text:
+        return ""
+    # Regex loại bỏ các ký tự từ \x00-\x08, \x0B-\x0C, \x0E-\x1F
+    return re.sub(r'[\x00-\x08\x0B-\x0C\x0E-\x1F]', '', str(text))
 def find_pandoc_executable():
     """
     Tìm pandoc.exe theo thứ tự ưu tiên:
@@ -135,7 +143,7 @@ def process_text_with_latex(text, paragraph, bold=False):
     """
     if not text:
         return
-    text = text.strip()
+    text = sanitize_xml_string(text).strip()
     is_entirely_bold = bold
     if text.startswith("**") and text.endswith("**"):
         is_entirely_bold = True
@@ -171,6 +179,9 @@ def process_text_with_latex(text, paragraph, bold=False):
             #     run.bold = True
             sub_parts = re.split(r'(\*\*.*?\*\*)', part)
             for sp in sub_parts:
+                sp_clean = sanitize_xml_string(sp)
+                if not sp_clean: 
+                    continue
                 if sp.startswith("**") and sp.endswith("**"):
                     run = paragraph.add_run(sp[2:-2])
                     run.bold = True
@@ -207,6 +218,8 @@ def insert_equation_into_paragraph(latex_math_dollar, paragraph):
 
 
 def clean_latex_math(latex_raw):
+    latex_raw = latex_raw.lstrip('$').rstrip('$')
+    latex_raw = latex_raw.strip()
     latex_raw = re.sub(r'\\/', '', latex_raw)
     latex_raw = re.sub(r'\\operatorname\s*{\s*([^}]*)\s*}',
                        lambda m: m.group(1).replace(' ', ''), latex_raw)
@@ -273,7 +286,21 @@ def save_document_securely(doc, batch_name, file_name):
         
         print(f"❌ Không thể lưu file sau {max_retries} lần thử")
         return None
+def save_json_securely(data, batch_name, file_name):
+    """Lưu file JSON với thread-safety"""
+    batch_folder = ensure_output_folder_for_batch(batch_name)
+    if not batch_folder: return None
 
+    output_path = os.path.join(batch_folder, f"{file_name}.json")
+    with _FILE_LOCK:
+        try:
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            print(f"✅ Đã lưu file JSON: {output_path}")
+            return output_path
+        except Exception as e:
+            print(f"❌ Lỗi lưu file JSON: {e}")
+            return None
 def generate_or_get_image(hinh_anh_data: Dict) -> tuple:
     mo_ta = hinh_anh_data.get("mo_ta", hinh_anh_data.get("description", ""))
     mo_ta = str(mo_ta).strip()
@@ -788,21 +815,14 @@ def response2docx_flexible(
 ):
     try:
         from modules.common.callAPI import VertexClient
-        
-        # 1. Khởi tạo Client
         client = VertexClient(project_id, creds, model_name)
         if not batch_name:
             batch_name = file_name.replace("_TN", "").replace("_DS", "").replace("_TLN", "")
             
-        # 2. Chọn Schema phù hợp
         target_schema = get_schema_by_type(question_type)
-        
-        # 3. Tạo Prompt tối giản
         final_prompt = PromptBuilder.wrap_user_prompt(prompt)
         
-        # 4. Gửi request AI với Schema
         print(f"📤 Đang gửi request (Schema: {question_type})...")
-        # QUAN TRỌNG: Truyền response_schema vào đây
         ai_response_text = client.send_data_to_AI(
             final_prompt, 
             file_path, 
@@ -814,15 +834,11 @@ def response2docx_flexible(
             print("❌ AI không trả về dữ liệu.")
             return None
 
-        # 5. Parse JSON (Đơn giản hóa cực đại)
         print("🔄 Đang parse JSON...")
         try:
-            # Vì Gemini Structured Output đảm bảo JSON valid, ta parse thẳng.
             data = json.loads(ai_response_text)
         except json.JSONDecodeError as e:
-            print(f"❌ Lỗi JSON bất ngờ (dù đã dùng Schema): {e}")
-            print(f"Raw response: {ai_response_text[:500]}...")
-            # Fallback nhẹ: Cố gắng tìm JSON nếu AI lỡ bọc trong markdown (hiếm khi xảy ra với Schema mod   e)
+            print(f"❌ Lỗi JSON bất ngờ: {e}")
             if "```json" in ai_response_text:
                 clean_text = ai_response_text.split("```json")[1].split("```")[0]
                 data = json.loads(clean_text)
@@ -830,28 +846,24 @@ def response2docx_flexible(
                 return None
 
         print(f"✅ Parse thành công: {data.get('tong_so_cau', 0)} câu hỏi")
-
-        print("In dữ liệu JSON đã nhận được:")
-        # print(json.dumps(data, indent=2, ensure_ascii=False))
-        with open("debug_received_data.json", "w", encoding="utf-8") as debug_file:
-            json.dump(data, debug_file, ensure_ascii=False, indent=2)
         
+        # --- [MỚI] LƯU FILE JSON ---
+        print("💾 Đang lưu file JSON...")
+        save_json_securely(data, batch_name, file_name)
+        # ---------------------------
 
-        # 6. Render DOCX
         print("📝 Đang tạo DOCX...")
         doc = Document()
-        renderer = DynamicDocxRenderer(doc) # Class này bạn đã có ở code cũ
+        renderer = DynamicDocxRenderer(doc)
         
         try:
             renderer.render_all(data)
         except Exception as render_err:
              print(f"❌ Lỗi Render: {render_err}")
              traceback.print_exc()
-             # Logic Fail-safe render cũ có thể giữ lại ở đây nếu muốn
 
-        # 7. Lưu file
-        print("💾 Đang lưu file...")
-        output_path = save_document_securely(doc, batch_name, file_name) # Hàm cũ
+        print("💾 Đang lưu file DOCX...")
+        output_path = save_document_securely(doc, batch_name, file_name)
         return output_path
 
     except Exception as e:
@@ -860,11 +872,8 @@ def response2docx_flexible(
         return None
 
     except Exception as e_main:
-        # BƯỚC FAIL-SAFE CUỐI CÙNG CHO TOÀN BỘ HÀM
         print(f"❌ LỖI NGHIÊM TRỌNG TRONG TOÀN BỘ HÀM: {e_main}")
         traceback.print_exc()
-        
-        # Tạo một file .docx trống tối thiểu với thông báo lỗi
         try:
             doc = Document()
             doc.add_heading('LỖI HỆ THỐNG', level=1).alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -876,10 +885,8 @@ def response2docx_flexible(
             fallback_path = os.path.join(ensure_output_folder_for_batch(batch_name), f"{file_name}_loi_he_thong.docx")
             
             doc.save(fallback_path)
-            print(f"✅ Đã tạo file FAIL-SAFE cuối cùng: {fallback_path}")
             return fallback_path
         except Exception as e_final:
-            print(f"❌ Không thể tạo file FAIL-SAFE cuối cùng: {e_final}")
             return None
 
 def response2docx_json(file_path, prompt, file_name, project_id, creds, model_name, batch_name=None):

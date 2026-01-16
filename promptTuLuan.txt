@@ -90,14 +90,14 @@ II. CHIẾN THUẬT QUÉT DỮ LIỆU & ĐỊNH DANH DẠNG BÀI (SMART TAGGING 
 Bạn phải đặt tên Dạng bài sao cho có thể tái sử dụng cho nhiều câu hỏi tương tự, tránh quá chi tiết vào một ví dụ cụ thể.
 
 1. NGUYÊN TẮC "KHÁI QUÁT HÓA" (GENERALIZATION RULE - BẮT BUỘC):
-- Công thức chuẩn: (Dạng: [Hành động] + [Lớp đối tượng chung]).
+- Công thức chuẩn: Dạng: [Hành động] + [Lớp đối tượng chung].
 - QUY TẮC CẤM TÊN RIÊNG (SPECIFIC INSTANCE BAN):
   + TUYỆT ĐỐI KHÔNG đưa tên riêng của các chất, nguyên tố, hoặc con số cụ thể vào trong tên Dạng (trừ khi bài học đó chỉ dành riêng cho chất đó).
   + Phải quy đổi về "Lớp đối tượng" (Class).
 - VÍ DỤ MINH HỌA QUY ĐỔI:
-  + Thấy sách hỏi: "Viết cấu hình của Aluminium, Carbon..." -> Quy đổi thành Tag: (Dạng: Viết cấu hình electron nguyên tử). (Dùng từ "nguyên tử" thay vì tên chất).
-  + Thấy sách hỏi: "So sánh hạt Proton và Electron..." -> Quy đổi thành Tag: (Dạng: So sánh các loại hạt cơ bản).
-  + Thấy sách hỏi: "Orbital s hình cầu, p hình số 8..." -> Quy đổi thành Tag: (Dạng: Hình dạng các Orbital). (Không liệt kê s, p, cầu, số 8).
+  + Thấy sách hỏi: "Viết cấu hình của Aluminium, Carbon..." -> Quy đổi thành Tag: Dạng: Viết cấu hình electron nguyên tử. (Dùng từ "nguyên tử" thay vì tên chất).
+  + Thấy sách hỏi: "So sánh hạt Proton và Electron..." -> Quy đổi thành Tag: Dạng: So sánh các loại hạt cơ bản.
+  + Thấy sách hỏi: "Orbital s hình cầu, p hình số 8..." -> Quy đổi thành Tag: Dạng: Hình dạng các Orbital. (Không liệt kê s, p, cầu, số 8).
 
 2. BẢNG MẪU TÊN DẠNG CHUẨN (Dùng để tham khảo mức độ chi tiết):
 Hãy sử dụng độ rộng (scope) tương đương các mẫu sau:
@@ -241,13 +241,13 @@ A. CẤU TRÚC CÂU HỎI:
   + Câu 1-20 điền: "van_dung"
   + Câu 21-40 điền: "van_dung_cao"
 - Trường "phan":
-  + CẤU TRÚC: "Tên Bài - Tên Mục (nếu có) (Dạng: [Hành động] [Lớp đối tượng chung])".
+  + CẤU TRÚC: "Tên Bài - Tên Mục (nếu có) - Dạng: [Hành động] [Lớp đối tượng chung]".
   + BỘ LỌC KIỂM TRA LỖI (VALIDATOR):
     * Trước khi ghi vào JSON, hãy tự kiểm tra: Trong chuỗi này còn dấu ngoặc vuông `[` hoặc `]` không? Còn từ `[A]`, `[B]` không?
     * Nếu CÒN -> Phải sửa ngay thành tên chất/hạt cụ thể.
   + VÍ DỤ ĐÚNG (GENERALIZED):
-    * "Bài 3 - Phần III (Dạng: Viết cấu hình electron nguyên tử)" (Đúng, bao quát được Al, Fe, Na...).
-    * "Bài 3 - Phần I (Dạng: So sánh các mô hình nguyên tử)" (Đúng, bao quát được Rutherford, Bohr...).
+    * "Bài 3 - Phần III. Cấu trúc phân tử - Dạng: Viết cấu hình electron nguyên tử" (Đúng, bao quát được Al, Fe, Na...).
+    * "Bài 3 - Phần I - Dạng: So sánh các mô hình nguyên tử" (Đúng, bao quát được Rutherford, Bohr...).
   + VÍ DỤ SAI (TOO SPECIFIC - CẤM):
     * "Bài 3 - Phần III (Dạng: Viết cấu hình electron của Aluminium)" (Sai, quá chi tiết).
     * "Bài 3 - Phần I (Dạng: So sánh mô hình Rutherford và Bohr)" (Hơi chi tiết -> Nên sửa thành "So sánh các mô hình").
