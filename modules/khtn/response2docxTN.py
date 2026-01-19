@@ -398,7 +398,15 @@ class DynamicDocxRenderer:
         loai_de = data.get("loai_de", "").upper()
         title = self.doc.add_heading(f'ĐỀ {loai_de}', level=1)
         title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    
+        ma_bai = data.get("ma_bai", "")
+        if ma_bai:
+            p_ma_bai = self.doc.add_paragraph()
+            p_ma_bai.add_run(f"[{ma_bai},,]")
+    def render_ma_dang_header(self, ma_dang: str):
+        """Hiển thị [ma_dang] trên một dòng riêng biệt"""
+        if ma_dang:
+            p_ma = self.doc.add_paragraph()
+            p_ma.add_run(f"[{ma_dang},,]")
     def auto_group_questions(self, data: Dict) -> Dict[str, List]:
         """
         Tự động nhóm câu hỏi và CHUẨN HÓA key muc_do từ Tiếng Việt sang code.
@@ -450,6 +458,7 @@ class DynamicDocxRenderer:
         return mapping.get(muc_do, muc_do.upper())
     
     def render_question_trac_nghiem(self, cau: Dict):
+        self.render_ma_dang_header(cau.get("ma_dang"))
         p = self.doc.add_paragraph()
         p.add_run(f"Câu {cau['stt']}. ").bold = True
         process_text_with_latex(cau.get('noi_dung', ''), p)
@@ -539,103 +548,118 @@ class DynamicDocxRenderer:
                         process_text_with_latex(line.strip(), self.doc.add_paragraph())
 
     def render_question_dung_sai(self, cau: Dict):
+        """
+        Render câu hỏi Đúng/Sai với GIẢI THÍCH DẠNG MẢNG ĐỐI TƯỢNG
+        """
         # 1. Render Header câu hỏi
+        self.render_ma_dang_header(cau.get("ma_dang"))
         p = self.doc.add_paragraph()
         p.add_run(f"Câu {cau['stt']}. ").bold = True
-        
+       
         # 2. Render Đoạn thông tin ngữ cảnh
         if cau.get("doan_thong_tin"):
             process_text_with_latex(cau.get("doan_thong_tin", ""), p)
-        
+       
         # 3. Render Hình ảnh (nếu có)
         hinh_anh = cau.get("hinh_anh", {})
         if hinh_anh.get("co_hinh"):
             insert_image_or_placeholder(self.doc, hinh_anh)
-        
+       
         # 4. Render các ý a, b, c, d
         for y in cau.get("cac_y", []):
             p_y = self.doc.add_paragraph()
             p_y.add_run(f"{y['ky_hieu']}) ")
             process_text_with_latex(y.get('noi_dung', ''), p_y)
-
+ 
         # 5. Render Tiếng Anh (nếu có)
         has_en = cau.get("doan_thong_tin_en") or any(y.get('noi_dung_en') for y in cau.get("cac_y", []))
         if has_en:
-            self.doc.add_paragraph("(translate_en)")
+            self.doc.add_paragraph("(translate_en)").italic = True
             if cau.get("doan_thong_tin_en"):
                 p_en = self.doc.add_paragraph()
                 process_text_with_latex(cau.get("doan_thong_tin_en", ""), p_en)
-            
+           
             for y in cau.get("cac_y", []):
                 p_y_en = self.doc.add_paragraph()
                 p_y_en.add_run(f"{y['ky_hieu']}) ")
                 content_en = y.get('noi_dung_en') or y.get('noi_dung', '')
                 process_text_with_latex(content_en, p_y_en)
-
-        # --- PHẦN LỜI GIẢI CHI TIẾT (NEW LOGIC) ---
+ 
+        # --- PHẦN LỜI GIẢI (CẬP NHẬT: XỬ LÝ MẢNG ĐỐI TƯỢNG) ---
         p_lg = self.doc.add_paragraph()
         p_lg.add_run("Lời giải").bold = True
-        
+       
         # 6. Đáp án bit (VD: 1001)
         p_da = self.doc.add_paragraph()
         p_da.add_run(str(cau.get("dap_an_dung_sai", ""))).bold = True
         self.doc.add_paragraph("####")
-
-        # HÀM RENDER STRING GIẢI THÍCH (MỚI)
-        def render_explanation_string(text_content):
-            if not text_content: return
-            
-            # Tách dòng dựa trên ký tự xuống dòng
-            lines = text_content.replace('\\n', '\n').split('\n')
-            
-            # Regex để bắt pattern: "+ (label) text... KẾT_LUẬN"
-            # Pattern này tìm dấu + ở đầu, và các từ khóa kết luận ở CUỐI dòng
-            pattern_result = re.compile(r'(.*)\b(ĐÚNG|SAI|TRUE|FALSE|CORRECT|INCORRECT)\s*$', re.IGNORECASE)
-
-            for line in lines:
-                text = line.strip()
-                if not text: continue
-                
-                p_exp = self.doc.add_paragraph()
-                
-                # Kiểm tra nếu dòng bắt đầu bằng dấu "+" (Dấu hiệu của dòng nhận định)
-                if text.startswith("+"):
-                    # Thử match regex để tách phần nội dung và phần Kết luận
-                    match = pattern_result.match(text)
-                    if match:
-                        # Phần trước kết luận (VD: "+ (a.) Nước sôi 100 độ. ")
-                        prefix = match.group(1) 
-                        # Phần kết luận (VD: "ĐÚNG")
-                        result_word = match.group(2)
-                        
-                        # Render phần trước bình thường
-                        process_text_with_latex(prefix, p_exp, bold=False)
-                        
-                        # Render phần kết luận IN ĐẬM
-                        run_res = p_exp.add_run(result_word)
-                        run_res.bold = True
-                    else:
-                        # Nếu có dấu + mà không tìm thấy từ khóa ĐÚNG/SAI ở cuối
-                        # Thì cứ render bình thường (fallback)
-                        process_text_with_latex(text, p_exp, bold=False)
-                else:
-                    # Dòng giải thích chi tiết (không có dấu +) -> Render bình thường
-                    process_text_with_latex(text, p_exp, bold=False)
-
-        # 7. Render Giải thích Tiếng Việt
-        giai_thich_vi = cau.get("giai_thich", "")
-        if giai_thich_vi:
-            render_explanation_string(giai_thich_vi)
-
-        # 8. Render Giải thích Tiếng Anh
-        giai_thich_en = cau.get("giai_thich_en", "")
-        if giai_thich_en:
-            self.doc.add_paragraph("(translate_en)")
-            render_explanation_string(giai_thich_en)  
+ 
+        # 7. Render Giải thích Tiếng Việt (MẢNG ĐỐI TƯỢNG)
+        giai_thich_arr = cau.get("giai_thich", [])
+        if isinstance(giai_thich_arr, list):
+            for item in giai_thich_arr:
+                # Dòng tiêu đề: + (a.) Nội dung ý. KẾT LUẬN
+                p_title = self.doc.add_paragraph()
+               
+                # Phần prefix: + (a.)
+                prefix_run = p_title.add_run(f"+ ({item.get('ky_hieu', '')}.) ")
+                prefix_run.bold = False
+               
+                # Lấy nội dung ý từ cac_y để hiển thị
+                ky_hieu_curr = item.get('ky_hieu', '')
+                noi_dung_y = ""
+                for y in cau.get("cac_y", []):
+                    if y.get('ky_hieu') == ky_hieu_curr:
+                        noi_dung_y = y.get('noi_dung', '')
+                        break
+               
+                # Thêm nội dung ý
+                if noi_dung_y:
+                    process_text_with_latex(noi_dung_y, p_title, bold=False)
+                    p_title.add_run(". ")
+               
+                # Thêm kết luận (IN ĐẬM)
+                ket_luan_run = p_title.add_run(item.get('ket_luan', ''))
+                ket_luan_run.bold = True
+               
+                # Giải thích chi tiết (dòng tiếp theo)
+                p_detail = self.doc.add_paragraph()
+                process_text_with_latex(item.get('noi_dung', ''), p_detail, bold=False)
+ 
+        # 8. Render Giải thích Tiếng Anh (nếu có)
+        giai_thich_en_arr = cau.get("giai_thich_en", [])
+        if isinstance(giai_thich_en_arr, list) and len(giai_thich_en_arr) > 0:
+            self.doc.add_paragraph("(translate_en)").italic = True
+           
+            for item in giai_thich_en_arr:
+                # Dòng tiêu đề EN
+                p_title_en = self.doc.add_paragraph()
+               
+                prefix_run_en = p_title_en.add_run(f"+ ({item.get('ky_hieu', '')}.) ")
+                prefix_run_en.bold = False
+               
+                # Lấy nội dung ý EN
+                ky_hieu_curr = item.get('ky_hieu', '')
+                noi_dung_y_en = ""
+                for y in cau.get("cac_y", []):
+                    if y.get('ky_hieu') == ky_hieu_curr:
+                        noi_dung_y_en = y.get('noi_dung_en', y.get('noi_dung', ''))
+                        break
+               
+                if noi_dung_y_en:
+                    process_text_with_latex(noi_dung_y_en, p_title_en, bold=False)
+                    p_title_en.add_run(". ")
+               
+                # Kết luận EN (IN ĐẬM)
+                ket_luan_en_run = p_title_en.add_run(item.get('ket_luan', ''))
+                ket_luan_en_run.bold = True
+               
+                # Giải thích chi tiết EN
+                p_detail_en = self.doc.add_paragraph()
+                process_text_with_latex(item.get('noi_dung', ''), p_detail_en, bold=False)  
     
     def render_question_tra_loi_ngan(self, cau: Dict):
-        """Render câu hỏi trả lời ngắn (Schema mới: Phan=Array, Content=Split Vi/En)"""
-        # 1. Câu hỏi Tiếng Việt
+        self.render_ma_dang_header(cau.get("ma_dang"))
         p = self.doc.add_paragraph()
         p.add_run(f"Câu {cau['stt']}. ").bold = True
         process_text_with_latex(cau.get('noi_dung', ''), p)  
@@ -704,6 +728,7 @@ class DynamicDocxRenderer:
             render_explanation_block(cau.get("giai_thich_en", ""), lang='en')  
     
     def render_question_tu_luan(self, cau: Dict):
+        self.render_ma_dang_header(cau.get("ma_dang"))
         """Render câu hỏi Tự luận (Schema mới tách Vi/En)"""
         # 1. Câu hỏi Tiếng Việt
         p = self.doc.add_paragraph()
@@ -758,7 +783,7 @@ class DynamicDocxRenderer:
         # 6. Render Giải thích Tiếng Anh
         if cau.get("giai_thich_en"):
             self.doc.add_paragraph("(translate_en)").italic = True
-            render_essay_solution(cau.get("giai_thich_en", ""), lang='en') 
+            render_essay_solution(cau.get("giai_thich_en", ""), lang='en')   
     
     def render_all(self, data: Dict):
         """
@@ -771,6 +796,7 @@ class DynamicDocxRenderer:
         
         # 2. Detect loại đề
         loai_de = data.get("loai_de", "")
+        ma_bai = data.get("ma_bai", "")
         
         # 3. Render từng nhóm MỨC ĐỘ
         # Thứ tự ưu tiên render
