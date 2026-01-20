@@ -19,6 +19,7 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtGui import QFont
 from config.credentials import Config
+from ui.groupfiles import main as _smart_group_files
 
 # ============================================================
 # CLASS ĐA LUỒNG (WORKER) - ĐÃ TỐI ƯU HÓA
@@ -781,110 +782,110 @@ class GenQuesWidget(QWidget):
         if not all_checked_pdfs:
             return {}
 
-        return self._smart_group_files(all_checked_pdfs)
+        return _smart_group_files(all_checked_pdfs)
 
-    def _smart_group_files(self, file_paths):
-        """Gom nhóm thông minh dựa trên tên file"""
-        groups = {}
-        pending_files = sorted(file_paths)
+    # def _smart_group_files(self, file_paths):
+    #     """Gom nhóm thông minh dựa trên tên file"""
+    #     groups = {}
+    #     pending_files = sorted(file_paths)
 
-        distinct_pattern = r"(?i)(?:chủ đề|bài|chương|phần|unit|chapter|topic|tuần|tiết|vol|tập)\s*[\d]+"
+    #     distinct_pattern = r"(?i)(?:chủ đề|bài|chương|phần|unit|chapter|topic|tuần|tiết|vol|tập)\s*[\d]+"
 
-        def clean_name_for_compare(name):
-            name = os.path.splitext(name)[0].lower()
-            name = re.sub(r'\(\d+.*?\)', '', name)
-            name = re.sub(r'[_\-\(\)\[\]]', ' ', name)
-            name = re.sub(r'\b(kntt|sgv|cd|sbt|sgk|hdtn|hoat dong trai nghiem)\b', '', name)
-            return " ".join(name.split())
+    #     def clean_name_for_compare(name):
+    #         name = os.path.splitext(name)[0].lower()
+    #         name = re.sub(r'\(\d+.*?\)', '', name)
+    #         name = re.sub(r'[_\-\(\)\[\]]', ' ', name)
+    #         name = re.sub(r'\b(kntt|sgv|cd|sbt|sgk|hdtn|hoat dong trai nghiem)\b', '', name)
+    #         return " ".join(name.split())
 
-        while pending_files:
-            seed = pending_files.pop(0)
-            seed_name = os.path.basename(seed)
-            seed_base = os.path.splitext(seed_name)[0]
+    #     while pending_files:
+    #         seed = pending_files.pop(0)
+    #         seed_name = os.path.basename(seed)
+    #         seed_base = os.path.splitext(seed_name)[0]
             
-            seed_numbers = re.findall(distinct_pattern, seed_base)
-            seed_clean = clean_name_for_compare(seed_name)
+    #         seed_numbers = re.findall(distinct_pattern, seed_base)
+    #         seed_clean = clean_name_for_compare(seed_name)
 
-            current_group = [seed]
+    #         current_group = [seed]
             
-            i = 0
-            while i < len(pending_files):
-                candidate = pending_files[i]
-                cand_name = os.path.basename(candidate)
-                cand_base = os.path.splitext(cand_name)[0]
+    #         i = 0
+    #         while i < len(pending_files):
+    #             candidate = pending_files[i]
+    #             cand_name = os.path.basename(candidate)
+    #             cand_base = os.path.splitext(cand_name)[0]
                 
-                cand_numbers = re.findall(distinct_pattern, cand_base)
-                cand_clean = clean_name_for_compare(cand_name)
+    #             cand_numbers = re.findall(distinct_pattern, cand_base)
+    #             cand_clean = clean_name_for_compare(cand_name)
 
-                should_merge = False
+    #             should_merge = False
                 
-                if seed_numbers and cand_numbers:
-                    last_seed_id = seed_numbers[-1].lower().replace(" ", "")
-                    last_cand_id = cand_numbers[-1].lower().replace(" ", "")
-                    if last_seed_id == last_cand_id:
-                        should_merge = True
+    #             if seed_numbers and cand_numbers:
+    #                 last_seed_id = seed_numbers[-1].lower().replace(" ", "")
+    #                 last_cand_id = cand_numbers[-1].lower().replace(" ", "")
+    #                 if last_seed_id == last_cand_id:
+    #                     should_merge = True
 
-                if not should_merge:
-                    suffix_len = min(len(seed_clean), len(cand_clean), 20)
-                    if suffix_len > 5:
-                        if seed_clean[-suffix_len:] == cand_clean[-suffix_len:]:
-                            should_merge = True
+    #             if not should_merge:
+    #                 suffix_len = min(len(seed_clean), len(cand_clean), 20)
+    #                 if suffix_len > 5:
+    #                     if seed_clean[-suffix_len:] == cand_clean[-suffix_len:]:
+    #                         should_merge = True
 
-                if not should_merge:
-                    import difflib
-                    matcher = difflib.SequenceMatcher(None, seed_clean, cand_clean)
-                    if matcher.ratio() > 0.8: 
-                        should_merge = True
+    #             if not should_merge:
+    #                 import difflib
+    #                 matcher = difflib.SequenceMatcher(None, seed_clean, cand_clean)
+    #                 if matcher.ratio() > 0.8: 
+    #                     should_merge = True
                     
-                    if os.path.dirname(seed) == os.path.dirname(candidate):
-                        if matcher.ratio() > 0.6:
-                            should_merge = True
+    #                 if os.path.dirname(seed) == os.path.dirname(candidate):
+    #                     if matcher.ratio() > 0.6:
+    #                         should_merge = True
 
-                if should_merge:
-                    current_group.append(candidate)
-                    pending_files.pop(i)
-                else:
-                    i += 1
+    #             if should_merge:
+    #                 current_group.append(candidate)
+    #                 pending_files.pop(i)
+    #             else:
+    #                 i += 1
             
-            if len(current_group) > 1:
-                folder_path = os.path.dirname(current_group[0])
-                folder_name = os.path.basename(folder_path)
-                is_same_folder = all(os.path.dirname(f) == folder_path for f in current_group)
+    #         if len(current_group) > 1:
+    #             folder_path = os.path.dirname(current_group[0])
+    #             folder_name = os.path.basename(folder_path)
+    #             is_same_folder = all(os.path.dirname(f) == folder_path for f in current_group)
                 
-                if is_same_folder:
-                    group_name = folder_name
-                elif seed_numbers:
-                    match = re.search(distinct_pattern, seed_base)
-                    if match:
-                        # Cắt chuỗi từ vị trí tìm thấy đến hết
-                        # Ví dụ: "SBT_Hoa_10_Bài 3. Cấu trúc..." -> "Bài 3. Cấu trúc..."
-                        group_name = seed_base[match.start():].strip(" _-.")
-                    else:
-                        # Fallback nếu không tìm thấy (giữ logic cũ ở mức tối thiểu)
-                        group_name = seed_numbers[-1].title()
-                    if len(group_name) < 10:
-                        parent_name = os.path.basename(folder_path)
-                        if group_name.lower() not in parent_name.lower():
-                            group_name = f"{parent_name}_{group_name}"
-                        else:
-                            group_name = parent_name
-                else:
-                    name1 = os.path.splitext(os.path.basename(current_group[0]))[0]
-                    name2 = os.path.splitext(os.path.basename(current_group[1]))[0]
-                    common = os.path.commonprefix([name1, name2]).strip(" .-_")
-                    group_name = common if len(common) > 5 else folder_name
-            else:
-                group_name = seed_base
+    #             if is_same_folder:
+    #                 group_name = folder_name
+    #             elif seed_numbers:
+    #                 match = re.search(distinct_pattern, seed_base)
+    #                 if match:
+    #                     # Cắt chuỗi từ vị trí tìm thấy đến hết
+    #                     # Ví dụ: "SBT_Hoa_10_Bài 3. Cấu trúc..." -> "Bài 3. Cấu trúc..."
+    #                     group_name = seed_base[match.start():].strip(" _-.")
+    #                 else:
+    #                     # Fallback nếu không tìm thấy (giữ logic cũ ở mức tối thiểu)
+    #                     group_name = seed_numbers[-1].title()
+    #                 if len(group_name) < 10:
+    #                     parent_name = os.path.basename(folder_path)
+    #                     if group_name.lower() not in parent_name.lower():
+    #                         group_name = f"{parent_name}_{group_name}"
+    #                     else:
+    #                         group_name = parent_name
+    #             else:
+    #                 name1 = os.path.splitext(os.path.basename(current_group[0]))[0]
+    #                 name2 = os.path.splitext(os.path.basename(current_group[1]))[0]
+    #                 common = os.path.commonprefix([name1, name2]).strip(" .-_")
+    #                 group_name = common if len(common) > 5 else folder_name
+    #         else:
+    #             group_name = seed_base
 
-            base_key = group_name
-            counter = 1
-            while group_name in groups:
-                group_name = f"{base_key}_{counter}"
-                counter += 1
+    #         base_key = group_name
+    #         counter = 1
+    #         while group_name in groups:
+    #             group_name = f"{base_key}_{counter}"
+    #             counter += 1
 
-            groups[group_name] = current_group
+    #         groups[group_name] = current_group
             
-        return groups
+    #     return groups
 
     # --- LOGIC PROMPT ---
     def select_prompt_file(self, prompt_type):

@@ -602,7 +602,7 @@ class DynamicDocxRenderer:
                 p_title = self.doc.add_paragraph()
                
                 # Phần prefix: + (a.)
-                prefix_run = p_title.add_run(f"+ ({item.get('ky_hieu', '')}.) ")
+                prefix_run = p_title.add_run(f"+ ({item.get('ky_hieu', '').upper()}.) ")
                 prefix_run.bold = False
                
                 # Lấy nội dung ý từ cac_y để hiển thị
@@ -616,7 +616,7 @@ class DynamicDocxRenderer:
                 # Thêm nội dung ý
                 if noi_dung_y:
                     process_text_with_latex(noi_dung_y, p_title, bold=False)
-                    p_title.add_run(". ")
+                    p_title.add_run(" ")
                
                 # Thêm kết luận (IN ĐẬM)
                 ket_luan_run = p_title.add_run(item.get('ket_luan', ''))
@@ -664,7 +664,7 @@ class DynamicDocxRenderer:
         p.add_run(f"Câu {cau['stt']}. ").bold = True
         process_text_with_latex(cau.get('noi_dung', ''), p)  
         
-        # 2. Câu hỏi Tiếng Anh (Lấy từ trường riêng)
+        # 2. Câu hỏi Tiếng Anh
         if cau.get('noi_dung_en'):
             self.doc.add_paragraph("(translate_en)").italic = True
             p_en = self.doc.add_paragraph()
@@ -681,7 +681,6 @@ class DynamicDocxRenderer:
         run_label.bold = True
         
         raw_ans = str(cau.get('dap_an', '')).strip()
-        # Tự động đóng ngoặc vuông nếu thiếu
         if not (raw_ans.startswith("[[") and raw_ans.endswith("]]")):
             final_ans = f"[[{raw_ans}]]"
         else:
@@ -693,43 +692,50 @@ class DynamicDocxRenderer:
         p_lg.add_run("Lời giải").bold = True
         self.doc.add_paragraph("####")
         
-        # Hàm helper render block lời giải (Dùng chung logic in đậm)
+        # --- HÀM HELPER MỚI: CHUẨN HÓA DÒNG TRỐNG ---
         def render_explanation_block(text_content, lang='vi'):
             if not text_content: return
-            lines = text_content.replace('\\n', '\n').split('\n')
+            
+            # 1. Chuẩn hóa xuống dòng: Biến \n\n, \n\s*\n thành 1 \n duy nhất
+            # Xử lý ký tự đặc biệt \\n trước
+            clean_text = text_content.replace('\\n', '\n')
+            # Regex gộp nhiều dòng trống thành 1
+            clean_text = re.sub(r'\n\s*\n', '\n', clean_text)
+            
+            lines = clean_text.split('\n')
             
             for line in lines:
                 text = line.strip()
+                # Bỏ qua dòng rỗng hoặc dòng chỉ có dấu ####
                 if not text or text == "####": continue
                 
                 is_bold = False
-                # Xử lý markdown bold thủ công từ AI (nếu có)
+                # Xử lý markdown bold thủ công từ AI
                 if text.startswith("**") and text.endswith("**"):
                     text = text[2:-2]
                     is_bold = True
                 
                 # Auto-detect dòng kết luận để in đậm
                 text_lower = text.lower()
-                if lang == 'vi' and (text_lower.startswith("vậy") or text_lower.startswith("kết luận")):
+                if lang == 'vi' and (text_lower.startswith("vậy") or text_lower.startswith("kết luận") or "(kl.)" in text_lower):
                     is_bold = True
                 elif lang == 'en' and (text_lower.startswith("therefore") or text_lower.startswith("conclusion")):
                     is_bold = True
                 
-                text = text.replace('**', '') # Clean up
+                text = text.replace('**', '') 
                 p_gt = self.doc.add_paragraph()
                 process_text_with_latex(text, p_gt, bold=is_bold)
 
-        # 6. Render Giải thích Tiếng Việt
+        # 6. Render Giải thích
         render_explanation_block(cau.get("giai_thich", ""), lang='vi')
 
-        # 7. Render Giải thích Tiếng Anh
         if cau.get("giai_thich_en"):
             self.doc.add_paragraph("(translate_en)").italic = True
             render_explanation_block(cau.get("giai_thich_en", ""), lang='en')  
-    
+
     def render_question_tu_luan(self, cau: Dict):
         self.render_ma_dang_header(cau.get("ma_dang"))
-        """Render câu hỏi Tự luận (Schema mới tách Vi/En)"""
+        """Render câu hỏi Tự luận (Đã fix lỗi khoảng cách dòng)"""
         # 1. Câu hỏi Tiếng Việt
         p = self.doc.add_paragraph()
         p.add_run(f"Câu {cau['stt']}. ").bold = True
@@ -751,24 +757,29 @@ class DynamicDocxRenderer:
         p_lg.add_run("Lời giải").bold = True
         # self.doc.add_paragraph("####")
         
-        # Hàm helper render block lời giải
+        # --- HÀM HELPER MỚI: CHUẨN HÓA DÒNG TRỐNG ---
         def render_essay_solution(text_content, lang='vi'):
             if not text_content: return
-            lines = text_content.replace('\\n', '\n').split('\n')
+            
+            # 1. Chuẩn hóa: Gộp dòng trống thừa
+            clean_text = text_content.replace('\\n', '\n')
+            clean_text = re.sub(r'\n\s*\n', '\n', clean_text)
+            
+            lines = clean_text.split('\n')
             
             for line in lines:
                 text = line.strip()
-                # if not text or text == "####": continue
+                # QUAN TRỌNG: Kích hoạt lại bộ lọc dòng trống
+                if not text or text == "####": continue
                 
-                # Logic in đậm thông minh
+                # Logic in đậm
                 is_bold = False
                 text_lower = text.lower()
                 
-                # In đậm các bước (Bước 1:, Step 1:) hoặc Kết luận
                 if (text.startswith("**") and text.endswith("**")):
                     text = text[2:-2]
                     is_bold = True
-                elif lang == 'vi' and text_lower.startswith("vậy"):
+                elif lang == 'vi' and (text_lower.startswith("vậy") or "(kl.)" in text_lower):
                     is_bold = True
                 elif lang == 'en' and text_lower.startswith("therefore"):
                     is_bold = True
@@ -777,10 +788,9 @@ class DynamicDocxRenderer:
                 p_gt = self.doc.add_paragraph()
                 process_text_with_latex(text, p_gt, bold=is_bold)
 
-        # 5. Render Giải thích Tiếng Việt
+        # 5. Render Giải thích
         render_essay_solution(cau.get("giai_thich", ""), lang='vi')
 
-        # 6. Render Giải thích Tiếng Anh
         if cau.get("giai_thich_en"):
             self.doc.add_paragraph("(translate_en)").italic = True
             render_essay_solution(cau.get("giai_thich_en", ""), lang='en')   
@@ -844,67 +854,251 @@ class DynamicDocxRenderer:
                 else:
                     self.render_question_trac_nghiem(cau)
 
-def response2docx_flexible(
-    file_path: str,
-    prompt: str,
-    file_name: str,
-    project_id: str,
-    creds: str,
-    model_name: str,
-    question_type: str = "trac_nghiem_4_dap_an",
-    batch_name: str = None
-):
+def clean_json_response(text):
+    """Làm sạch chuỗi trả về từ AI, loại bỏ markdown và ký tự thừa"""
     try:
-        from modules.common.callAPI import VertexClient
-        client = VertexClient(project_id, creds, model_name)
-        if not batch_name:
-            batch_name = file_name.replace("_TN", "").replace("_DS", "").replace("_TLN", "")
-            
-        target_schema = get_schema_by_type(question_type)
-        final_prompt = PromptBuilder.wrap_user_prompt(prompt)
-        
-        print(f"📤 Đang gửi request (Schema: {question_type})...")
-        ai_response_text = client.send_data_to_AI(
-            final_prompt, 
-            file_path, 
-            response_schema=target_schema,
-            max_output_tokens=65534
-        )
-        
-        if not ai_response_text:
-            print("❌ AI không trả về dữ liệu.")
-            return None
+        # Loại bỏ các tag ```json hoặc ``` nếu có
+        clean_text = re.sub(r'```json|```', '', text).strip()
+        return clean_text
+    except Exception:
+        return text
+ 
+import re
 
-        print("🔄 Đang parse JSON...")
+def roman_to_int(s):
+    """Chuyển số La Mã sang số nguyên (Hỗ trợ I..XX)"""
+    s = s.upper().strip().replace('.', '').replace(':', '').replace(')', '')
+    romans = {'I': 1, 'V': 5, 'X': 10}
+    
+    # Map nhanh các số nhỏ hay gặp để tốc độ cao nhất
+    fast_map = {
+        'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5,
+        'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9, 'X': 10,
+        'XI': 11, 'XII': 12
+    }
+    if s in fast_map: return fast_map[s]
+    return None
+
+def renumber_ma_dang_global(all_questions, reference_ma_bai):
+    """
+    [SPECIALIZED FUNCTION FOR DUNG_SAI ONLY]
+    Logic: 
+    1. Bỏ qua ID Mục/Phần.
+    2. Chỉ đếm ID Dạng tăng dần (Global Counter).
+    3. Cấu trúc output: [MA_BAI]_[ID_DẠNG] (Ví dụ: SN_HOA_10_1_1_1, SN_HOA_10_1_1_2...)
+    """
+    print(f"🔧 [DungSai Only] Chuẩn hóa Mã Dạng (No-Section) cho: {reference_ma_bai}")
+    
+    # Bộ nhớ map tên dạng -> ID (Dùng chung cho cả bài)
+    type_memory = {} 
+    
+    # Bộ đếm ID dạng toàn cục (bắt đầu từ 0)
+    global_dang_counter = 0
+    
+    final_questions = []
+    
+    # Biến fallback phòng khi AI trả thiếu mảng phan
+    last_known_phan = [reference_ma_bai, "Mục 1", "Dạng tổng quát"]
+
+    for index, q in enumerate(all_questions):
+        # 1. Cập nhật STT chuẩn (cho chắc chắn)
+        q['stt'] = index + 1
+        
+        # 2. Lấy dữ liệu phân cấp
+        raw_phan = q.get("phan", [])
+        if not isinstance(raw_phan, list) or len(raw_phan) < 3:
+            raw_phan = list(last_known_phan)
+        else:
+            last_known_phan = raw_phan
+
+        # Tách các thành phần (Chỉ dùng để hiển thị hoặc map key)
+        ten_bai = str(raw_phan[0]).strip()
+        ten_muc = str(raw_phan[1]).strip()
+        ten_dang = str(raw_phan[2]).strip() # Key quan trọng nhất
+        
+        # 3. THUẬT TOÁN GÁN ID (GLOBAL - NO SECTION)
+        # Chỉ quan tâm tên dạng. Nếu tên dạng trùng -> ID cũ. Nếu mới -> ID mới.
+        if ten_dang in type_memory:
+            current_dang_id = type_memory[ten_dang]
+        else:
+            global_dang_counter += 1
+            current_dang_id = global_dang_counter
+            type_memory[ten_dang] = current_dang_id
+
+        # 4. Tạo chuỗi ma_dang chuẩn: MA_BAI + "_" + ID_DANG
+        final_ma_dang = f"{reference_ma_bai}_{current_dang_id}"
+        
+        q['ma_dang'] = final_ma_dang
+        # Cập nhật lại phan để đảm bảo thống nhất
+        q['phan'] = [ten_bai, ten_muc, ten_dang] 
+        
+        final_questions.append(q)
+
+    print(f"   ✅ [DungSai] Đã map {global_dang_counter} dạng bài duy nhất.")
+    return final_questions
+
+def process_dung_sai_smart_batch(file_path, base_prompt, file_name, project_id, creds, model_name, batch_name):
+    """
+    Quy trình xử lý ĐÚNG/SAI (Fixed Logic): 
+    - Batch 1 (1-20): 100% THÔNG HIỂU.
+    - Batch 2 (21-40): 10 VẬN DỤNG + 10 VẬN DỤNG CAO.
+    - Clean trường 'phan' để không bị dính từ khóa mức độ.
+    """
+    from modules.common.callAPI import VertexClient
+    client = VertexClient(project_id, creds, model_name)
+    
+    # --- CẤU HÌNH BATCH (TUÂN THỦ 20 THÔNG HIỂU) ---
+    batches = [
+        {
+            "range": "1-20", 
+            # Instruction gửi cho AI: Ép sinh Thông hiểu
+            "level_desc": "YÊU CẦU: Sinh 20 câu THÔNG HIỂU (Giải thích, so sánh, phân biệt bản chất). KHÔNG sinh câu Nhận biết (định nghĩa đơn giản).", 
+            "mode": "thong_hieu" 
+        },
+        {
+            "range": "21-40", 
+            # Instruction gửi cho AI: Ép sinh Vận dụng & Vận dụng cao
+            "level_desc": "YÊU CẦU: 10 câu VẬN DỤNG (Tính toán, áp dụng công thức) và 10 câu VẬN DỤNG CAO (Suy luận, tổng hợp, bài toán ngược).", 
+            "mode": "van_dung" # Mode tạm, sẽ override chi tiết bên dưới
+        }
+    ]
+
+    all_raw_questions = []
+    reference_ma_bai = "SN_UNK" 
+    
+    print(f"\n🚀 [DungSai] Chạy chế độ Smart Batch (20 Thông hiểu - 10 Vận dụng - 10 VDC) cho: {batch_name}")
+
+    for idx, batch in enumerate(batches):
+        print(f"   ► Batch {idx+1}: Câu {batch['range']}...")
+        
+        batch_instruction = f"""
+{base_prompt}
+--------------------------------------------------------------------------------
+⚠️ LỆNH THỰC THI BATCH {idx+1}/2:
+1. PHẠM VI STT: {batch['range']}.
+2. YÊU CẦU MỨC ĐỘ: {batch['level_desc']}
+3. QUY ĐỊNH NGHIÊM NGẶT: 
+   - Trường "phan" CHỈ ĐƯỢC CHỨA: ["Tên Bài", "Tên Mục", "Tên Dạng"]. 
+   - CẤM đưa từ khóa "Thông hiểu", "Vận dụng" vào trường "phan".
+   - Trích xuất Mã Bài (ma_bai) chuẩn SN_[MÔN]...
+--------------------------------------------------------------------------------
+"""
         try:
-            data = json.loads(ai_response_text)
-        except json.JSONDecodeError as e:
-            print(f"❌ Lỗi JSON bất ngờ: {e}")
-            if "```json" in ai_response_text:
-                clean_text = ai_response_text.split("```json")[1].split("```")[0]
-                data = json.loads(clean_text)
-            else:
-                return None
+            raw_text = client.send_data_to_AI(batch_instruction, file_path, response_schema=schema_dung_sai, max_output_tokens=65534)
+            if not raw_text: continue
 
-        print(f"✅ Parse thành công: {data.get('tong_so_cau', 0)} câu hỏi")
+            data = json.loads(clean_json_response(raw_text))
+            batch_questions = data.get("cau_hoi", [])
+            
+            # --- CODE FIX: CLEAN 'PHAN' & FORCE 'MUC_DO' ---
+            keywords_to_remove = ["nhận biết", "thông hiểu", "vận dụng", "mức độ", "level", "nhan_biet", "thong_hieu", "van_dung"]
+            
+            for q in batch_questions:
+                # 1. Clean trường 'phan' (Xóa các từ khóa mức độ nếu AI lỡ điền vào)
+                raw_phan = q.get("phan", [])
+                if isinstance(raw_phan, list):
+                    clean_phan = []
+                    for p_item in raw_phan:
+                        p_str = str(p_item)
+                        # Nếu dòng này chứa từ khóa cấm -> Không add vào, hoặc clean nhẹ
+                        # Ở đây ta chọn giải pháp: Nếu chứa từ khóa mức độ -> Bỏ qua phần tử đó luôn
+                        if not any(kw in p_str.lower() for kw in keywords_to_remove):
+                             clean_phan.append(p_str)
+                    
+                    # Nếu clean xong bị rỗng hoặc mất dạng -> Fallback nhẹ
+                    if len(clean_phan) < 3:
+                        # Giữ nguyên bản gốc nếu clean làm hỏng cấu trúc (chấp nhận xấu còn hơn lỗi code)
+                        pass 
+                    else:
+                        q['phan'] = clean_phan
+                
+                # 2. Force Mức độ (Ghi đè cứng theo logic STT của bạn)
+                stt = q.get("stt", 0)
+                
+                # Logic: 20 Thông hiểu -> 10 Vận dụng -> 10 VDC
+                if 1 <= stt <= 20:
+                    q['muc_do'] = "thong_hieu"
+                elif 21 <= stt <= 30:
+                    q['muc_do'] = "van_dung"
+                elif 31 <= stt <= 40:
+                    q['muc_do'] = "van_dung_cao"
+                # (Các câu ngoài range này sẽ giữ nguyên giá trị AI trả về)
+
+            if idx == 0:
+                raw_ma = data.get("ma_bai", "")
+                if raw_ma and raw_ma.startswith("SN_") and raw_ma.count("_") >= 3:
+                    reference_ma_bai = raw_ma
+                else:
+                    if reference_ma_bai == "SN_UNK": reference_ma_bai = f"SN_UNK_{batch_name}"
+
+            all_raw_questions.extend(batch_questions)
+            print(f"      ✅ Batch {idx+1} OK: +{len(batch_questions)} câu.")
+            
+        except Exception as e:
+            print(f"      ❌ Lỗi Batch {idx+1}: {e}")
+
+    if not all_raw_questions: return None
+
+    # Gọi Renumber (Logic bỏ Mục, chỉ giữ ID dạng tăng dần)
+    final_questions = renumber_ma_dang_global(all_raw_questions, reference_ma_bai)
+    
+    return {
+        "loai_de": "dung_sai",
+        "tong_so_cau": len(final_questions),
+        "ma_bai": reference_ma_bai,
+        "cau_hoi": final_questions
+    }
+
+# ==============================================================================
+# MAIN ENTRY POINT
+# ==============================================================================
+
+def response2docx_flexible(file_path, prompt, file_name, project_id, creds, model_name, question_type="trac_nghiem_4_dap_an", batch_name=None):
+    if not batch_name:
+        batch_name = file_name.replace("_TN", "").replace("_DS", "").replace("_TLN", "")
         
-        # --- [MỚI] LƯU FILE JSON ---
-        print("💾 Đang lưu file JSON...")
-        save_json_securely(data, batch_name, file_name)
-        # ---------------------------
+    try:
+        final_json_data = None
 
-        print("📝 Đang tạo DOCX...")
+        # 1. LOGIC RIÊNG CHO ĐÚNG/SAI (Có can thiệp code renumber)
+        if question_type == "dung_sai":
+            final_json_data = process_dung_sai_smart_batch(
+                file_path, prompt, file_name, project_id, creds, model_name, batch_name
+            )
+
+        # 2. LOGIC CHO CÁC DẠNG KHÁC (Tuyệt đối tin tưởng Prompt AI, không renumber)
+        else:
+            from modules.common.callAPI import VertexClient
+            client = VertexClient(project_id, creds, model_name)
+            target_schema = get_schema_by_type(question_type)
+            final_prompt = PromptBuilder.wrap_user_prompt(prompt)
+            
+            print(f"📤 [{question_type}] Đang gửi request (1-shot)...")
+            ai_response_text = client.send_data_to_AI(
+                final_prompt, file_path, response_schema=target_schema, max_output_tokens=65534
+            )
+            
+            if ai_response_text:
+                final_json_data = json.loads(clean_json_response(ai_response_text))
+            
+            # KHÔNG GỌI renumber_ma_dang_global ở đây.
+            # Dữ liệu AI trả về sao thì dùng vậy.
+
+        # --- PHẦN CHUNG: LƯU FILE ---
+        if not final_json_data: 
+            print("❌ Không có dữ liệu.")
+            return None
+        
+        print(f"💾 [{batch_name}] Lưu JSON...")
+        save_json_securely(final_json_data, batch_name, file_name)
+        
+        print(f"📝 [{batch_name}] Render DOCX...")
         doc = Document()
         renderer = DynamicDocxRenderer(doc)
+        renderer.render_all(final_json_data)
         
-        try:
-            renderer.render_all(data)
-        except Exception as render_err:
-             print(f"❌ Lỗi Render: {render_err}")
-             traceback.print_exc()
-
-        print("💾 Đang lưu file DOCX...")
         output_path = save_document_securely(doc, batch_name, file_name)
+        if output_path: print(f"✅ HOÀN THÀNH: {output_path}")
         return output_path
 
     except Exception as e:
@@ -912,23 +1106,91 @@ def response2docx_flexible(
         traceback.print_exc()
         return None
 
-    except Exception as e_main:
-        print(f"❌ LỖI NGHIÊM TRỌNG TRONG TOÀN BỘ HÀM: {e_main}")
-        traceback.print_exc()
-        try:
-            doc = Document()
-            doc.add_heading('LỖI HỆ THỐNG', level=1).alignment = WD_ALIGN_PARAGRAPH.CENTER
-            doc.add_paragraph(f'Lỗi nghiêm trọng: {e_main}')
-            doc.add_paragraph('Hệ thống không thể xử lý yêu cầu.')
+# def response2docx_flexible(
+#     file_path: str,
+#     prompt: str,
+#     file_name: str,
+#     project_id: str,
+#     creds: str,
+#     model_name: str,
+#     question_type: str = "trac_nghiem_4_dap_an",
+#     batch_name: str = None
+# ):
+#     try:
+#         from modules.common.callAPI import VertexClient
+#         client = VertexClient(project_id, creds, model_name)
+#         if not batch_name:
+#             batch_name = file_name.replace("_TN", "").replace("_DS", "").replace("_TLN", "")
             
-            if not batch_name:
-                batch_name = file_name.replace("_TN", "").replace("_DS", "").replace("_TLN", "")
-            fallback_path = os.path.join(ensure_output_folder_for_batch(batch_name), f"{file_name}_loi_he_thong.docx")
+#         target_schema = get_schema_by_type(question_type)
+#         final_prompt = PromptBuilder.wrap_user_prompt(prompt)
+        
+#         print(f"📤 Đang gửi request (Schema: {question_type})...")
+#         ai_response_text = client.send_data_to_AI(
+#             final_prompt, 
+#             file_path, 
+#             response_schema=target_schema,
+#             max_output_tokens=65534
+#         )
+        
+#         if not ai_response_text:
+#             print("❌ AI không trả về dữ liệu.")
+#             return None
+
+#         print("🔄 Đang parse JSON...")
+#         try:
+#             data = json.loads(ai_response_text)
+#         except json.JSONDecodeError as e:
+#             print(f"❌ Lỗi JSON bất ngờ: {e}")
+#             if "```json" in ai_response_text:
+#                 clean_text = ai_response_text.split("```json")[1].split("```")[0]
+#                 data = json.loads(clean_text)
+#             else:
+#                 return None
+
+#         print(f"✅ Parse thành công: {data.get('tong_so_cau', 0)} câu hỏi")
+        
+#         # --- [MỚI] LƯU FILE JSON ---
+#         print("💾 Đang lưu file JSON...")
+#         save_json_securely(data, batch_name, file_name)
+#         # ---------------------------
+
+#         print("📝 Đang tạo DOCX...")
+#         doc = Document()
+#         renderer = DynamicDocxRenderer(doc)
+        
+#         try:
+#             renderer.render_all(data)
+#         except Exception as render_err:
+#              print(f"❌ Lỗi Render: {render_err}")
+#              traceback.print_exc()
+
+#         print("💾 Đang lưu file DOCX...")
+#         output_path = save_document_securely(doc, batch_name, file_name)
+#         return output_path
+
+#     except Exception as e:
+#         print(f"❌ Lỗi hệ thống: {e}")
+#         traceback.print_exc()
+#         return None
+
+#     except Exception as e_main:
+#         print(f"❌ LỖI NGHIÊM TRỌNG TRONG TOÀN BỘ HÀM: {e_main}")
+#         traceback.print_exc()
+#         try:
+#             doc = Document()
+#             doc.add_heading('LỖI HỆ THỐNG', level=1).alignment = WD_ALIGN_PARAGRAPH.CENTER
+#             doc.add_paragraph(f'Lỗi nghiêm trọng: {e_main}')
+#             doc.add_paragraph('Hệ thống không thể xử lý yêu cầu.')
             
-            doc.save(fallback_path)
-            return fallback_path
-        except Exception as e_final:
-            return None
+#             if not batch_name:
+#                 batch_name = file_name.replace("_TN", "").replace("_DS", "").replace("_TLN", "")
+#             fallback_path = os.path.join(ensure_output_folder_for_batch(batch_name), f"{file_name}_loi_he_thong.docx")
+            
+#             doc.save(fallback_path)
+#             return fallback_path
+#         except Exception as e_final:
+#             return None
 
 def response2docx_json(file_path, prompt, file_name, project_id, creds, model_name, batch_name=None):
     """Wrapper cho trắc nghiệm 4 đáp án (legacy)"""

@@ -69,7 +69,7 @@ schema_dung_sai = {
                 "type": "OBJECT",
                 "properties": {
                     "stt": {"type": "INTEGER"},
-                    "muc_do": {"type": "STRING"},
+                    "muc_do": {"type": "STRING", "enum": ["nhan_biet", "thong_hieu", "van_dung", "van_dung_cao"]},
                     "ma_dang": {"type": "STRING"},
                     "phan": {
                         "type": "ARRAY",
@@ -159,7 +159,7 @@ schema_tra_loi_ngan = {
                    
                     "dap_an": {
                         "type": "STRING",
-                        "description": "CHỈ CHỨA số (VD: 5; -2; 3,5) hoặc phân số (VD: 1/2). CẤM chữ, đơn vị."
+                        "description": "CHỈ CHỨA số nguyên hoặc số thập phân (VD: 5; -2; 3,5). CẤM chữ, đơn vị và các kí tự thường và đặc biệt."
                     },
                    
                     "hinh_anh": {

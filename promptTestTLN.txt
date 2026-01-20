@@ -45,7 +45,7 @@ Sau đó BẮT BUỘC phải chuyển ngay sang đoạn kế tiếp.
 + Nếu AI cố tình sinh câu thứ 3 cho một ý đã hỏi, đó được coi là câu hỏi "RÁC" và vi phạm nguyên tắc.
 2. YÊU CẦU ĐẶC BIỆT VỀ HÌNH ẢNH (BẮT BUỘC):
 - QUY TẮC XỬ LÝ HÌNH ẢNH (LOGIC NGẮT MẠCH):
-  * BẮT BUỘC 30% tổng số câu hỏi (tức là 12 câu có hình ảnh) có trường "hinh_anh": { "co_hinh": true, "loai": "tu_mo_ta", "mo_ta": "[Mô tả chi tiết hình ảnh cần vẽ bằng lời văn]" }.
+  * BẮT BUỘC 0% tổng số câu hỏi (tức là 0 câu có hình ảnh) có trường "hinh_anh": { "co_hinh": true, "loai": "tu_mo_ta", "mo_ta": "[Mô tả chi tiết hình ảnh cần vẽ bằng lời văn Tiếng Việt]" }.
 * Lưu ý: Trường "mo_ta" phải mô tả cụ thể hình ảnh (Ví dụ: "Sơ đồ bình điện phân với 2 cực...", "Đồ thị biểu diễn sự biến thiên...").
 * TUYỆT ĐỐI KHÔNG để trống trường này.
 
@@ -82,15 +82,38 @@ Nếu câu mới cùng hỏi về một đối tượng và cùng một khía c�
 - Không đặt câu hỏi mà một người bình thường không cần đọc tài liệu cũng trả lời được (VD: "Acid có vị gì?").
 - Hãy đi sâu vào chi tiết kỹ thuật: Nồng độ cụ thể (%), tên gọi chính xác của ion, điều kiện phản ứng, ứng dụng đặc thù của từng chất.
 
-6. QUY ĐỊNH VỀ MÃ DẠNG BÀI
-- Trước khi tạo câu hỏi, bạn phải quét toàn bộ PDF để xác định thông tin metadata và điền vào trường "ma_dang" ở cấp cao nhất của JSON theo công thức sau:
-- Cấu trúc mã: SN_[MÔN]_[CẤP]_[LỚP]_[CHƯƠNG]_[BÀI]_[MỤC]
-- SN: Tiền tố cố định.
-- MÔN: Viết tắt không dấu (VÍ DỤ: VATLY, HOA HOC, TOAN, SINHHOC).
-- CẤP: THPT, THCS, hoặc TIEUHOC.
-- LỚP: Ký hiệu C + Số lớp (Ví dụ: C11, C12, C10).
-- CHƯƠNG_BÀI_MỤC: Lấy số hiệu tương ứng từ mục lục SGK (Ví dụ: 1_1_1).
-- Ví dụ: Nếu là môn Vật lý lớp 11, Chương 1, Bài 1, Mục 1 -> "ma_dang": "SN_VATLYTHPT_C11_1_1_1"
+6. QUY ĐỊNH VỀ MÃ BÀI VÀ MÃ DẠNG (ALGORITHMIC LOGIC)
+
+A. MÃ BÀI (ma_bai - Cấp cao nhất)
+- Cấu trúc: SN_[MÔN][CẤP]_[LỚP]_[TẬP]_[CHƯƠNG]_[BÀI]
+- LƯU Ý: [TẬP] chỉ có ở TOÁN, các môn còn lại không được thêm [TẬP] vào.
+- QUY TẮC BẮT BUỘC:
+  1. Phải quét mục lục PDF để lấy ĐÚNG số Chương và số Bài.
+  2. Ví dụ: SN_HOAHOCTHPT_C10_1_3 (Hóa lớp 10, Chương 1, Bài 3).
+
+B. MÃ DẠNG (ma_dang - Từng câu hỏi)
+- Cấu trúc MỚI (GLOBAL ID): SN_[MÔN][CẤP]_[LỚP]_[TẬP]_[CHƯƠNG]_[BÀI]_[ID_DẠNG]
+  (Lưu ý: Đã BỎ thành phần [MỤC] ra khỏi chuỗi mã).
+
+- THUẬT TOÁN GÁN ID_DẠNG (TOÀN CỤC - KHÔNG RESET):
+  Bạn phải duy trì một bộ đếm ID chạy xuyên suốt từ đầu đến cuối file PDF:
+  1. ID_DẠNG là số nguyên tăng dần (1, 2, 3...) đại diện cho loại dạng bài.
+  2. NGUYÊN TẮC "XUYÊN SUỐT": ID_DẠNG chạy liên tục cho toàn bộ Bài học.
+     -> TUYỆT ĐỐI KHÔNG được reset ID về 1 khi chuyển sang Mục mới (Ví dụ: Từ Mục I sang Mục II vẫn phải đếm tiếp).
+  3. LOGIC CẤP SỐ:
+     - Nếu Tên Dạng hoàn toàn mới (chưa từng xuất hiện trong cả bài): ID_DẠNG = Số ID lớn nhất hiện tại + 1.
+     - Nếu Tên Dạng trùng khớp với một dạng đã xuất hiện trước đó (dù ở mục khác): Dùng lại ID_DẠNG cũ.
+
+- VÍ DỤ MINH HỌA ĐÚNG (GLOBAL LOGIC):
+  + Mục I - "Dạng: Khái niệm" -> ID là 1. Mã: ..._1_3_1
+  + Mục I - "Dạng: Tính toán" -> ID là 2. Mã: ..._1_3_2
+  + Sang Mục II (Không reset):
+    - Gặp "Dạng: Ứng dụng" (Mới) -> ID là 3. Mã: ..._1_3_3
+    - Gặp lại "Dạng: Khái niệm" (Cũ) -> ID quay về 1. Mã: ..._1_3_1
+
+C. ĐỊNH DẠNG HIỂN THỊ TRONG JSON
+- AI trích xuất giá trị thuần túy vào JSON (Ví dụ: "SN_TOANTHPT_C10_1_1_3_5").
+
 II. CHIẾN THUẬT QUÉT DỮ LIỆU & ĐỊNH DANH DẠNG BÀI (SMART TAGGING & CLUSTERING)
 Để danh sách câu hỏi gọn gàng và khoa học, bạn phải tuân thủ quy tắc "Điền thế chỗ" và "Gom nhóm cục bộ".
 Bạn phải đặt tên Dạng bài sao cho có thể tái sử dụng cho nhiều câu hỏi tương tự, tránh quá chi tiết vào một ví dụ cụ thể.
@@ -202,7 +225,8 @@ Chấp nhận 2 hình thức câu hỏi trong trường "noi_dung":
   + Là một mệnh đề chưa hoàn chỉnh, KHÔNG có dấu kết thúc câu ở cuối trường "noi_dung".
 + Ví dụ: "Số lượng orbital trong lớp p là" (Không có dấu chấm/hỏi ở cuối).
 2. QUY TẮC ĐÁP ÁN SỐ TUYỆT ĐỐI (STRICT NUMERIC - QUAN TRỌNG NHẤT):
-- Đáp án (trường "dap_an") CHỈ ĐƯỢC CHỨA SỐ (0-9), dấu thập phân, hoặc phân số.
+- Đáp án (trường "dap_an") CHỈ ĐƯỢC CHỨA SỐ NGUYÊN HOẶC SỐ THẬP PHÂN.
+- LƯU Ý VỀ SỐ THẬP PHÂN: Khi sinh số thập phân phải để dấu phẩy (,) không được để dấu chấm (.).
 - CẤM TUYỆT ĐỐI: Không được có đơn vị (km, m, s), không được có chữ (x=, v=).
 - CẢNH BÁO: Nếu câu hỏi là "Xe chạy bao nhiêu km?", đáp án chỉ điền "50", không điền "50 km".
 3. QUY TẮC "NHÚNG NGỮ CẢNH" CHO CÂU HỎI VẬN DỤNG/THỰC TẾ (CONTEXT EMBEDDING RULE):
@@ -280,14 +304,15 @@ A. CẤU TRÚC CÂU HỎI:
 - Trường "noi_dung_en": [Câu hỏi Tiếng Anh].
 - Trường "dap_an": 
   + BẮT BUỘC định dạng chuỗi: "[[số hoặc số thập phân]]".
+  + CẤM chứa chữ, đơn vị và các kí tự thường và đặc biệt.
 + VÍ DỤ: "[[50]]", "[[3.14]]", "[[-2]]".
   + CẤM: "[[50m]]", "[[x=50]]".
 - Trường "giai_thich" và "giai_thich_en":
   + BẮT BUỘC phải tách riêng 2 trường này.
-+ Giải thích chi tiết các bước tính toán/suy luận.
++ Giải thích chi tiết các bước tính toán/suy luận, không kết luận khi chưa có (KL.).
 + KẾT LUẬN (BẮT BUỘC):
-    * Tiếng Việt: Kết thúc bằng "**(KL.) Vậy [kết quả].**" (In đậm).
-* Tiếng Anh: Kết thúc bằng "**(KL.) Therefore, [result].**" (In đậm).
+    * Tiếng Việt: Kết thúc bằng "\n**(KL.) Vậy [kết quả].**" (In đậm).
+* Tiếng Anh: Kết thúc bằng "\n**(KL.) Therefore, [result].**" (In đậm).
 
 Bắt đầu thực hiện:
 1. QUÉT LINH HOẠT đầu bài để tìm "Khung định hướng".
