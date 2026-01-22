@@ -84,9 +84,9 @@ class CutPdfWidget(QWidget):
         """)
         layout.addWidget(header_label)
         
-        # Google Drive section
-        drive_group = self.create_drive_section()
-        layout.addWidget(drive_group)
+        # # Google Drive section
+        # drive_group = self.create_drive_section()
+        # layout.addWidget(drive_group)
         
         # Local folder section
         local_group = self.create_local_section()
@@ -114,33 +114,33 @@ class CutPdfWidget(QWidget):
         
         self.setLayout(layout)
     
-    def create_drive_section(self):
-        """Tạo section Google Drive"""
-        group = QGroupBox("📁 Tải từ Google Drive")
-        group.setFont(QFont("Arial", 11, QFont.Bold))
-        layout = QVBoxLayout()
+    # def create_drive_section(self):
+    #     """Tạo section Google Drive"""
+    #     group = QGroupBox("📁 Tải từ Google Drive")
+    #     group.setFont(QFont("Arial", 11, QFont.Bold))
+    #     layout = QVBoxLayout()
         
-        self.drive_url_input = QLineEdit()
-        self.drive_url_input.setPlaceholderText("Nhập link folder Google Drive chứa file PDF...")
-        self.drive_url_input.setFixedHeight(35)
+    #     self.drive_url_input = QLineEdit()
+    #     self.drive_url_input.setPlaceholderText("Nhập link folder Google Drive chứa file PDF...")
+    #     self.drive_url_input.setFixedHeight(35)
         
-        buttons_layout = QHBoxLayout()
-        self.download_button = QPushButton("📥 Tải PDF từ Drive")
-        self.download_button.setFixedHeight(40)
-        self.download_button.clicked.connect(self.download_from_drive)
+    #     buttons_layout = QHBoxLayout()
+    #     self.download_button = QPushButton("📥 Tải PDF từ Drive")
+    #     self.download_button.setFixedHeight(40)
+    #     self.download_button.clicked.connect(self.download_from_drive)
         
-        self.auto_process_button = QPushButton("🤖 Auto xử lý từ Drive")
-        self.auto_process_button.setFixedHeight(40)
-        self.auto_process_button.setStyleSheet("background-color: #e6ffe6; font-weight: bold;")
-        self.auto_process_button.clicked.connect(self.start_auto_processing)
+    #     self.auto_process_button = QPushButton("🤖 Auto xử lý từ Drive")
+    #     self.auto_process_button.setFixedHeight(40)
+    #     self.auto_process_button.setStyleSheet("background-color: #e6ffe6; font-weight: bold;")
+    #     self.auto_process_button.clicked.connect(self.start_auto_processing)
         
-        buttons_layout.addWidget(self.download_button)
-        buttons_layout.addWidget(self.auto_process_button)
+    #     buttons_layout.addWidget(self.download_button)
+    #     buttons_layout.addWidget(self.auto_process_button)
         
-        layout.addWidget(self.drive_url_input)
-        layout.addLayout(buttons_layout)
-        group.setLayout(layout)
-        return group
+    #     layout.addWidget(self.drive_url_input)
+    #     layout.addLayout(buttons_layout)
+    #     group.setLayout(layout)
+    #     return group
     
     def create_local_section(self):
         """Tạo section Local folder"""
@@ -1077,9 +1077,9 @@ class CutPdfWidget(QWidget):
 
     def _set_ui_enabled(self, enabled):
         """Enable/disable UI elements"""
-        self.download_button.setEnabled(enabled)
-        self.auto_process_button.setEnabled(enabled)
-        self.auto_process_local_button.setEnabled(enabled)
+        # self.download_button.setEnabled(enabled)
+        # self.auto_process_button.setEnabled(enabled)
+        # self.auto_process_local_button.setEnabled(enabled)
         self.browse_folder_button.setEnabled(enabled)
         self.scan_folder_button.setEnabled(enabled)
         self.process_button.setEnabled(enabled)

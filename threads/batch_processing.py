@@ -61,7 +61,7 @@ class BatchProcessingThread(QThread):
                         file_generated = []
                         for idx, bai in enumerate(exercises):
                             safe_name = re.sub(r"[:\\/\"*?<>|]", ".", bai['name'])
-                            output_filename = f"{idx+1:02d}. {safe_name}.pdf"
+                            output_filename = f"{safe_name}.pdf"
                             output_path = os.path.join(output_folder, output_filename)
                             
                             # Sử dụng cut_and_compress

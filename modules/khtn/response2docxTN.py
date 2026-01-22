@@ -220,6 +220,7 @@ def insert_equation_into_paragraph(latex_math_dollar, paragraph):
 def clean_latex_math(latex_raw):
     latex_raw = latex_raw.lstrip('$').rstrip('$')
     latex_raw = latex_raw.strip()
+    latex_raw = re.sub(r'(?<!\\)%', r'\%', latex_raw)
     latex_raw = re.sub(r'\\/', '', latex_raw)
     latex_raw = re.sub(r'\\operatorname\s*{\s*([^}]*)\s*}',
                        lambda m: m.group(1).replace(' ', ''), latex_raw)
@@ -938,108 +939,208 @@ def renumber_ma_dang_global(all_questions, reference_ma_bai):
     return final_questions
 
 def process_dung_sai_smart_batch(file_path, base_prompt, file_name, project_id, creds, model_name, batch_name):
-    """
-    Quy trình xử lý ĐÚNG/SAI (Fixed Logic): 
-    - Batch 1 (1-20): 100% THÔNG HIỂU.
-    - Batch 2 (21-40): 10 VẬN DỤNG + 10 VẬN DỤNG CAO.
-    - Clean trường 'phan' để không bị dính từ khóa mức độ.
-    """
     from modules.common.callAPI import VertexClient
-    client = VertexClient(project_id, creds, model_name)
+    import re
+    import time
     
-    # --- CẤU HÌNH BATCH (TUÂN THỦ 20 THÔNG HIỂU) ---
-    batches = [
-        {
-            "range": "1-20", 
-            # Instruction gửi cho AI: Ép sinh Thông hiểu
-            "level_desc": "YÊU CẦU: Sinh 20 câu THÔNG HIỂU (Giải thích, so sánh, phân biệt bản chất). KHÔNG sinh câu Nhận biết (định nghĩa đơn giản).", 
-            "mode": "thong_hieu" 
-        },
-        {
-            "range": "21-40", 
-            # Instruction gửi cho AI: Ép sinh Vận dụng & Vận dụng cao
-            "level_desc": "YÊU CẦU: 10 câu VẬN DỤNG (Tính toán, áp dụng công thức) và 10 câu VẬN DỤNG CAO (Suy luận, tổng hợp, bài toán ngược).", 
-            "mode": "van_dung" # Mode tạm, sẽ override chi tiết bên dưới
-        }
-    ]
+    client = VertexClient(project_id, creds, model_name)
 
+    # ==============================================================================
+    # 0. HÀM PHỤ: CỨU DỮ LIỆU JSON (Smart Stream Scanner)
+    # ==============================================================================
+    def salvage_questions_from_broken_json(broken_text):
+        questions = []
+        try:
+            text = clean_json_response(broken_text)
+            # Regex tìm vị trí bắt đầu các object câu hỏi ({"stt": ...)
+            start_pattern = re.compile(r'\{\s*[\'"]stt[\'"]\s*:', re.IGNORECASE)
+            
+            for match in start_pattern.finditer(text):
+                start_idx = match.start()
+                # Thuật toán cân bằng ngoặc để tìm điểm kết thúc
+                balance = 0
+                end_idx = -1
+                in_string = False
+                escape = False
+                
+                for i in range(start_idx, len(text)):
+                    char = text[i]
+                    if in_string:
+                        if char == '\\' and not escape: escape = True
+                        elif char == '"' and not escape: in_string = False; escape = False
+                        else: escape = False
+                    else:
+                        if char == '"': in_string = True
+                        elif char == '{': balance += 1
+                        elif char == '}':
+                            balance -= 1
+                            if balance == 0:
+                                end_idx = i + 1
+                                break
+                
+                if end_idx != -1:
+                    try:
+                        q_obj = json.loads(text[start_idx:end_idx])
+                        if "stt" in q_obj: questions.append(q_obj)
+                    except: pass
+        except: pass
+        return questions
+
+    # ==============================================================================
+    # 1. PARSER CẤU HÌNH (Level Parser V3.1)
+    # ==============================================================================
+    total_questions = 40
+    match_total = re.search(r'["\']?tong_so_cau["\']?\s*[:=]\s*(\d+)', base_prompt)
+    if match_total: total_questions = int(match_total.group(1))
+    
+    config_levels = {"nhan_biet": 0, "thong_hieu": 0, "van_dung": 0, "van_dung_cao": 0}
+    found_config = False
+    
+    # Priority 1: Key-Value
+    for key in config_levels:
+        match = re.search(f"(?:sl_|so_cau_){key}\\s*[:=]\\s*(\\d+)", base_prompt, re.IGNORECASE)
+        if match:
+            config_levels[key] = int(match.group(1))
+            found_config = True
+
+    # Priority 2: Natural Language (Ưu tiên từ khóa dài)
+    if not found_config:
+        print("🔍 Đang quét prompt để tìm định nghĩa SLOT...")
+        keywords_priority = [
+            ("van_dung_cao", ["VẬN DỤNG CAO", "MỨC 4"]), 
+            ("van_dung",     ["VẬN DỤNG", "MỨC 3"]),     
+            ("thong_hieu",   ["THÔNG HIỂU", "MỨC 2"]),
+            ("nhan_biet",    ["NHẬN BIẾT", "MỨC 1"])
+        ]
+        range_pattern = r"(?:từ câu|câu)\s*(\d+)\s*(?:đến câu|-|đến)\s*(\d+)"
+        lines = base_prompt.split('\n')
+        for line in lines:
+            line_upper = line.upper()
+            matched_key = None
+            for key, kws in keywords_priority:
+                if any(kw in line_upper for kw in kws):
+                    matched_key = key
+                    break 
+            if matched_key:
+                match_range = re.search(range_pattern, line, re.IGNORECASE)
+                if match_range:
+                    start_q = int(match_range.group(1))
+                    end_q = int(match_range.group(2))
+                    count = end_q - start_q + 1
+                    if count > 0:
+                        config_levels[matched_key] += count
+                        found_config = True
+
+    # Fallback mặc định
+    if not found_config:
+        config_levels["nhan_biet"] = int(total_questions * 0.4) 
+        config_levels["thong_hieu"] = int(total_questions * 0.3)
+        config_levels["van_dung"] = int(total_questions * 0.3)
+        config_levels["van_dung_cao"] = total_questions - sum(config_levels.values())
+
+    # Tính ngưỡng tích lũy
+    t_nb = config_levels["nhan_biet"]
+    t_th = t_nb + config_levels["thong_hieu"]
+    t_vd = t_th + config_levels["van_dung"]
+    t_vdc = t_vd + config_levels["van_dung_cao"]
+    
+    print(f"\n[DungSai V3.5 Stable] Tổng: {total_questions} câu. (NB:{config_levels['nhan_biet']}, TH:{config_levels['thong_hieu']}, VD:{config_levels['van_dung']}, VDC:{config_levels['van_dung_cao']})")
+    
+    # ==============================================================================
+    # 2. CHIA BATCH (BATCH_SIZE = 10)
+    # ==============================================================================
+    BATCH_SIZE = 10  # <--- CHÌA KHÓA AN TOÀN CỦA BẠN LÀ Ở ĐÂY
+    batches = []
+    current_start = 1
+    while current_start <= total_questions:
+        current_end = min(current_start + BATCH_SIZE - 1, total_questions)
+        mid_point = (current_start + current_end) / 2
+        
+        if mid_point <= t_nb: mode_desc = "NHẬN BIẾT"
+        elif mid_point <= t_th: mode_desc = "THÔNG HIỂU"
+        elif mid_point <= t_vd: mode_desc = "VẬN DỤNG"
+        else: mode_desc = "VẬN DỤNG CAO"
+            
+        batches.append({"range": f"{current_start}-{current_end}", "desc": mode_desc})
+        current_start += BATCH_SIZE
+
+    # ==============================================================================
+    # 3. THỰC THI (CÓ SALVAGE)
+    # ==============================================================================
     all_raw_questions = []
     reference_ma_bai = "SN_UNK" 
-    
-    print(f"\n🚀 [DungSai] Chạy chế độ Smart Batch (20 Thông hiểu - 10 Vận dụng - 10 VDC) cho: {batch_name}")
 
     for idx, batch in enumerate(batches):
-        print(f"   ► Batch {idx+1}: Câu {batch['range']}...")
+        print(f"   ► Batch {idx+1}/{len(batches)}: Câu {batch['range']} [{batch['desc']}]")
         
         batch_instruction = f"""
 {base_prompt}
 --------------------------------------------------------------------------------
-⚠️ LỆNH THỰC THI BATCH {idx+1}/2:
+LỆNH THỰC THI BATCH {idx+1}/{len(batches)}:
 1. PHẠM VI STT: {batch['range']}.
-2. YÊU CẦU MỨC ĐỘ: {batch['level_desc']}
-3. QUY ĐỊNH NGHIÊM NGẶT: 
-   - Trường "phan" CHỈ ĐƯỢC CHỨA: ["Tên Bài", "Tên Mục", "Tên Dạng"]. 
-   - CẤM đưa từ khóa "Thông hiểu", "Vận dụng" vào trường "phan".
-   - Trích xuất Mã Bài (ma_bai) chuẩn SN_[MÔN]...
+2. TRỌNG TÂM: {batch['desc']}.
+3. QUY ĐỊNH: Trường "phan" CHỈ chứa địa chỉ sách, CẤM chứa tên mức độ.
 --------------------------------------------------------------------------------
 """
-        try:
-            raw_text = client.send_data_to_AI(batch_instruction, file_path, response_schema=schema_dung_sai, max_output_tokens=65534)
-            if not raw_text: continue
+        max_retries = 2
+        retry_count = 0
+        success = False
+        
+        while retry_count < max_retries and not success:
+            try:
+                raw_text = client.send_data_to_AI(batch_instruction, file_path, response_schema=schema_dung_sai, max_output_tokens=65534)
+                if not raw_text: 
+                    print(f"      ⚠️ AI trả về rỗng. Thử lại...")
+                    retry_count += 1
+                    continue
 
-            data = json.loads(clean_json_response(raw_text))
-            batch_questions = data.get("cau_hoi", [])
-            
-            # --- CODE FIX: CLEAN 'PHAN' & FORCE 'MUC_DO' ---
-            keywords_to_remove = ["nhận biết", "thông hiểu", "vận dụng", "mức độ", "level", "nhan_biet", "thong_hieu", "van_dung"]
-            
-            for q in batch_questions:
-                # 1. Clean trường 'phan' (Xóa các từ khóa mức độ nếu AI lỡ điền vào)
-                raw_phan = q.get("phan", [])
-                if isinstance(raw_phan, list):
-                    clean_phan = []
-                    for p_item in raw_phan:
-                        p_str = str(p_item)
-                        # Nếu dòng này chứa từ khóa cấm -> Không add vào, hoặc clean nhẹ
-                        # Ở đây ta chọn giải pháp: Nếu chứa từ khóa mức độ -> Bỏ qua phần tử đó luôn
-                        if not any(kw in p_str.lower() for kw in keywords_to_remove):
-                             clean_phan.append(p_str)
-                    
-                    # Nếu clean xong bị rỗng hoặc mất dạng -> Fallback nhẹ
-                    if len(clean_phan) < 3:
-                        # Giữ nguyên bản gốc nếu clean làm hỏng cấu trúc (chấp nhận xấu còn hơn lỗi code)
-                        pass 
+                batch_questions = []
+                try:
+                    clean_text = clean_json_response(raw_text)
+                    data = json.loads(clean_text)
+                    batch_questions = data.get("cau_hoi", [])
+                    print(f"      ✅ Batch {idx+1} OK: {len(batch_questions)} câu.")
+                except json.JSONDecodeError:
+                    print(f"      ⚠️ Batch {idx+1} lỗi cú pháp. Đang cứu dữ liệu...")
+                    batch_questions = salvage_questions_from_broken_json(raw_text)
+                    if len(batch_questions) > 0:
+                        print(f"      🚑 ĐÃ CỨU: {len(batch_questions)} câu.")
                     else:
-                        q['phan'] = clean_phan
-                
-                # 2. Force Mức độ (Ghi đè cứng theo logic STT của bạn)
-                stt = q.get("stt", 0)
-                
-                # Logic: 20 Thông hiểu -> 10 Vận dụng -> 10 VDC
-                if 1 <= stt <= 20:
-                    q['muc_do'] = "thong_hieu"
-                elif 21 <= stt <= 30:
-                    q['muc_do'] = "van_dung"
-                elif 31 <= stt <= 40:
-                    q['muc_do'] = "van_dung_cao"
-                # (Các câu ngoài range này sẽ giữ nguyên giá trị AI trả về)
+                        raise Exception("Không cứu được câu nào.")
 
-            if idx == 0:
-                raw_ma = data.get("ma_bai", "")
-                if raw_ma and raw_ma.startswith("SN_") and raw_ma.count("_") >= 3:
-                    reference_ma_bai = raw_ma
-                else:
-                    if reference_ma_bai == "SN_UNK": reference_ma_bai = f"SN_UNK_{batch_name}"
+                # POST-PROCESSING
+                keywords_to_remove = ["nhận biết", "thong_hieu", "vận dụng", "mức độ", "level", "nhan_biet", "thong_hieu", "van_dung", "slot"]
+                for q in batch_questions:
+                    # Clean Phan
+                    raw_phan = q.get("phan", [])
+                    if isinstance(raw_phan, list):
+                        clean_phan = [str(p) for p in raw_phan if not any(kw in str(p).lower() for kw in keywords_to_remove)]
+                        if len(clean_phan) >= 3: q['phan'] = clean_phan
+                    
+                    # Force Level
+                    stt = q.get("stt", 0)
+                    if stt <= t_nb: q['muc_do'] = "nhan_biet"
+                    elif stt <= t_th: q['muc_do'] = "thong_hieu"
+                    elif stt <= t_vd: q['muc_do'] = "van_dung"
+                    else: q['muc_do'] = "van_dung_cao"
 
-            all_raw_questions.extend(batch_questions)
-            print(f"      ✅ Batch {idx+1} OK: +{len(batch_questions)} câu.")
-            
-        except Exception as e:
-            print(f"      ❌ Lỗi Batch {idx+1}: {e}")
+                if reference_ma_bai == "SN_UNK" and len(batch_questions) > 0:
+                    q0 = batch_questions[0]
+                    raw_ma_dang = q0.get("ma_dang", "")
+                    if raw_ma_dang:
+                        parts = raw_ma_dang.split("_")
+                        if len(parts) > 2: reference_ma_bai = "_".join(parts[:-1])
+
+                all_raw_questions.extend(batch_questions)
+                success = True 
+
+            except Exception as e:
+                retry_count += 1
+                print(f"      ❌ Lỗi Batch {idx+1} (Lần {retry_count}): {e}")
 
     if not all_raw_questions: return None
-
-    # Gọi Renumber (Logic bỏ Mục, chỉ giữ ID dạng tăng dần)
+    
+    all_raw_questions.sort(key=lambda x: x.get("stt", 0))
     final_questions = renumber_ma_dang_global(all_raw_questions, reference_ma_bai)
     
     return {
@@ -1048,10 +1149,6 @@ def process_dung_sai_smart_batch(file_path, base_prompt, file_name, project_id, 
         "ma_bai": reference_ma_bai,
         "cau_hoi": final_questions
     }
-
-# ==============================================================================
-# MAIN ENTRY POINT
-# ==============================================================================
 
 def response2docx_flexible(file_path, prompt, file_name, project_id, creds, model_name, question_type="trac_nghiem_4_dap_an", batch_name=None):
     if not batch_name:
