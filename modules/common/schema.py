@@ -26,7 +26,8 @@ schema_trac_nghiem = {
                         "properties": {
                             "co_hinh": {"type": "BOOLEAN"},
                             "loai": {"type": "STRING"},
-                            "mo_ta": {"type": "STRING"}
+                            "mo_ta": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Việt để vẽ"},
+                            "mo_ta_en": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Anh (translate labels) để vẽ"}
                         }
                     },
                     "cac_lua_chon": {
@@ -83,7 +84,8 @@ schema_dung_sai = {
                         "properties": {
                             "co_hinh": {"type": "BOOLEAN"},
                             "loai": {"type": "STRING"},
-                            "mo_ta": {"type": "STRING"}
+                            "mo_ta": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Việt để vẽ"},
+                            "mo_ta_en": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Anh (translate labels) để vẽ"}
                         }
                     },
                     "cac_y": {
@@ -167,7 +169,8 @@ schema_tra_loi_ngan = {
                         "properties": {
                             "co_hinh": {"type": "BOOLEAN"},
                             "loai": {"type": "STRING"},
-                            "mo_ta": {"type": "STRING"}
+                            "mo_ta": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Việt để vẽ"},
+                            "mo_ta_en": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Anh (translate labels) để vẽ"}
                         }
                     },
                    
@@ -213,7 +216,8 @@ schema_tu_luan = {
                         "properties": {
                             "co_hinh": {"type": "BOOLEAN"},
                             "loai": {"type": "STRING"},
-                            "mo_ta": {"type": "STRING"}
+                            "mo_ta": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Việt để vẽ"},
+                            "mo_ta_en": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Anh (translate labels) để vẽ"}
                         }
                     },
                    

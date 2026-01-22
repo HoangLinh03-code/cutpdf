@@ -13,9 +13,10 @@ from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, 
     QGroupBox, QCheckBox, QProgressBar, QMessageBox, QListWidget, 
     QFileDialog, QTreeWidget, QTreeWidgetItem, QHeaderView, 
-    QTabWidget, QTextEdit, QTreeWidgetItemIterator, QSpinBox, QDialog, QSplitter
+    QTabWidget, QTextEdit, QTreeWidgetItemIterator, QSpinBox, QDialog, QSplitter,
+    QScrollArea, QFrame
 )
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QSettings
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtGui import QFont
 from config.credentials import Config
@@ -127,7 +128,7 @@ class ProcessingThread(QThread):
 
     def _process_worker(self, task):
         """Gọi hàm xử lý từ module được truyền vào"""
-        MODEL_NAME = "gemini-2.5-pro"
+        MODEL_NAME = "gemini-3-pro-preview"
         
         try:
             if task.task_type == "TN":
@@ -184,21 +185,23 @@ class GenQuesWidget(QWidget):
         self.widget_title = widget_title
         self.generated_files = []
         self.processing_thread = None
+        self.settings = QSettings("CutPDF_Tool", "GenQues_Module")
         
         # Thiết lập đường dẫn Prompt
         current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.prompt_base_dir = os.path.join(current_dir, "modules", prompt_folder_name)
         
-        self.default_prompt_tn = os.path.join(self.prompt_base_dir, "testTN.txt")
-        self.default_prompt_ds = os.path.join(self.prompt_base_dir, "testDS.txt")
-        self.default_prompt_tln = os.path.join(self.prompt_base_dir, "testTLN.txt")
-        self.default_prompt_tl = os.path.join(self.prompt_base_dir, "testTL.txt")
+        self.default_prompt_tn = os.path.join(self.prompt_base_dir, "promptTest.txt")
+        self.default_prompt_ds = os.path.join(self.prompt_base_dir, "promptTestDS.txt")
+        self.default_prompt_tln = os.path.join(self.prompt_base_dir, "promptTestTLN.txt")
+        self.default_prompt_tl = os.path.join(self.prompt_base_dir, "promptTuLuan   .txt")
 
         # Load nội dung prompt
         self.load_default_prompts()
         self.current_prompt_tn = self.default_prompt_tn
         self.current_prompt_ds = self.default_prompt_ds
         self.current_prompt_tln = self.default_prompt_tln
+        self.current_prompt_tl = self.default_prompt_tl
 
         # Setup Credentials
         self.setup_credentials()
@@ -286,18 +289,27 @@ class GenQuesWidget(QWidget):
         self.prompt_ds_content = ""
         self.prompt_tln_content = ""
         self.prompt_tl_content = ""
-        
+        def get_valid_path(setting_key, default_path):
+            # Lấy đường dẫn đã lưu, nếu không có thì dùng default
+            saved_path = self.settings.value(setting_key, default_path, type=str)
+            # Kiểm tra xem file đó còn tồn tại không
+            if os.path.exists(saved_path):
+                return saved_path
+            return default_path
         def read_safe(path):
             if os.path.exists(path):
                 with open(path, "r", encoding="utf-8") as f: 
                     return f.read()
             return ""
-
-        self.prompt_tn_content = read_safe(self.default_prompt_tn)
-        self.prompt_ds_content = read_safe(self.default_prompt_ds)
-        self.prompt_tln_content = read_safe(self.default_prompt_tln)
-        self.prompt_tl_content = read_safe(self.default_prompt_tl)
-
+        self.current_prompt_tn = get_valid_path("path_prompt_tn", self.default_prompt_tn)
+        self.current_prompt_ds = get_valid_path("path_prompt_ds", self.default_prompt_ds)
+        self.current_prompt_tln = get_valid_path("path_prompt_tln", self.default_prompt_tln)
+        self.current_prompt_tl = get_valid_path("path_prompt_tl", self.default_prompt_tl)
+        
+        self.prompt_tn_content = read_safe(self.current_prompt_tn)
+        self.prompt_ds_content = read_safe(self.current_prompt_ds)
+        self.prompt_tln_content = read_safe(self.current_prompt_tln)
+        self.prompt_tl_content = read_safe(self.current_prompt_tl)
     def init_ui(self):
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(15, 15, 15, 15)
@@ -323,7 +335,20 @@ class GenQuesWidget(QWidget):
 
         # TAB 1: CẤU HÌNH & XỬ LÝ
         proc_tab = QWidget()
-        proc_layout = QVBoxLayout()
+        tab_layout_root = QVBoxLayout(proc_tab)
+        tab_layout_root.setContentsMargins(0, 0, 0, 0)
+
+        # 2. Tạo vùng cuộn (ScrollArea)
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True) # Cho phép nội dung co giãn
+        scroll_area.setFrameShape(QFrame.NoFrame) # Bỏ viền xấu
+
+        # 3. Tạo Widget chứa nội dung (Container)
+        content_container = QWidget()
+        
+        # 4. Gắn layout cũ (proc_layout) vào Container này thay vì proc_tab
+        proc_layout = QVBoxLayout(content_container) 
+        proc_layout.setContentsMargins(10, 10, 10, 10)
         
         # 1. Nguồn tài liệu
         file_group = QGroupBox("1. Chọn Tài Liệu PDF (đã cắt)")
@@ -386,7 +411,7 @@ class GenQuesWidget(QWidget):
         self.chk_tn.setChecked(True)
         self.chk_tn.stateChanged.connect(self.update_process_button_state)
         
-        self.prompt_tn_label = QLabel(os.path.basename(self.default_prompt_tn))
+        self.prompt_tn_label = QLabel(os.path.basename(self.current_prompt_tn))
         self.prompt_tn_label.setStyleSheet("color: #666; font-style: italic;")
         
         self.btn_select_prompt_tn = QPushButton("📂 Chọn")
@@ -412,7 +437,7 @@ class GenQuesWidget(QWidget):
         self.chk_ds.setChecked(True)
         self.chk_ds.stateChanged.connect(self.update_process_button_state)
         
-        self.prompt_ds_label = QLabel(os.path.basename(self.default_prompt_ds))
+        self.prompt_ds_label = QLabel(os.path.basename(self.current_prompt_ds))
         self.prompt_ds_label.setStyleSheet("color: #666; font-style: italic;")
         
         self.btn_select_prompt_ds = QPushButton("📂 Chọn")
@@ -438,7 +463,7 @@ class GenQuesWidget(QWidget):
         self.chk_tln.setChecked(True)
         self.chk_tln.stateChanged.connect(self.update_process_button_state)
         
-        self.prompt_tln_label = QLabel(os.path.basename(self.default_prompt_tln))
+        self.prompt_tln_label = QLabel(os.path.basename(self.current_prompt_tln))
         self.prompt_tln_label.setStyleSheet("color: #666; font-style: italic;")
         
         self.btn_select_prompt_tln = QPushButton("📂 Chọn")
@@ -463,7 +488,7 @@ class GenQuesWidget(QWidget):
         self.chk_tl.setChecked(True) 
         self.chk_tl.stateChanged.connect(self.update_process_button_state)
         
-        self.prompt_tl_label = QLabel(os.path.basename(self.default_prompt_tl))
+        self.prompt_tl_label = QLabel(os.path.basename(self.current_prompt_tl))
         self.prompt_tl_label.setStyleSheet("color: #666; font-style: italic;")
         
         self.btn_select_prompt_tl = QPushButton("📂 Chọn")
@@ -521,7 +546,10 @@ class GenQuesWidget(QWidget):
         proc_layout.addWidget(file_group, 5)
         proc_layout.addWidget(conf_group, 3)
         proc_layout.addLayout(act_layout, 1)
-        proc_tab.setLayout(proc_layout)
+        scroll_area.setWidget(content_container)
+            
+            # Đưa vùng cuộn vào layout của Tab
+        tab_layout_root.addWidget(scroll_area)
 
         # TAB 2: KẾT QUẢ
         res_tab = QWidget()
@@ -896,7 +924,11 @@ class GenQuesWidget(QWidget):
             "", 
             "Text Files (*.txt)"
         )
-        
+        if isinstance(file_path, list): 
+            if not file_path: return
+            file_path = file_path[0]
+        elif isinstance(file_path, tuple):
+             file_path = file_path[0]
         if file_path:
             try:
                 # Đọc nội dung để lưu vào bộ nhớ
@@ -907,18 +939,22 @@ class GenQuesWidget(QWidget):
                     self.prompt_tn_content = content
                     self.current_prompt_tn = file_path 
                     self.prompt_tn_label.setText(os.path.basename(file_path))
+                    self.settings.setValue("path_prompt_tn", file_path)
                 elif prompt_type == "dung_sai":
                     self.prompt_ds_content = content
                     self.current_prompt_ds = file_path 
                     self.prompt_ds_label.setText(os.path.basename(file_path))
+                    self.settings.setValue("path_prompt_ds", file_path)
                 elif prompt_type == "tra_loi_ngan":
                     self.prompt_tln_content = content
                     self.current_prompt_tln = file_path
                     self.prompt_tln_label.setText(os.path.basename(file_path))
+                    self.settings.setValue("path_prompt_tln", file_path)
                 elif prompt_type == "tu_luan":
                     self.prompt_tl_content = content
                     self.current_prompt_tl = file_path
                     self.prompt_tl_label.setText(os.path.basename(file_path))
+                    self.settings.setValue("path_prompt_tl", file_path)
                 
                 self.emit_status(f"Đã chọn prompt: {os.path.basename(file_path)}", "success")
                 
@@ -1018,6 +1054,12 @@ class GenQuesWidget(QWidget):
                 'tra_loi_ngan': self.default_prompt_tln,
                 'tu_luan': self.default_prompt_tl
             }
+            setting_keys = {
+                'trac_nghiem': 'path_prompt_tn',
+                'dung_sai': 'path_prompt_ds',
+                'tra_loi_ngan': 'path_prompt_tln',
+                'tu_luan': 'path_prompt_tl'
+            }
             default_file = default_files.get(p_type, self.default_prompt_tn)
             
             if os.path.isfile(default_file):
@@ -1026,7 +1068,7 @@ class GenQuesWidget(QWidget):
                         default_content = f.read()
                     txt_edit.setPlainText(default_content)
                     
-                    # Reset current prompt path về mặc định
+                    # Reset current path & Label
                     if p_type == "trac_nghiem":
                         self.current_prompt_tn = default_file
                         self.prompt_tn_label.setText(os.path.basename(default_file))
@@ -1040,7 +1082,10 @@ class GenQuesWidget(QWidget):
                         self.current_prompt_tl = default_file
                         self.prompt_tl_label.setText(os.path.basename(default_file))
                     
-                    QMessageBox.information(dialog, "Thành công", "Đã reset về prompt mặc định!")
+                    # --- [THÊM] Xóa config đã lưu để quay về mặc định ---
+                    self.settings.remove(setting_keys.get(p_type)) 
+                    
+                    QMessageBox.information(dialog, "Thành công", "Đã reset về prompt mặc định gốc!")
                     self.emit_status(f"Đã reset prompt về mặc định", "info")
                 except Exception as e:
                     QMessageBox.warning(dialog, "Lỗi", f"Không thể load prompt: {str(e)}")
@@ -1062,21 +1107,40 @@ class GenQuesWidget(QWidget):
 
     # --- LOGIC CHẠY (PROCESS) ---
     def process_files(self):
+        # 1. Kiểm tra đã chọn PDF chưa
         selected = self.get_selected_files()
         if not selected:
-            QMessageBox.warning(self, "Lỗi", "Chưa chọn file nào!")
+            QMessageBox.warning(self, "Thiếu dữ liệu", "⚠️ Vui lòng chọn ít nhất 1 file tài liệu PDF!")
             return
 
+        # 2. VALIDATION PROMPT (Bước quan trọng mới thêm vào)
+        # Kiểm tra xem các mục được tick có file prompt hợp lệ không
+        missing_prompts = []
         prompt_paths = {}
-        if self.chk_tn.isChecked(): 
-            prompt_paths["trac_nghiem"] = self.current_prompt_tn
-        if self.chk_ds.isChecked(): 
-            prompt_paths["dung_sai"] = self.current_prompt_ds
-        if self.chk_tln.isChecked(): 
-            prompt_paths["tra_loi_ngan"] = self.current_prompt_tln
-        if self.chk_tl.isChecked(): 
-            prompt_paths["tu_luan"] = self.current_prompt_tl
 
+        # Hàm kiểm tra nhanh
+        def check_path(is_checked, path, key, label):
+            if is_checked:
+                # Kiểm tra đường dẫn có trống hoặc file không tồn tại
+                if not path or not os.path.exists(path):
+                    missing_prompts.append(label)
+                else:
+                    prompt_paths[key] = path
+
+        check_path(self.chk_tn.isChecked(), self.current_prompt_tn, "trac_nghiem", "Trắc nghiệm")
+        check_path(self.chk_ds.isChecked(), self.current_prompt_ds, "dung_sai", "Đúng / Sai")
+        check_path(self.chk_tln.isChecked(), self.current_prompt_tln, "tra_loi_ngan", "Trả lời ngắn")
+        check_path(self.chk_tl.isChecked(), self.current_prompt_tl, "tu_luan", "Tự luận")
+
+        # Nếu có lỗi thiếu prompt -> Dừng ngay, không cho chạy Thread
+        if missing_prompts:
+            msg = "⛔ Các loại đề sau chưa có file Prompt hợp lệ (hoặc file không tồn tại):\n\n"
+            msg += "\n".join([f"• {name}" for name in missing_prompts])
+            msg += "\n\n👉 Vui lòng bấm nút [📂 Chọn] để nạp file prompt txt."
+            QMessageBox.critical(self, "Lỗi Prompt", msg)
+            return
+
+        # 3. Nếu mọi thứ OK -> Mới bắt đầu khóa nút và chạy Thread
         self.btn_process.setEnabled(False)
         self.progress_bar.setVisible(True)
         self.progress_bar.setValue(0)
@@ -1086,7 +1150,7 @@ class GenQuesWidget(QWidget):
         
         self.processing_thread = ProcessingThread(
             selected,
-            prompt_paths,
+            prompt_paths, # Dict này đảm bảo chỉ chứa các path đã tồn tại
             self.project_id,
             self.credentials,
             self.processor_module,
@@ -1096,7 +1160,15 @@ class GenQuesWidget(QWidget):
         self.processing_thread.progress.connect(lambda s: self.status_lbl.setText(s))
         self.processing_thread.progress_update.connect(lambda c, t: self.progress_bar.setValue(int(c/t*100) if t else 0))
         self.processing_thread.finished.connect(self.on_finished)
-        self.processing_thread.error_signal.connect(lambda e: QMessageBox.critical(self, "Lỗi", e))
+        
+        # Thêm xử lý lỗi để mở lại nút nếu Thread chết bất đắc kỳ tử
+        def on_thread_error(e):
+            QMessageBox.critical(self, "Lỗi xử lý", f"❌ Có lỗi xảy ra trong quá trình chạy:\n{e}")
+            self.btn_process.setEnabled(True) # Mở lại nút để user bấm lại
+            self.progress_bar.setVisible(False)
+            self.status_lbl.setText("Đã dừng do lỗi.")
+
+        self.processing_thread.error_signal.connect(on_thread_error)
         
         self.processing_thread.start()
 

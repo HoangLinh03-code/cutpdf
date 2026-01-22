@@ -18,7 +18,8 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("CutPDF - Multi-Tool Platform")
-        self.resize(1400, 850)
+        self.setMinimumSize(1100, 700)
+        self.resize(1200, 800)
         
         # Initialize data
         self.generated_files = []

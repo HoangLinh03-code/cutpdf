@@ -1,6 +1,11 @@
 import os
 import sys
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, 
+    QFileDialog, QListWidget, QProgressBar, QMessageBox, 
+    QGroupBox, QRadioButton, QButtonGroup, QSpinBox, 
+    QScrollArea, QFrame, QLineEdit, QComboBox, QCheckBox, QSplitter
+)
 from PyQt5.QtCore import *
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtGui import QFont
@@ -65,8 +70,27 @@ class CutPdfWidget(QWidget):
             self.auto_process_local_button.setToolTip("❌ Cần credentials để sử dụng AI")
 
     def init_ui(self):
+        # --- [FIX GIAO DIỆN START] ---
+        # 1. Tạo layout chính cho Widget này (bọc ngoài cùng)
+        outer_layout = QVBoxLayout(self)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+
+        # 2. Tạo vùng cuộn (Scroll Area)
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True) # Cho phép nội dung co giãn
+        scroll_area.setFrameShape(QFrame.NoFrame) # Bỏ viền
+
+        # 3. Tạo Widget chứa nội dung (Container)
+        content_widget = QWidget()
+        
+        # 4. Layout của nội dung (Đây là layout bạn sẽ add các widget vào)
+        layout = QVBoxLayout(content_widget)
+        layout.setSpacing(10)
+        layout.setContentsMargins(10, 10, 10, 10)
+        # --- [FIX GIAO DIỆN END] ---
+
         font = QFont("Arial", 10)
-        layout = QVBoxLayout()
+        # layout = QVBoxLayout()  <-- DELETE CODE CŨ (Đã thay bằng layout của content_widget)
         
         # Header
         header_label = QLabel("✂️ CẮT PDF BẰNG AI")
@@ -84,7 +108,7 @@ class CutPdfWidget(QWidget):
         """)
         layout.addWidget(header_label)
         
-        # # Google Drive section
+        # # Google Drive section (Đang comment theo code cũ)
         # drive_group = self.create_drive_section()
         # layout.addWidget(drive_group)
         
@@ -112,7 +136,16 @@ class CutPdfWidget(QWidget):
         compress_group = self.create_compression_section()
         layout.addWidget(compress_group)
         
-        self.setLayout(layout)
+        # self.setLayout(layout) <-- DELETE CODE CŨ
+        
+        # --- [FIX GIAO DIỆN START] ---
+        # 5. Đẩy nội dung lên trên và gắn vào Scroll Area
+        layout.addStretch()
+        scroll_area.setWidget(content_widget)
+        outer_layout.addWidget(scroll_area)
+        # --- [FIX GIAO DIỆN END] ---
+    
+    # --- CÁC HÀM DƯỚI ĐÂY GIỮ NGUYÊN 100% ---
     
     # def create_drive_section(self):
     #     """Tạo section Google Drive"""

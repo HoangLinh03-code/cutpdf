@@ -3,7 +3,11 @@ from google import genai
 from google.genai import types
 from modules.common.callAPI import get_vertex_ai_credentials 
 
-def generate_image_from_text(prompt, aspect_ratio="1:1"):
+def generate_image_from_text(prompt, aspect_ratio="1:1", lang="vi"):
+    """
+    Sinh ảnh từ prompt text.
+    - lang: 'vi' (Mặc định) hoặc 'en'.
+    """
     try:
         credentials = get_vertex_ai_credentials()
         project_id = os.getenv("PROJECT_ID")
@@ -16,16 +20,22 @@ def generate_image_from_text(prompt, aspect_ratio="1:1"):
         client = genai.Client(vertexai=True, project=project_id, location=location, credentials=credentials)
         model_name = "gemini-3-pro-image-preview" 
 
-        print(f"🎨 Đang sinh ảnh: {prompt[:100]}...")
+        print(f"🎨 Đang sinh ảnh ({lang.upper()}): {prompt[:50]}...")
         
-        # Gọi API với timeout=60s (Đủ cho 1 ảnh)
+        # --- TỐI ƯU HÓA PROMPT THEO NGÔN NGỮ ---
+        if lang == 'en':
+            # Instruction tiếng Anh -> Kích hoạt mode vẽ text tiếng Anh chuẩn xác
+            final_prompt = f"Generate a high-quality, accurate illustration based on the following description. Ensure all text labels inside the image are in ENGLISH: {prompt}"
+        else:
+            # Instruction tiếng Việt
+            final_prompt = f"Vẽ hình ảnh minh họa chính xác cho mô tả sau. Đảm bảo các chữ/nhãn trong hình là TIẾNG VIỆT: {prompt}"
+
         response = client.models.generate_content(
             model=model_name,
-            contents=f"Vẽ hình ảnh minh họa chính xác cho mô tả sau: {prompt}",
+            contents=final_prompt,
             config=types.GenerateContentConfig(
-                # tools=[{"google_search": {}}],
                 response_modalities=["IMAGE"],
-                candidate_count=1, # Yêu cầu rõ ràng chỉ sinh 1 ảnh
+                candidate_count=1,
                 image_config=types.ImageConfig(aspect_ratio=aspect_ratio),
             )
         )
@@ -41,7 +51,6 @@ def generate_image_from_text(prompt, aspect_ratio="1:1"):
         print(f"❌ Lỗi sinh ảnh: {str(e)}")
         return None
 
-# Hàm phụ trợ giữ nguyên
 def get_image_size_for_aspect_ratio(aspect_ratio, base_width_inches=3.0):
     try:
         w, h = map(float, aspect_ratio.split(":"))

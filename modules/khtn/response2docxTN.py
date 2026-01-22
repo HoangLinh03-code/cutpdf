@@ -302,44 +302,66 @@ def save_json_securely(data, batch_name, file_name):
         except Exception as e:
             print(f"❌ Lỗi lưu file JSON: {e}")
             return None
-def generate_or_get_image(hinh_anh_data: Dict) -> tuple:
-    mo_ta = hinh_anh_data.get("mo_ta", hinh_anh_data.get("description", ""))
+def generate_or_get_image(hinh_anh_data: Dict, target_key: str = "mo_ta") -> tuple:
+    """
+    Sinh ảnh từ data (STRICT MODE). 
+    target_key: 'mo_ta' (Việt) hoặc 'mo_ta_en' (Anh)
+    """
+    # 1. Lấy mô tả
+    mo_ta = hinh_anh_data.get(target_key, "")
+    
+    # 2. Tương thích ngược (Chỉ cho tiếng Việt)
+    if target_key == "mo_ta" and not mo_ta:
+        mo_ta = hinh_anh_data.get("description", "")
+
     mo_ta = str(mo_ta).strip()
     loai = hinh_anh_data.get("loai", "tu_mo_ta")
     
+    # 3. Xác định ngôn ngữ
+    lang_code = "en" if target_key == "mo_ta_en" else "vi"
+
+    # 4. Gọi API sinh ảnh
     if loai == "tu_mo_ta" and mo_ta:
         try:
             from modules.common.text2Image import generate_image_from_text
-            # Hàm này trả về 1 bytes object (hoặc None)
-            image_bytes = generate_image_from_text(mo_ta)
+            
+            # Gọi hàm với tham số lang
+            image_bytes = generate_image_from_text(mo_ta, lang=lang_code)
+            
             if image_bytes:
                 return image_bytes, None
             else:
-                # Nếu API trả về None (do lỗi mạng hoặc quota)
-                return None, f"⚠️ [Lỗi sinh ảnh] Server không trả về ảnh cho mô tả: {mo_ta}"
+                return None, f"⚠️ [Lỗi Server] Không sinh được ảnh ({target_key})..."
         except Exception as e:
             print(f"❌ Lỗi sinh ảnh: {e}")
             return None, f"⚠️ [Lỗi Code] {str(e)}"
     
-    placeholder = f"🖼️ [Cần chèn hình: {mo_ta}]"
+    # 5. Placeholder (Strict Mode - Báo lỗi nếu thiếu)
+    placeholder = None
+    lang_label = "EN" if lang_code == "en" else "VI"
+    
+    if mo_ta:
+        placeholder = f"🖼️ [{lang_label}: Cần chèn hình: {mo_ta}]"
+    elif hinh_anh_data.get("co_hinh"): 
+        placeholder = f"❌ [MISSING {lang_label} IMAGE DESCRIPTION]"
+        
     return None, placeholder
 
-def insert_image_or_placeholder(doc: Document, hinh_anh_data: Dict):
-    """Chèn ảnh hoặc placeholder vào document"""
-    image_bytes, placeholder = generate_or_get_image(hinh_anh_data)
+def insert_image_or_placeholder(doc: Document, hinh_anh_data: Dict, target_key: str = "mo_ta"):
+    if not hinh_anh_data.get("co_hinh"):
+        return doc
+
+    image_bytes, placeholder = generate_or_get_image(hinh_anh_data, target_key)
     
     if image_bytes:
         try:
             image_stream = BytesIO(image_bytes)
-            doc.add_picture(image_stream, width=Inches(4))
+            doc.add_picture(image_stream, width=Inches(3.5))
             doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
         except Exception as e:
-            print(f"❌ Lỗi chèn ảnh: {e}")
             p = doc.add_paragraph()
             run = p.add_run(f"⚠️ [Lỗi chèn ảnh: {str(e)}]")
             run.font.color.rgb = RGBColor(255, 0, 0)
-            run.italic = True
-    
     elif placeholder:
         p = doc.add_paragraph()
         run = p.add_run(placeholder)
@@ -347,7 +369,6 @@ def insert_image_or_placeholder(doc: Document, hinh_anh_data: Dict):
         run.italic = True
         run.bold = True
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    
     return doc
 
 class PromptBuilder:
@@ -466,7 +487,7 @@ class DynamicDocxRenderer:
         
         hinh_anh = cau.get("hinh_anh", {})
         if hinh_anh.get("co_hinh"):
-            insert_image_or_placeholder(self.doc, hinh_anh)
+            insert_image_or_placeholder(self.doc, hinh_anh, target_key="mo_ta")
         
         for dap_an in cau.get("cac_lua_chon", []):
             p_da = self.doc.add_paragraph()
@@ -477,7 +498,8 @@ class DynamicDocxRenderer:
             self.doc.add_paragraph("(translate_en)").italic = True
             p_en = self.doc.add_paragraph()
             process_text_with_latex(cau.get('noi_dung_en', ''), p_en)
-            
+            if hinh_anh.get("co_hinh"):
+                insert_image_or_placeholder(self.doc, hinh_anh, target_key="mo_ta_en")
             for dap_an in cau.get("cac_lua_chon", []):
                 p_da_en = self.doc.add_paragraph()
                 p_da_en.add_run(f"{dap_an['ky_hieu']}. ").bold = True
@@ -564,7 +586,7 @@ class DynamicDocxRenderer:
         # 3. Render Hình ảnh (nếu có)
         hinh_anh = cau.get("hinh_anh", {})
         if hinh_anh.get("co_hinh"):
-            insert_image_or_placeholder(self.doc, hinh_anh)
+            insert_image_or_placeholder(self.doc, hinh_anh, target_key="mo_ta")
        
         # 4. Render các ý a, b, c, d
         for y in cau.get("cac_y", []):
@@ -579,7 +601,8 @@ class DynamicDocxRenderer:
             if cau.get("doan_thong_tin_en"):
                 p_en = self.doc.add_paragraph()
                 process_text_with_latex(cau.get("doan_thong_tin_en", ""), p_en)
-           
+            if hinh_anh.get("co_hinh"):
+                insert_image_or_placeholder(self.doc, hinh_anh, target_key="mo_ta_en")
             for y in cau.get("cac_y", []):
                 p_y_en = self.doc.add_paragraph()
                 p_y_en.add_run(f"{y['ky_hieu']}) ")
@@ -664,17 +687,18 @@ class DynamicDocxRenderer:
         p = self.doc.add_paragraph()
         p.add_run(f"Câu {cau['stt']}. ").bold = True
         process_text_with_latex(cau.get('noi_dung', ''), p)  
-        
+        hinh_anh = cau.get("hinh_anh", {})
+        if hinh_anh.get("co_hinh"):
+            insert_image_or_placeholder(self.doc, hinh_anh, target_key="mo_ta")
         # 2. Câu hỏi Tiếng Anh
         if cau.get('noi_dung_en'):
             self.doc.add_paragraph("(translate_en)").italic = True
             p_en = self.doc.add_paragraph()
             process_text_with_latex(cau.get('noi_dung_en', ''), p_en)
-
-        # 3. Hình ảnh
-        hinh_anh = cau.get("hinh_anh", {})
-        if hinh_anh.get("co_hinh"):
-            insert_image_or_placeholder(self.doc, hinh_anh)
+            # --- ẢNH ANH ---
+            if hinh_anh.get("co_hinh"):
+                insert_image_or_placeholder(self.doc, hinh_anh, target_key="mo_ta_en")
+        
         
         # 4. Đáp án
         p_da = self.doc.add_paragraph()
@@ -741,18 +765,17 @@ class DynamicDocxRenderer:
         p = self.doc.add_paragraph()
         p.add_run(f"Câu {cau['stt']}. ").bold = True
         process_text_with_latex(cau.get('noi_dung', ''), p)
-        
+        # 3. Hình ảnh
+        hinh_anh = cau.get("hinh_anh", {})
+        if hinh_anh.get("co_hinh"):
+            insert_image_or_placeholder(self.doc, hinh_anh)
         # 2. Câu hỏi Tiếng Anh
         if cau.get('noi_dung_en'):
             self.doc.add_paragraph("(translate_en)").italic = True
             p_en = self.doc.add_paragraph()
             process_text_with_latex(cau.get('noi_dung_en', ''), p_en)
-        
-        # 3. Hình ảnh
-        hinh_anh = cau.get("hinh_anh", {})
-        if hinh_anh.get("co_hinh"):
-            insert_image_or_placeholder(self.doc, hinh_anh)
-            
+            if hinh_anh.get("co_hinh"):
+                insert_image_or_placeholder(self.doc, hinh_anh, target_key="mo_ta_en")
         # 4. Header Lời giải
         p_lg = self.doc.add_paragraph()
         p_lg.add_run("Lời giải").bold = True
