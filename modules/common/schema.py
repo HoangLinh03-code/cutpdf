@@ -156,8 +156,8 @@ schema_tra_loi_ngan = {
                         "description": "Mảng phân cấp 3 phần tử: [Tên Bài, Tên Mục, Tên Dạng]"
                     },
                    
-                    "noi_dung": {"type": "STRING", "description": "Câu hỏi Tiếng Việt"},
-                    "noi_dung_en": {"type": "STRING", "description": "Câu hỏi Tiếng Anh"},
+                    "noi_dung": {"type": "STRING", "description": "Câu hỏi Tiếng Việt phân tích sâu, đưa ra nhiều dữ kiện dẫn dắt"},
+                    "noi_dung_en": {"type": "STRING", "description": "Câu hỏi Tiếng Anh phân tích sâu, đưa ra nhiều dữ kiện dẫn dắt"},
                    
                     "dap_an": {
                         "type": "STRING",
@@ -175,8 +175,8 @@ schema_tra_loi_ngan = {
                     },
                    
                     # --- GIẢI THÍCH SONG NGỮ ---
-                    "giai_thich": {"type": "STRING", "description": "Giải thích Tiếng Việt"},
-                    "giai_thich_en": {"type": "STRING", "description": "Giải thích Tiếng Anh"}
+                    "giai_thich": {"type": "STRING", "description": "Giải thích Tiếng Việt CỰC KỲ CHI TIẾT, phân tích sâu bản chất/cơ chế, mở rộng vấn đề"},
+                    "giai_thich_en": {"type": "STRING", "description": "Giải thích Tiếng Anh CỰC KỲ CHI TIẾT, phân tích sâu bản chất/cơ chế, mở rộng vấn đề"}
                 },
                 "required": ["stt", "muc_do", "ma_dang", "phan", "noi_dung", "noi_dung_en", "dap_an", "hinh_anh", "giai_thich", "giai_thich_en"]
             }
