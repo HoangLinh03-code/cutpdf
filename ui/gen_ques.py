@@ -1188,21 +1188,68 @@ class GenQuesWidget(QWidget):
         self.emit_progress(100, False)
 
     # --- LOGIC PREVIEW ---
+    # --- LOGIC PREVIEW (ĐÃ SỬA) ---
     def preview_docx(self, item):
         fname = item.text()
+        # Tìm đường dẫn file thực tế trong list generated_files
         fpath = next((f for f in self.generated_files if os.path.basename(f) == fname), None)
         
+        # Mặc định bật nút mở Word
         self.btn_open_word.setEnabled(True)
         
         if fpath and os.path.exists(fpath):
             try:
-                with open(fpath, "rb") as docx_file:
-                    result = mammoth.convert_to_html(docx_file)
-                    html = f"<html><body>{result.value}</body></html>"
-                    self.web_view.setHtml(html)
+                # 1. Kiểm tra dung lượng file (Bytes -> MB)
+                file_size_mb = os.path.getsize(fpath) / (1024 * 1024)
+                
+                # 2. Nếu file > 10MB -> Hiện thông báo HTML đẹp thay vì render nội dung
+                if file_size_mb > 10:
+                    warning_html = f"""
+                    <html>
+                    <body style="font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #fafafa;">
+                        <div style="text-align: center; border: 2px dashed #f44336; padding: 40px; border-radius: 12px; background-color: white; max-width: 600px;">
+                            <h2 style="color: #d32f2f; margin-top: 0;">⚠️ FILE QUÁ LỚN ({file_size_mb:.2f} MB)</h2>
+                            <p style="font-size: 16px; color: #555;">Hệ thống tạm ẩn xem trước với file trên 10MB để tránh treo ứng dụng.</p>
+                            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                            <p style="font-weight: bold; color: #1565C0; font-size: 18px;">👉 Vui lòng nhấn nút "↗️ Mở bằng Word/WPS" ở góc phải.</p>
+                        </div>
+                    </body>
+                    </html>
+                    """
+                    self.web_view.setHtml(warning_html)
+                
+                # 3. Nếu file <= 10MB -> Dùng Mammoth convert bình thường
+                else:
+                    with open(fpath, "rb") as docx_file:
+                        result = mammoth.convert_to_html(docx_file)
+                        # Thêm chút CSS cơ bản để nội dung dễ đọc hơn
+                        style = """
+                        <style>
+                            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; }
+                            p { margin-bottom: 12px; }
+                            h1, h2, h3 { color: #0b4ae7; }
+                            table { border-collapse: collapse; width: 100%; margin: 15px 0; border: 1px solid #ddd; }
+                            td, th { border: 1px solid #ddd; padding: 10px; }
+                            img { max-width: 100%; height: auto; display: block; margin: 10px auto; }
+                        </style>
+                        """
+                        html = f"<html><head>{style}</head><body>{result.value}</body></html>"
+                        self.web_view.setHtml(html)
+
             except Exception as e:
-                self.web_view.setHtml(f"Lỗi đọc file: {e}")
+                # Xử lý lỗi nếu không đọc được file
+                self.web_view.setHtml(f"""
+                    <h3 style='color:red; text-align:center; margin-top:50px;'>
+                        ❌ Lỗi đọc file: {str(e)}
+                    </h3>
+                """)
         else:
+            # Trường hợp file bị xóa hoặc không tìm thấy
+            self.web_view.setHtml("""
+                <h3 style='color:gray; text-align:center; margin-top:50px;'>
+                    🚫 File không tồn tại hoặc đã bị xóa.
+                </h3>
+            """)
             self.btn_open_word.setEnabled(False)
 
     def open_word(self):

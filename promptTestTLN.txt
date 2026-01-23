@@ -48,7 +48,7 @@ Chỉ được thay đổi đối tượng đời sống/vật lý tương đư�
   + Nếu AI cố tình sinh câu thứ 3 cho một ý đã hỏi, đó được coi là câu hỏi "RÁC" và vi phạm nguyên tắc.
 2. YÊU CẦU ĐẶC BIỆT VỀ HÌNH ẢNH (BẮT BUỘC):
 - QUY TẮC XỬ LÝ HÌNH ẢNH (LOGIC NGẮT MẠCH):
-  * BẮT BUỘC 30% tổng số câu hỏi (tức là 12 câu có hình ảnh) có trường "hinh_anh": { "co_hinh": true, "loai": "tu_mo_ta", "mo_ta": "[Mô tả chi tiết hình ảnh cần vẽ bằng lời văn Tiếng Việt]", "mo_ta_en": [Mô tả chi tiết hình ảnh cần vẽ bằng lời văn Tiếng Anh dịch từ lời văn Tiếng Việt]}.
+  * BẮT BUỘC 0% tổng số câu hỏi (tức là 0 câu có hình ảnh) có trường "hinh_anh": { "co_hinh": true, "loai": "tu_mo_ta", "mo_ta": "[Mô tả chi tiết hình ảnh cần vẽ bằng lời văn Tiếng Việt]", "mo_ta_en": [Mô tả chi tiết hình ảnh cần vẽ bằng lời văn Tiếng Anh dịch từ lời văn Tiếng Việt]}.
   * Lưu ý: Trường "mo_ta" phải mô tả cụ thể hình ảnh (Ví dụ: "Sơ đồ bình điện phân với 2 cực...", "Đồ thị biểu diễn sự biến thiên..."). 
   * TUYỆT ĐỐI KHÔNG để trống trường này.
   * KIỂM TRA HÌNH ẢNH: Nếu "co_hinh": true, BẮT BUỘC phải điền đủ cả 2 trường "mo_ta" và "mo_ta_en". Không được phép thiếu 1 trong 2.
@@ -230,7 +230,7 @@ Chấp nhận 2 hình thức câu hỏi trong trường "noi_dung":
 + Ví dụ: "Số lượng orbital trong lớp p là" (Không có dấu chấm/hỏi ở cuối).
 2. QUY TẮC ĐÁP ÁN SỐ TUYỆT ĐỐI (STRICT NUMERIC - QUAN TRỌNG NHẤT):
 - Đáp án (trường "dap_an") CHỈ ĐƯỢC CHỨA SỐ NGUYÊN HOẶC SỐ THẬP PHÂN.
-- GIỚI HẠN KÝ TỰ: Tối đa 4 ký tự số (ví dụ: 1000; 3,14; -5,5; 0,01).
+- GIỚI HẠN KÝ TỰ (BẮT BUỘC): Tối đa 4 ký tự số (ví dụ: 1000; 3,14; -5,5; 0,01).
 - LƯU Ý VỀ SỐ THẬP PHÂN: BẮT BUỘC dùng dấu phẩy (,) để ngăn cách phần thập phân. TUYỆT ĐỐI KHÔNG dùng dấu chấm (.).
   + Đúng: [[3,14]]
   + Sai: [[3.14]]
@@ -312,8 +312,14 @@ A. CẤU TRÚC CÂU HỎI:
   + Nếu nội dung nằm ở phần "Luyện tập", "Vận dụng", hay "Em có biết", phải ghi rõ: "Bài X - Mục Y - Luyện tập 2".
   + KIỂM TRA LẠI: Nếu 5 câu hỏi liên tiếp có trường "phan" giống hệt nhau mà không có sự thay đổi về tiểu mục, bạn đang quét quá nông -> HÃY ĐI SÂU HƠN.
 - TUYỆT ĐỐI PHẢI đảm bảo câu hỏi đi sâu vào từng ngóc ngách của kiến thức.
-- Trường "noi_dung": [Câu hỏi Tiếng Việt phân tích sâu, đưa ra nhiều dữ kiện dẫn dắt, khoảng 80 đến 100 từ].
-- Trường "noi_dung_en": [Câu hỏi Tiếng Anh phân tích sâu, đưa ra nhiều dữ kiện dẫn dắt, khoảng 80 đến 100 từ].
+- Trường "noi_dung": 
+  + YÊU CẦU ĐỘ DÀI: khoảng 70 đến 90 từ (Bắt buộc).
+  + CẤU TRÚC BẮT BUỘC (3 PHẦN):
+    1. [Bối cảnh/Dẫn dắt]: Đưa ra một tình huống thực tế, một thí nghiệm, hoặc một đoạn trích dẫn giả định (1-2 câu).
+    2. [Dữ kiện]: Cung cấp các con số, thông số cụ thể (biến thiên so với sách).
+    3. [Câu hỏi]: Yêu cầu cụ thể cần giải quyết.
+  + CẤM: Không được hỏi cộc lốc kiểu "X là gì?". Phải hỏi: "Trong điều kiện Y, hiện tượng Z xảy ra như thế nào và giá trị của X là bao nhiêu?"
+- Trường "noi_dung_en": Tương tự, dịch thuật ngữ chuyên ngành chuẩn xác, độ dài tương đương.
 - "hinh_anh": {
     "co_hinh": boolean,
     "loai": "tu_mo_ta",
@@ -331,10 +337,18 @@ A. CẤU TRÚC CÂU HỎI:
   + CẤM: "[[50m]]", "[[x=50]]".
 - Trường "giai_thich" và "giai_thich_en":
   + BẮT BUỘC phải tách riêng 2 trường này.
-  + Giải thích CỰC KỲ CHI TIẾT, phân tích sâu bản chất/cơ chế, mở rộng vấn đề khoảng 80 đến 100 từ, không kết luận khi chưa có (KL.).
+  + YÊU CẦU VỀ ĐỘ DÀI & PHONG CÁCH (BẮT BUỘC - TRỌNG SỐ 90%):
+    * ĐỘ DÀI: BẮT BUỘC TỪ 70 đến 90 TỪ.
+    * PHONG CÁCH "TIỂU LUẬN CHUYÊN GIA" (EXPERT ESSAY):
+      - TUYỆT ĐỐI KHÔNG sử dụng gạch đầu dòng (-), dấu cộng (+) hay chia "Bước 1, Bước 2".
+      - Phải viết thành VĂN XUÔI liền mạch, sử dụng các từ nối logic (Bởi vì, Mặt khác, Hơn nữa, Từ đó suy ra...) để tạo sự chặt chẽ.
+    * CHIẾN THUẬT PHÂN TÍCH SÂU:
+      - Đừng chỉ thay số vào công thức. Hãy giải thích TẠI SAO lại dùng công thức đó? Bản chất vật lý/hóa học là gì?
+      - Phân tích ý nghĩa của các con số dữ kiện (Ví dụ: "Nồng độ này rất loãng nên sự phân li diễn ra hoàn toàn...").
+      - Mở rộng vấn đề: Cảnh báo những sai lầm học sinh thường gặp hoặc liên hệ thực tế.
   + KẾT LUẬN (BẮT BUỘC - VIẾT TRỌN CÂU):
-      * Tiếng Việt: Kết thúc bằng "\n**(KL.) Vậy [nhắc lại chủ ngữ câu hỏi] là [kết quả].**" (In đậm).
-      * Tiếng Anh: Kết thúc bằng "\n**(KL.) Therefore, [restate subject] is [result].**" (In đậm).
+      * Tiếng Việt: Kết thúc đoạn văn bằng dòng mới: "\n**(KL.) Vậy [nhắc lại chủ ngữ câu hỏi] là [kết quả].**" (In đậm).
+      * Tiếng Anh: Kết thúc đoạn văn bằng dòng mới: "\n**(KL.) Therefore, [restate subject] is [result].**" (In đậm).
       * VÍ DỤ CHUẨN:
         - Sai: "(KL.) Vậy 3."
         - Đúng: "(KL.) Vậy nguyên tử của nguyên tố này có 3 lớp electron."
