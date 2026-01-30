@@ -83,35 +83,39 @@ class VertexClient:
             print(f"Lỗi init GenAI Client: {e}")
             self.client = None
 
-    def send_data_to_AI(self, prompt, file_paths=None, temperature=0.2, top_p=0.8, response_schema=None,max_output_tokens=65535):
+    def send_data_to_AI(self, prompt, file_paths=None, temperature=0.2, top_p=0.8, response_schema=None, max_output_tokens=65535):
         if not self.client:
             return "❌ Lỗi: Client chưa được khởi tạo."
 
         contents = []
 
-        # 1. Xử lý File PDF (Sử dụng types.Part.from_bytes)
         if file_paths:
-            # Nếu file_paths là string đơn, chuyển thành list
             if isinstance(file_paths, str):
                 file_paths = [file_paths]
                 
             for file_path in file_paths:
                 try:
-                    with open(file_path, "rb") as f:
-                        pdf_bytes = f.read()
+                    # --- PHẦN THÊM MỚI: Xử lý file Markdown ---
+                    if file_path.lower().endswith('.md'):
+                        with open(file_path, "r", encoding="utf-8") as f:
+                            md_text = f.read()
+                        # Đưa nội dung Markdown vào như một phần của ngữ cảnh văn bản
+                        md_part = types.Part.from_text(text=f"--- NỘI DUNG TÀI LIỆU (.MD): ---\n{md_text}\n--- HẾT TÀI LIỆU ---")
+                        contents.append(types.Content(role="user", parts=[md_part]))
+                        print(f"📝 Đã load nội dung Markdown: {os.path.basename(file_path)}")
                     
-                    # SDK mới dùng from_bytes thay vì from_data cũ
-                    pdf_part = types.Part.from_bytes(
-                        data=pdf_bytes, 
-                        mime_type="application/pdf"
-                    )
-                    contents.append(types.Content(role="user", parts=[pdf_part]))
-                    print(f"📄 Đã load PDF: {os.path.basename(file_path)}")
+                    # --- PHẦN CŨ: Xử lý file PDF ---
+                    elif file_path.lower().endswith('.pdf'):
+                        with open(file_path, "rb") as f:
+                            pdf_bytes = f.read()
+                        pdf_part = types.Part.from_bytes(data=pdf_bytes, mime_type="application/pdf")
+                        contents.append(types.Content(role="user", parts=[pdf_part]))
+                        print(f"📄 Đã load PDF: {os.path.basename(file_path)}")
                 except Exception as e:
                     print(f"❌ Lỗi đọc file {file_path}: {e}")
                     raise e
 
-        # 2. Xử lý Prompt text
+        # Các phần còn lại giữ nguyên...
         text_part = types.Part.from_text(text=prompt)
         contents.append(types.Content(role="user", parts=[text_part]))
 

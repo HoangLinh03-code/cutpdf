@@ -114,7 +114,7 @@ schema_dung_sai = {
                                 "noi_dung": {"type": "STRING", "description": "Giải thích Tiếng Việt 90-100 từ"},
                                 "noi_dung_en": {"type": "STRING", "description": "Explanation in English 90-100 words"}
                             },
-                            "required": ["ky_hieu", "ket_luan", "noi_dung", "noi_dung_en"]
+                            "required": ["ky_hieu", "ket_luan", "noi_dung"]
                         }
                     },
                     "giai_thich_en": {
@@ -178,7 +178,7 @@ schema_tra_loi_ngan = {
                     "giai_thich": {"type": "STRING", "description": "Giải thích Tiếng Việt CỰC KỲ CHI TIẾT, phân tích sâu bản chất/cơ chế, mở rộng vấn đề"},
                     "giai_thich_en": {"type": "STRING", "description": "Giải thích Tiếng Anh CỰC KỲ CHI TIẾT, phân tích sâu bản chất/cơ chế, mở rộng vấn đề"}
                 },
-                "required": ["stt", "muc_do", "ma_dang", "phan", "noi_dung", "noi_dung_en", "dap_an", "hinh_anh", "giai_thich", "giai_thich_en"]
+                "required": ["stt", "muc_do", "ma_dang", "phan", "noi_dung", "dap_an", "hinh_anh", "giai_thich"]
             }
         }
     },
@@ -225,7 +225,7 @@ schema_tu_luan = {
                     "giai_thich": {"type": "STRING", "description": "Hướng dẫn chấm/Lời giải chi tiết Tiếng Việt. Phải đầy đủ các bước lập luận, công thức, thay số."},
                     "giai_thich_en": {"type": "STRING", "description": "Model Answer/Marking Guide in English."}
                 },
-                "required": ["stt", "muc_do", "ma_dang", "phan", "noi_dung", "noi_dung_en", "hinh_anh", "giai_thich", "giai_thich_en"]
+                "required": ["stt", "muc_do", "ma_dang", "phan", "noi_dung", "hinh_anh", "giai_thich"]
             }
         }
     },

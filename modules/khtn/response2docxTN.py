@@ -329,6 +329,7 @@ def generate_or_get_image(hinh_anh_data: Dict, target_key: str = "mo_ta") -> tup
             image_bytes = generate_image_from_text(mo_ta, lang=lang_code)
             
             if image_bytes:
+                time.sleep(5)
                 return image_bytes, None
             else:
                 return None, f"⚠️ [Lỗi Server] Không sinh được ảnh ({target_key})..."

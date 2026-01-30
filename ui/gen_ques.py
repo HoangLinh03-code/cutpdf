@@ -70,6 +70,7 @@ class ProcessingThread(QThread):
 
         # 2. Tạo danh sách công việc
         all_tasks = []
+        total_input_files = len(self.selected_items)
         for output_name, pdf_files in self.selected_items.items():
             if "trac_nghiem" in prompts:
                 all_tasks.append(TaskInfo(output_name, pdf_files, "TN", prompts["trac_nghiem"]))
@@ -85,7 +86,8 @@ class ProcessingThread(QThread):
             self.finished.emit([])
             return
 
-        self.progress.emit(f"🚀 Bắt đầu xử lý {total_tasks} tác vụ với module: {self.processor_module.__name__}...")
+        msg_start = f"🚀 Bắt đầu xử lý {total_input_files} bài (sinh ra {total_tasks} file kết quả)..."
+        self.progress.emit(msg_start)
         self.progress_update.emit(0, total_tasks)
 
         completed_count = 0
@@ -110,7 +112,9 @@ class ProcessingThread(QThread):
                         if result_path:
                             self.generated_files.append(result_path)
                             status_icon = "✅"
-                            msg = f"Xong {task.output_name} ({task.task_type})"
+                            # Rút gọn tên hiển thị cho đỡ rối
+                            short_name = task.output_name if len(task.output_name) < 30 else task.output_name[:27] + "..."
+                            msg = f"Xong {short_name} - {task.task_type}"
                         else:
                             failed_count += 1
                             status_icon = "⚠️"
@@ -128,7 +132,7 @@ class ProcessingThread(QThread):
 
     def _process_worker(self, task):
         """Gọi hàm xử lý từ module được truyền vào"""
-        MODEL_NAME = "gemini-3-pro-preview"
+        MODEL_NAME = "gemini-2.5-pro"
         
         try:
             if task.task_type == "TN":
@@ -607,7 +611,8 @@ class GenQuesWidget(QWidget):
 
     # --- LOGIC QUẢN LÝ FILE ---
     def add_pdf_files(self):
-        files, _ = QFileDialog.getOpenFileNames(self, "Chọn PDF", "", "PDF Files (*.pdf)")
+        # Cập nhật filter để chọn được cả PDF và MD
+        files, _ = QFileDialog.getOpenFileNames(self, "Chọn Tài Liệu", "", "Tài liệu (*.pdf *.md)")
         if files:
             for f in files:
                 item = QTreeWidgetItem(self.file_tree)
@@ -630,13 +635,16 @@ class GenQuesWidget(QWidget):
         folder_item.setCheckState(0, Qt.Checked)
         folder_item.setData(0, Qt.UserRole, "folder")
         
-        pdf_files = glob.glob(os.path.join(folder_path, "*.pdf"))
-        for pdf_file in sorted(pdf_files):
-            file_item = QTreeWidgetItem(folder_item)
-            file_item.setText(0, os.path.basename(pdf_file))
-            file_item.setText(1, pdf_file)
-            file_item.setCheckState(0, Qt.Checked)
-            file_item.setData(0, Qt.UserRole, "file")
+        extensions = ['*.pdf', '*.md']
+        all_files = []
+        for ext in extensions:
+            all_files.extend(glob.glob(os.path.join(folder_path, ext)))
+            for doc_file in sorted(all_files):
+                file_item = QTreeWidgetItem(folder_item)
+                file_item.setText(0, os.path.basename(doc_file))
+                file_item.setText(1, doc_file)
+                file_item.setCheckState(0, Qt.Checked)
+                file_item.setData(0, Qt.UserRole, "file")
         
         for name in sorted(os.listdir(folder_path)):
             subfolder_path = os.path.join(folder_path, name)
@@ -782,7 +790,7 @@ class GenQuesWidget(QWidget):
         if total_files == 0 and total_folders == 0:
             self.file_count_lbl.setText("<i>Chưa có tài liệu nào được chọn</i>")
         else:
-            text = f"📊 Tổng: <b>{total_folders}</b> folder, <b>{total_files}</b> file PDF"
+            text = f"📊 Tổng: <b>{total_folders}</b> folder, <b>{total_files}</b> tài liệu (PDF/MD)"
             self.file_count_lbl.setText(text)
         
         self.emit_file_count(total_files)
