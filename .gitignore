@@ -19,3 +19,6 @@ fix.py
 .env.gen
 SGK Lịch sử và địa lí 6 CD/
 modules/chuyendang/
+*.pdf
+*.docx 
+*.xlsx
