@@ -56,7 +56,25 @@ class ConvertPdfWidget(QWidget):
 
     def init_ui(self):
         """Khởi tạo giao diện Convert PDF"""
-        layout = QVBoxLayout()
+        
+        # --- [FIX GIAO DIỆN START] ---
+        # 1. Tạo layout bao ngoài cùng
+        outer_layout = QVBoxLayout(self)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+
+        # 2. Tạo vùng cuộn (Scroll Area)
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True) # Cho phép nội dung co giãn
+        scroll_area.setFrameShape(QFrame.NoFrame) # Bỏ viền xấu
+
+        # 3. Tạo Widget chứa nội dung (Container)
+        content_widget = QWidget()
+        
+        # 4. Layout chính gắn vào Container (Thay vì gắn trực tiếp vào self như cũ)
+        layout = QVBoxLayout(content_widget)
+        layout.setSpacing(15) # Tăng khoảng cách giữa các phần cho thoáng (Dãn ra)
+        layout.setContentsMargins(20, 20, 20, 20) # Căn lề rộng rãi
+        # --- [FIX GIAO DIỆN END] ---
         
         # Header - CẬP NHẬT
         header_label = QLabel("🔄 CONVERT PDF TO MARKDOWN & DOCX\n📥 Hỗ trợ tải từ Google Drive")
@@ -90,13 +108,21 @@ class ConvertPdfWidget(QWidget):
         results_section = self.create_results_section()
         layout.addWidget(results_section)
         
-        self.setLayout(layout)
+        # self.setLayout(layout)  <-- BỎ DÒNG NÀY (CODE CŨ)
+
+        # --- [FIX GIAO DIỆN START] ---
+        # 5. Đẩy nội dung lên trên cùng và gắn vào Scroll Area
+        layout.addStretch() 
+        scroll_area.setWidget(content_widget)
+        outer_layout.addWidget(scroll_area)
+        # --- [FIX GIAO DIỆN END] ---
 
     def create_file_section(self):
         """Tạo section chọn file - THÊM GOOGLE DRIVE SUPPORT"""
         group = QGroupBox("📁 Chọn PDF Files")
         group.setFont(QFont("Arial", 11, QFont.Bold))
         layout = QVBoxLayout()
+        layout.setSpacing(10) # Dãn khoảng cách trong group box
         
         # THÊM: Google Drive URL input
         drive_layout = QHBoxLayout()
@@ -155,6 +181,7 @@ class ConvertPdfWidget(QWidget):
         group = QGroupBox("⚙️ Conversion Options")
         group.setFont(QFont("Arial", 11, QFont.Bold))
         layout = QVBoxLayout()
+        layout.setSpacing(8) # Dãn khoảng cách
         
         # Output format
         format_layout = QHBoxLayout()
@@ -216,6 +243,7 @@ class ConvertPdfWidget(QWidget):
         """Tạo section progress"""
         group = QGroupBox("📊 Progress")
         layout = QVBoxLayout()
+        layout.setSpacing(5)
         
         # Overall progress
         self.overall_progress = QProgressBar()
@@ -245,6 +273,7 @@ class ConvertPdfWidget(QWidget):
         """Tạo section results"""
         group = QGroupBox("📄 Conversion Results")
         layout = QVBoxLayout()
+        layout.setSpacing(10)
         
         # Control buttons
         buttons_layout = QHBoxLayout()

@@ -13,5 +13,5 @@ class GenQuesKHTNWidget(GenQuesWidget):
         super().__init__(
             prompt_folder_name="khtn", 
             processor_module=khtn_processor,
-            widget_title="Sinh Câu Hỏi KHTN"
+            widget_title="TẠO CÂU HỎI BẰNG AI"
         )

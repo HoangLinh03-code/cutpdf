@@ -26,7 +26,8 @@ schema_trac_nghiem = {
                         "properties": {
                             "co_hinh": {"type": "BOOLEAN"},
                             "loai": {"type": "STRING"},
-                            "mo_ta": {"type": "STRING"}
+                            "mo_ta": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Việt để vẽ"},
+                            "mo_ta_en": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Anh (translate labels) để vẽ"}
                         }
                     },
                     "cac_lua_chon": {
@@ -50,11 +51,11 @@ schema_trac_nghiem = {
                     "goi_y": {"type": "STRING"},
                     "goi_y_en": {"type": "STRING"}
                 },
-                "required": ["stt", "muc_do", "phan", "noi_dung", "cac_lua_chon", "dap_an_dung", "giai_thich"]
+                "required": ["stt", "muc_do","ma_dang", "phan", "noi_dung", "cac_lua_chon", "dap_an_dung", "giai_thich"]
             }
         }
     },
-    "required": ["loai_de", "tong_so_cau", "cau_hoi"]
+    "required": ["loai_de", "ma_bai", "tong_so_cau", "cau_hoi"]
 }
 
 schema_dung_sai = {
@@ -69,11 +70,12 @@ schema_dung_sai = {
                 "type": "OBJECT",
                 "properties": {
                     "stt": {"type": "INTEGER"},
-                    "muc_do": {"type": "STRING"},
+                    "muc_do": {"type": "STRING", "enum": ["nhan_biet", "thong_hieu", "van_dung", "van_dung_cao"]},
                     "ma_dang": {"type": "STRING"},
                     "phan": {
                         "type": "ARRAY",
-                        "items": {"type": "STRING"}
+                        "items": {"type": "STRING"},
+                        "description": "Mảng 3 phần tử: [Tên Bài, Tên Mục, Tên Dạng]"
                     },
                     "doan_thong_tin": {"type": "STRING"},
                     "doan_thong_tin_en": {"type": "STRING"},
@@ -82,7 +84,8 @@ schema_dung_sai = {
                         "properties": {
                             "co_hinh": {"type": "BOOLEAN"},
                             "loai": {"type": "STRING"},
-                            "mo_ta": {"type": "STRING"}
+                            "mo_ta": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Việt để vẽ"},
+                            "mo_ta_en": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Anh (translate labels) để vẽ"}
                         }
                     },
                     "cac_y": {
@@ -99,18 +102,40 @@ schema_dung_sai = {
                         }
                     },
                     "dap_an_dung_sai": {"type": "STRING"},
-                    
-                    # --- CẬP NHẬT QUAN TRỌNG: STRING THAY VÌ ARRAY ---
-                    "giai_thich": {"type": "STRING"},
-                    "giai_thich_en": {"type": "STRING"}
+                   
+                    # --- CẬP NHẬT: GIẢI THÍCH DẠNG MẢNG ĐỐI TƯỢNG ---
+                    "giai_thich": {
+                        "type": "ARRAY",
+                        "items": {
+                            "type": "OBJECT",
+                            "properties": {
+                                "ky_hieu": {"type": "STRING", "description": "a, b, c, d"},
+                                "ket_luan": {"type": "STRING", "description": "ĐÚNG hoặc SAI"},
+                                "noi_dung": {"type": "STRING", "description": "Giải thích Tiếng Việt 90-100 từ"},
+                                "noi_dung_en": {"type": "STRING", "description": "Explanation in English 90-100 words"}
+                            },
+                            "required": ["ky_hieu", "ket_luan", "noi_dung", "noi_dung_en"]
+                        }
+                    },
+                    "giai_thich_en": {
+                        "type": "ARRAY",
+                        "items": {
+                            "type": "OBJECT",
+                            "properties": {
+                                "ky_hieu": {"type": "STRING"},
+                                "ket_luan": {"type": "STRING", "description": "TRUE or FALSE"},
+                                "noi_dung": {"type": "STRING", "description": "Explanation in English 90-100 words"}
+                            },
+                            "required": ["ky_hieu", "ket_luan", "noi_dung"]
+                        }
+                    }
                 },
-                "required": ["stt", "phan", "doan_thong_tin", "cac_y", "dap_an_dung_sai", "giai_thich"]
+                "required": ["stt","ma_dang", "phan", "doan_thong_tin", "cac_y", "dap_an_dung_sai", "giai_thich"]
             }
         }
     },
-    "required": ["loai_de", "tong_so_cau", "cau_hoi"]
+    "required": ["loai_de","ma_bai", "tong_so_cau", "cau_hoi"]
 }
- 
 schema_tra_loi_ngan = {
     "type": "OBJECT",
     "properties": {
@@ -131,12 +156,12 @@ schema_tra_loi_ngan = {
                         "description": "Mảng phân cấp 3 phần tử: [Tên Bài, Tên Mục, Tên Dạng]"
                     },
                    
-                    "noi_dung": {"type": "STRING", "description": "Câu hỏi Tiếng Việt"},
-                    "noi_dung_en": {"type": "STRING", "description": "Câu hỏi Tiếng Anh"},
+                    "noi_dung": {"type": "STRING", "description": "Câu hỏi Tiếng Việt phân tích sâu, đưa ra nhiều dữ kiện dẫn dắt"},
+                    "noi_dung_en": {"type": "STRING", "description": "Câu hỏi Tiếng Anh phân tích sâu, đưa ra nhiều dữ kiện dẫn dắt"},
                    
                     "dap_an": {
                         "type": "STRING",
-                        "description": "CHỈ CHỨA số (VD: 5; -2; 3,5) hoặc phân số (VD: 1/2). CẤM chữ, đơn vị."
+                        "description": "CHỈ CHỨA số nguyên hoặc số thập phân (VD: 5; -2; 3,5). CẤM chữ, đơn vị và các kí tự thường và đặc biệt."
                     },
                    
                     "hinh_anh": {
@@ -144,19 +169,20 @@ schema_tra_loi_ngan = {
                         "properties": {
                             "co_hinh": {"type": "BOOLEAN"},
                             "loai": {"type": "STRING"},
-                            "mo_ta": {"type": "STRING"}
+                            "mo_ta": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Việt để vẽ"},
+                            "mo_ta_en": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Anh (translate labels) để vẽ"}
                         }
                     },
                    
                     # --- GIẢI THÍCH SONG NGỮ ---
-                    "giai_thich": {"type": "STRING", "description": "Giải thích Tiếng Việt"},
-                    "giai_thich_en": {"type": "STRING", "description": "Giải thích Tiếng Anh"}
+                    "giai_thich": {"type": "STRING", "description": "Giải thích Tiếng Việt CỰC KỲ CHI TIẾT, phân tích sâu bản chất/cơ chế, mở rộng vấn đề"},
+                    "giai_thich_en": {"type": "STRING", "description": "Giải thích Tiếng Anh CỰC KỲ CHI TIẾT, phân tích sâu bản chất/cơ chế, mở rộng vấn đề"}
                 },
-                "required": ["stt", "muc_do", "phan", "noi_dung", "noi_dung_en", "dap_an", "hinh_anh", "giai_thich", "giai_thich_en"]
+                "required": ["stt", "muc_do", "ma_dang", "phan", "noi_dung", "noi_dung_en", "dap_an", "hinh_anh", "giai_thich", "giai_thich_en"]
             }
         }
     },
-    "required": ["loai_de", "tong_so_cau", "cau_hoi"]
+    "required": ["loai_de", "ma_bai", "tong_so_cau", "cau_hoi"]
 }
  
 schema_tu_luan = {
@@ -190,7 +216,8 @@ schema_tu_luan = {
                         "properties": {
                             "co_hinh": {"type": "BOOLEAN"},
                             "loai": {"type": "STRING"},
-                            "mo_ta": {"type": "STRING"}
+                            "mo_ta": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Việt để vẽ"},
+                            "mo_ta_en": {"type": "STRING", "description": "Mô tả ảnh bằng Tiếng Anh (translate labels) để vẽ"}
                         }
                     },
                    
@@ -198,10 +225,10 @@ schema_tu_luan = {
                     "giai_thich": {"type": "STRING", "description": "Hướng dẫn chấm/Lời giải chi tiết Tiếng Việt. Phải đầy đủ các bước lập luận, công thức, thay số."},
                     "giai_thich_en": {"type": "STRING", "description": "Model Answer/Marking Guide in English."}
                 },
-                "required": ["stt", "muc_do", "phan", "noi_dung", "noi_dung_en", "hinh_anh", "giai_thich", "giai_thich_en"]
+                "required": ["stt", "muc_do", "ma_dang", "phan", "noi_dung", "noi_dung_en", "hinh_anh", "giai_thich", "giai_thich_en"]
             }
         }
     },
-    "required": ["loai_de", "tong_so_cau", "cau_hoi"]
+    "required": ["loai_de", "ma_bai", "tong_so_cau", "cau_hoi"]
 }
  
