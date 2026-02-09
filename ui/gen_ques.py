@@ -39,7 +39,7 @@ class ProcessingThread(QThread):
     finished = pyqtSignal(list)
     error_signal = pyqtSignal(str)
 
-    def __init__(self, selected_items, prompt_paths, project_id, creds, processor_module, max_workers=3):
+    def __init__(self, selected_items, prompt_paths, project_id, creds, processor_module, max_workers=2):
         super().__init__()
         self.selected_items = selected_items
         self.prompt_paths = prompt_paths
@@ -521,7 +521,7 @@ class GenQuesWidget(QWidget):
         thread_layout = QHBoxLayout()
         thread_layout.addWidget(QLabel("Số bài xử lí cùng lúc:"))
         self.spin_worker = QSpinBox()
-        self.spin_worker.setRange(1, 50)
+        self.spin_worker.setRange(1, 3)
         self.spin_worker.setValue(3)
         self.spin_worker.setFixedWidth(60)
         thread_layout.addWidget(self.spin_worker)
