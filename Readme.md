@@ -42,6 +42,22 @@ Tuân thủ **Chuẩn Giáo dục 2025**, hỗ trợ 4 dạng câu hỏi chính:
 | **📂 Gom Nhóm Thông Minh** | Tự động gom nhóm các file đã cắt thành các đơn vị bài học để tạo câu hỏi toàn diện. |
 | **🎨 Xem Trước Trực Tiếp** | Xem trước trực quan các tệp DOCX được tạo ngay trong ứng dụng. |
 | **🔧 Tùy Chỉnh Prompt** | Kiểm soát hoàn toàn các câu lệnh (prompts) cho AI để điều chỉnh phong cách và độ khó đầu ra. |
+| **📉 Nén Thông Minh** | Tích hợp **Ghostscript** để nén PDF đầu ra (Quality: screen/ebook/printer) giúp tối ưu dung lượng lưu trữ. |
+
+### 5. ⚙️ **Cơ Chế Xử Lý Đa Luồng (Multi-threaded Processing Core)**
+Hệ thống sử dụng kiến trúc bất đồng bộ (Asynchronous Architecture) với `PyQt5.QtCore.QThread` để đảm bảo UI luôn phản hồi (responsive) trong quá trình xử lý tác vụ nặng.
+
+- **AutoProcessor (ETL Pipeline)**:
+  - **Extract**: Tải dữ liệu đệ quy từ Google Drive.
+  - **Transform**: Phân tích cấu trúc tài liệu bằng Gemini AI, ánh xạ cây thư mục ảo (Virtual Directory Tree).
+  - **Load**: Cắt và lưu trữ file theo cấu trúc phân cấp tương ứng.
+  
+- **BatchProcessingThread (High-Performance Computing)**:
+  - Tập trung vào thông lượng (Throughput) cho các tác vụ chuyển đổi số lượng lớn.
+  - Tích hợp thuật toán nén ảnh hưởng thấp đến chất lượng (Lossy Compression) để tối ưu hóa dung lượng lưu trữ.
+
+- **LocalProcessor (File System Mirroring)**:
+  - Xử lý dữ liệu cục bộ với cơ chế **Mirroring**: Sao chép chính xác cấu trúc thư mục nguồn sang thư mục đích sau khi xử lý.
 
 ---
 
@@ -51,20 +67,40 @@ Kiến trúc mô-đun (modular architecture) đảm bảo tính ổn định và
 
 ```
 d:\CheckTool\OneInAll\cutpdf\
-├── ui/                         # Tầng Giao Diện Người Dùng (PyQt5)
-│   ├── main_window.py          # Cửa Sổ Ứng Dụng Chính
-│   ├── cut_pdf_widget.py       # Giao Diện Cắt PDF
-│   ├── convert_pdf_widget.py   # Giao Diện Chuyển Đổi PDF
-│   ├── gen_ques.py             # Lớp Cơ Sở (Base Class) cho các Module GenQues
-│   ├── genques_khtn_widget.py  # Module Khoa Học Tự Nhiên
-│   └── genques_khxh_widget.py  # Module Khoa Học Xã Hội
-├── modules/                    # Tầng Nghiệp Vụ (Business Logic Layer)
-│   ├── common/                 # Tiện Ích Dùng Chung (API AI, OCR, Xử Lý Ảnh)
-│   ├── khtn/                   # Triển Khai Logic KHTN
-│   └── khxh/                   # Triển Khai Logic KHXH
-├── output/                     # Các Tài Liệu Đầu Ra (Artifacts)
-├── main.py                     # Điểm Khởi Chạy Ứng Dụng (Entry Point)
-└── prompt                     # Prompt cho AI
+├── config/                             # Cấu Hình & Bảo Mật (Secrets)
+│   ├── credentials.py                  # Cấu Hình & Bảo Mật (Secrets)
+├── core/                               # Lõi Ứng Dụng
+│   ├── callAPI.py                      # Trình Gọi API
+│   ├── cutPDF.py                       # Trình Cắt PDF
+│   ├── compress_manager.py             # Trình Quản Lý Nén PDF
+│   ├── convert_pdf_md.py               # Trình Chuyển Đổi PDF sang Markdown
+│   ├── client_driver.py                # Trình Điều Khiển Google Drive
+├── ui/                                 # Tầng Giao Diện Người Dùng (PyQt5)
+│   ├── main_window.py                  # Cửa Sổ Ứng Dụng Chính
+│   ├── cut_pdf_widget.py               # Giao Diện Cắt PDF
+│   ├── convert_pdf_widget.py           # Giao Diện Chuyển Đổi PDF
+│   ├── gen_ques.py                     # Lớp Cơ Sở (Base Class) cho các Module GenQues
+│   ├── genques_khtn_widget.py          # Module Khoa Học Tự Nhiên
+│   └── genques_khxh_widget.py          # Module Khoa Học Xã Hội
+├── threads/                            # Các Luồng Xử Lý Nền (Background Processing Threads)
+│   ├── auto_processor.py               # Bộ Xử Lý Tự Động: Pipeline tích hợp Google Drive -> AI -> Cắt file (Bảo toàn cấu trúc thư mục)
+│   ├── batch_processing.py             # Bộ Xử Lý Hàng Loạt: Tối ưu hóa hiệu năng cho danh sách file lớn (Hỗ trợ nén)
+│   ├── local_processor.py              # Bộ Xử Lý Cục Bộ: Ánh xạ cấu trúc thư mục nguồn (Source Mapping) sang đầu ra
+├── modules/                            # Tầng Nghiệp Vụ (Business Logic Layer)
+│   ├── common/                         # Tiện Ích Dùng Chung (API AI, OCR, Xử Lý Ảnh)
+│   │   ├── callAPI.py                  # Trình Gọi API
+│   │   ├── schema.py                   # Cấu trúc dữ liệu JSON tạo câu hỏi
+│   │   ├── text2image.py               # Trình chuyển đổi văn bản sang hình ảnh
+│   ├── khtn/                           # Triển Khai Logic KHTN
+│   │   ├── response2docx.py            # Trình chuyển đổi câu trả lời sang DOCX
+│   └── khxh/                           # Triển Khai Logic KHXH
+│   │   ├── response2docx.py            # Trình chuyển đổi câu trả lời sang DOCX
+├── main.py                             # Điểm Khởi Chạy Ứng Dụng (Entry Point)
+├── CompressPDF.py                      # Công cụ nén PDF độc lập (Standalone Utility)
+├── requirements.txt                    # Danh sách các gói phụ thuộc
+├── promptCatPDF.txt                    # Prompt cho việc cắt PDF
+├── Prompt Sinh câu hỏi SONG NGỮ/       # Prompt cho việc sinh câu hỏi song ngữ
+└── Prompt Sinh câu hỏi Tiếng Việt/     # Prompt cho việc sinh câu hỏi tiếng việt
 ```
 
 ---
@@ -76,6 +112,7 @@ d:\CheckTool\OneInAll\cutpdf\
 | **Hệ Điều Hành** | Windows 10 / 11 |
 | **Python** | Phiên bản 3.8 hoặc cao hơn |
 | **RAM** | 8GB+ khuyến nghị cho xử lý hàng loạt |
+| **Phần mềm bổ trợ** | **Ghostscript** (bắt buộc cho tính năng nén PDF), **Pandoc** (cho DOCX) |
 | **Cloud APIs** | **Google Cloud** (Vertex AI, Drive), **Mathpix** (Tùy chọn) |
 
 ---
