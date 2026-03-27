@@ -60,25 +60,68 @@ def generate_image_from_text(prompt, aspect_ratio="1:1", lang="vi"):
         else:
             final_prompt = f"Vẽ hình ảnh minh họa chính xác cho mô tả sau. Đảm bảo các chữ/nhãn trong hình là TIẾNG VIỆT: {prompt}"
 
-        response = client.models.generate_content(
-            model=model_name,
-            contents=final_prompt,
-            config=types.GenerateContentConfig(
-                response_modalities=["IMAGE"],
-                candidate_count=1,
-                image_config=types.ImageConfig(aspect_ratio=aspect_ratio),
-            )
-        )
+        # response = client.models.generate_content(
+        #     model=model_name,
+        #     contents=final_prompt,
+        #     config=types.GenerateContentConfig(
+        #         response_modalities=["IMAGE"],
+        #         candidate_count=1,
+        #         image_config=types.ImageConfig(aspect_ratio=aspect_ratio),
+                
+        #     )
+        # )
         
-        for part in response.parts:
-            if part.inline_data and part.inline_data.data:
-                raw_bytes = part.inline_data.data
-                compressed_bytes = compress_image_to_min(raw_bytes)
-                print(f"✅ Sinh & Nén ảnh thành công ({len(raw_bytes)/1024:.1f} KB -> {len(compressed_bytes)/1024:.1f} KB)")
-                return compressed_bytes
+        # for part in response.parts:
+        #     if part.inline_data and part.inline_data.data:
+        #         raw_bytes = part.inline_data.data
+        #         compressed_bytes = compress_image_to_min(raw_bytes)
+        #         print(f"✅ Sinh & Nén ảnh thành công ({len(raw_bytes)/1024:.1f} KB -> {len(compressed_bytes)/1024:.1f} KB)")
+        #         return compressed_bytes
 
-        print("❌ API không trả về dữ liệu ảnh.")
-        return None
+        # print("❌ API không trả về dữ liệu ảnh.")
+        # return None
+
+        base_delay = 8 # Thời gian chờ cơ sở (giây)
+
+        for attempt in range(max_retries):
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=final_prompt,
+                    config=types.GenerateContentConfig(
+                        response_modalities=["IMAGE"],
+                        candidate_count=1,
+                        image_config=types.ImageConfig(aspect_ratio=aspect_ratio),
+                    )
+                )
+                
+                for part in response.parts:
+                    if part.inline_data and part.inline_data.data:
+                        raw_bytes = part.inline_data.data
+                        compressed_bytes = compress_image_to_min(raw_bytes)
+                        print(f"✅ Sinh & Nén ảnh thành công ({len(raw_bytes)/1024:.1f} KB -> {len(compressed_bytes)/1024:.1f} KB)")
+                        return compressed_bytes
+
+                print("❌ API không trả về dữ liệu ảnh.")
+                return None
+
+            except Exception as api_err:
+                error_str = str(api_err).lower()
+                # Bắt lỗi 429 hoặc Quota Exceeded
+                if "429" in error_str or "quota" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+                    if attempt < max_retries - 1:
+                        # Tính thời gian chờ: (2^attempt * base_delay) + jitter ngẫu nhiên
+                        sleep_time = (base_delay * (2 ** attempt)) + random.uniform(0.1, 1.5)
+                        print(f"⚠️ [Lỗi 429] Quá tải API sinh ảnh. Thử lại lần {attempt + 1}/{max_retries} sau {sleep_time:.2f}s...")
+                        time.sleep(sleep_time)
+                        continue # Bỏ qua các code bên dưới, quay lại vòng lặp for
+                    else:
+                        print(f"❌ Hết lượt thử lại. API từ chối phục vụ: {api_err}")
+                        return None
+                else:
+                    # Lỗi khác (không phải 429) thì văng ra luôn, không cần retry
+                    print(f"❌ Lỗi sinh ảnh (Không thể phục hồi): {api_err}")
+                    return None
             
     except Exception as e:
         print(f"❌ Lỗi sinh ảnh: {str(e)}")

@@ -163,6 +163,10 @@ schema_tra_loi_ngan = {
                         "type": "STRING",
                         "description": "CHỈ CHỨA số nguyên hoặc số thập phân (VD: 5; -2; 3,5). CẤM chữ, đơn vị và các kí tự thường và đặc biệt."
                     },
+                    "dap_an_en": {
+                        "type": "STRING",
+                        "description": "Đáp án Tiếng Anh. SỐ (giữ nguyên) hoặc TỪ KHÓA Tiếng Anh tối đa 3 từ."
+                    },
                    
                     "hinh_anh": {
                         "type": "OBJECT",

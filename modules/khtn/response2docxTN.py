@@ -329,7 +329,7 @@ def generate_or_get_image(hinh_anh_data: Dict, target_key: str = "mo_ta") -> tup
             image_bytes = generate_image_from_text(mo_ta, lang=lang_code)
             
             if image_bytes:
-                time.sleep(5)
+                time.sleep(15)
                 return image_bytes, None
             else:
                 return None, f"⚠️ [Lỗi Server] Không sinh được ảnh ({target_key})..."
@@ -425,11 +425,11 @@ class DynamicDocxRenderer:
         if ma_bai:
             p_ma_bai = self.doc.add_paragraph()
             p_ma_bai.add_run(f"[{ma_bai},,]")
-    def render_ma_dang_header(self, ma_dang: str):
-        """Hiển thị [ma_dang] trên một dòng riêng biệt"""
-        if ma_dang:
-            p_ma = self.doc.add_paragraph()
-            p_ma.add_run(f"[{ma_dang},,]")
+    # def render_ma_dang_header(self, ma_dang: str):
+    #     """Hiển thị [ma_dang] trên một dòng riêng biệt"""
+    #     if ma_dang:
+    #         p_ma = self.doc.add_paragraph()
+    #         p_ma.add_run(f"[{ma_dang},,]")
     def auto_group_questions(self, data: Dict) -> Dict[str, List]:
         """
         Tự động nhóm câu hỏi và CHUẨN HÓA key muc_do từ Tiếng Việt sang code.
@@ -481,7 +481,7 @@ class DynamicDocxRenderer:
         return mapping.get(muc_do, muc_do.upper())
     
     def render_question_trac_nghiem(self, cau: Dict):
-        self.render_ma_dang_header(cau.get("ma_dang"))
+        # self.render_ma_dang_header(cau.get("ma_dang"))
         p = self.doc.add_paragraph()
         p.add_run(f"Câu {cau['stt']}. ").bold = True
         process_text_with_latex(cau.get('noi_dung', ''), p)
@@ -576,7 +576,7 @@ class DynamicDocxRenderer:
         Render câu hỏi Đúng/Sai với GIẢI THÍCH DẠNG MẢNG ĐỐI TƯỢNG
         """
         # 1. Render Header câu hỏi
-        self.render_ma_dang_header(cau.get("ma_dang"))
+        # self.render_ma_dang_header(cau.get("ma_dang"))
         p = self.doc.add_paragraph()
         p.add_run(f"Câu {cau['stt']}. ").bold = True
        
@@ -684,7 +684,7 @@ class DynamicDocxRenderer:
                 process_text_with_latex(item.get('noi_dung', ''), p_detail_en, bold=False)  
     
     def render_question_tra_loi_ngan(self, cau: Dict):
-        self.render_ma_dang_header(cau.get("ma_dang"))
+        # self.render_ma_dang_header(cau.get("ma_dang"))
         p = self.doc.add_paragraph()
         p.add_run(f"Câu {cau['stt']}. ").bold = True
         process_text_with_latex(cau.get('noi_dung', ''), p)  
@@ -712,7 +712,21 @@ class DynamicDocxRenderer:
         else:
             final_ans = raw_ans
         process_text_with_latex(final_ans, p_da, bold=True)  
-        
+
+        if cau.get('dap_an_en'):
+            p_da_en = self.doc.add_paragraph()
+            # Theo đúng mẫu bạn yêu cầu, in chữ "Đáp án: "
+            run_label_en = p_da_en.add_run("Đáp án: ") 
+            run_label_en.bold = True
+            
+            raw_ans_en = str(cau.get('dap_an_en', '')).strip()
+            if not (raw_ans_en.startswith("[[") and raw_ans_en.endswith("]]")):
+                final_ans_en = f"[[{raw_ans_en}]]"
+            else:
+                final_ans_en = raw_ans_en
+            process_text_with_latex(final_ans_en, p_da_en, bold=True)
+
+
         # 5. Lời giải Header
         p_lg = self.doc.add_paragraph()
         p_lg.add_run("Lời giải").bold = True
@@ -760,7 +774,7 @@ class DynamicDocxRenderer:
             render_explanation_block(cau.get("giai_thich_en", ""), lang='en')  
 
     def render_question_tu_luan(self, cau: Dict):
-        self.render_ma_dang_header(cau.get("ma_dang"))
+        # self.render_ma_dang_header(cau.get("ma_dang"))
         """Render câu hỏi Tự luận (Đã fix lỗi khoảng cách dòng)"""
         # 1. Câu hỏi Tiếng Việt
         p = self.doc.add_paragraph()
@@ -904,63 +918,63 @@ def roman_to_int(s):
     if s in fast_map: return fast_map[s]
     return None
 
-def renumber_ma_dang_global(all_questions, reference_ma_bai):
-    """
-    [SPECIALIZED FUNCTION FOR DUNG_SAI ONLY]
-    Logic: 
-    1. Bỏ qua ID Mục/Phần.
-    2. Chỉ đếm ID Dạng tăng dần (Global Counter).
-    3. Cấu trúc output: [MA_BAI]_[ID_DẠNG] (Ví dụ: SN_HOA_10_1_1_1, SN_HOA_10_1_1_2...)
-    """
-    print(f"🔧 [DungSai Only] Chuẩn hóa Mã Dạng (No-Section) cho: {reference_ma_bai}")
+# def renumber_ma_dang_global(all_questions, reference_ma_bai):
+#     """
+#     [SPECIALIZED FUNCTION FOR DUNG_SAI ONLY]
+#     Logic: 
+#     1. Bỏ qua ID Mục/Phần.
+#     2. Chỉ đếm ID Dạng tăng dần (Global Counter).
+#     3. Cấu trúc output: [MA_BAI]_[ID_DẠNG] (Ví dụ: SN_HOA_10_1_1_1, SN_HOA_10_1_1_2...)
+#     """
+#     print(f"🔧 [DungSai Only] Chuẩn hóa Mã Dạng (No-Section) cho: {reference_ma_bai}")
     
-    # Bộ nhớ map tên dạng -> ID (Dùng chung cho cả bài)
-    type_memory = {} 
+#     # Bộ nhớ map tên dạng -> ID (Dùng chung cho cả bài)
+#     type_memory = {} 
     
-    # Bộ đếm ID dạng toàn cục (bắt đầu từ 0)
-    global_dang_counter = 0
+#     # Bộ đếm ID dạng toàn cục (bắt đầu từ 0)
+#     global_dang_counter = 0
     
-    final_questions = []
+#     final_questions = []
     
-    # Biến fallback phòng khi AI trả thiếu mảng phan
-    last_known_phan = [reference_ma_bai, "Mục 1", "Dạng tổng quát"]
+#     # Biến fallback phòng khi AI trả thiếu mảng phan
+#     last_known_phan = [reference_ma_bai, "Mục 1", "Dạng tổng quát"]
 
-    for index, q in enumerate(all_questions):
-        # 1. Cập nhật STT chuẩn (cho chắc chắn)
-        q['stt'] = index + 1
+#     for index, q in enumerate(all_questions):
+#         # 1. Cập nhật STT chuẩn (cho chắc chắn)
+#         q['stt'] = index + 1
         
-        # 2. Lấy dữ liệu phân cấp
-        raw_phan = q.get("phan", [])
-        if not isinstance(raw_phan, list) or len(raw_phan) < 3:
-            raw_phan = list(last_known_phan)
-        else:
-            last_known_phan = raw_phan
+#         # 2. Lấy dữ liệu phân cấp
+#         raw_phan = q.get("phan", [])
+#         if not isinstance(raw_phan, list) or len(raw_phan) < 3:
+#             raw_phan = list(last_known_phan)
+#         else:
+#             last_known_phan = raw_phan
 
-        # Tách các thành phần (Chỉ dùng để hiển thị hoặc map key)
-        ten_bai = str(raw_phan[0]).strip()
-        ten_muc = str(raw_phan[1]).strip()
-        ten_dang = str(raw_phan[2]).strip() # Key quan trọng nhất
+#         # Tách các thành phần (Chỉ dùng để hiển thị hoặc map key)
+#         ten_bai = str(raw_phan[0]).strip()
+#         ten_muc = str(raw_phan[1]).strip()
+#         ten_dang = str(raw_phan[2]).strip() # Key quan trọng nhất
         
-        # 3. THUẬT TOÁN GÁN ID (GLOBAL - NO SECTION)
-        # Chỉ quan tâm tên dạng. Nếu tên dạng trùng -> ID cũ. Nếu mới -> ID mới.
-        if ten_dang in type_memory:
-            current_dang_id = type_memory[ten_dang]
-        else:
-            global_dang_counter += 1
-            current_dang_id = global_dang_counter
-            type_memory[ten_dang] = current_dang_id
+#         # 3. THUẬT TOÁN GÁN ID (GLOBAL - NO SECTION)
+#         # Chỉ quan tâm tên dạng. Nếu tên dạng trùng -> ID cũ. Nếu mới -> ID mới.
+#         if ten_dang in type_memory:
+#             current_dang_id = type_memory[ten_dang]
+#         else:
+#             global_dang_counter += 1
+#             current_dang_id = global_dang_counter
+#             type_memory[ten_dang] = current_dang_id
 
-        # 4. Tạo chuỗi ma_dang chuẩn: MA_BAI + "_" + ID_DANG
-        final_ma_dang = f"{reference_ma_bai}_{current_dang_id}"
+#         # 4. Tạo chuỗi ma_dang chuẩn: MA_BAI + "_" + ID_DANG
+#         final_ma_dang = f"{reference_ma_bai}_{current_dang_id}"
         
-        q['ma_dang'] = final_ma_dang
-        # Cập nhật lại phan để đảm bảo thống nhất
-        q['phan'] = [ten_bai, ten_muc, ten_dang] 
+#         q['ma_dang'] = final_ma_dang
+#         # Cập nhật lại phan để đảm bảo thống nhất
+#         q['phan'] = [ten_bai, ten_muc, ten_dang] 
         
-        final_questions.append(q)
+#         final_questions.append(q)
 
-    print(f"   ✅ [DungSai] Đã map {global_dang_counter} dạng bài duy nhất.")
-    return final_questions
+#     print(f"   ✅ [DungSai] Đã map {global_dang_counter} dạng bài duy nhất.")
+#     return final_questions
 
 def process_trac_nghiem_smart_batch(file_path, base_prompt, file_name, project_id, creds, model_name, batch_name):
     from modules.common.callAPI import VertexClient
@@ -1358,13 +1372,204 @@ LỆNH THỰC THI BATCH {idx+1}/{len(batches)}:
     if not all_raw_questions: return None
     
     all_raw_questions.sort(key=lambda x: x.get("stt", 0))
-    final_questions = renumber_ma_dang_global(all_raw_questions, reference_ma_bai)
-    
+    # final_questions = renumber_ma_dang_global(all_raw_questions, reference_ma_bai)
+    for i, q in enumerate(all_raw_questions):
+        q['stt'] = i + 1
+        q['ma_dang'] = ""
     return {
         "loai_de": "dung_sai",
-        "tong_so_cau": len(final_questions),
+        "tong_so_cau": len(all_raw_questions),
         "ma_bai": reference_ma_bai,
-        "cau_hoi": final_questions
+        "cau_hoi": all_raw_questions
+    }
+
+def process_tra_loi_ngan_smart_batch(file_path, base_prompt, file_name, project_id, creds, model_name, batch_name):
+    from modules.common.callAPI import VertexClient
+    import re
+    import time
+    from modules.common.schema import schema_tra_loi_ngan
+    
+    client = VertexClient(project_id, creds, model_name)
+
+    # ==============================================================================
+    # 0. HÀM PHỤ: CỨU DỮ LIỆU JSON
+    # ==============================================================================
+    def salvage_questions_from_broken_json(broken_text):
+        questions = []
+        try:
+            text = clean_json_response(broken_text)
+            start_pattern = re.compile(r'\{\s*[\'"]stt[\'"]\s*:', re.IGNORECASE)
+            
+            for match in start_pattern.finditer(text):
+                start_idx = match.start()
+                balance = 0
+                end_idx = -1
+                in_string = False
+                escape = False
+                
+                for i in range(start_idx, len(text)):
+                    char = text[i]
+                    if in_string:
+                        if char == '\\' and not escape: escape = True
+                        elif char == '"' and not escape: in_string = False; escape = False
+                        else: escape = False
+                    else:
+                        if char == '"': in_string = True
+                        elif char == '{': balance += 1
+                        elif char == '}':
+                            balance -= 1
+                            if balance == 0:
+                                end_idx = i + 1
+                                break
+                
+                if end_idx != -1:
+                    try:
+                        q_obj = json.loads(text[start_idx:end_idx])
+                        if "stt" in q_obj: questions.append(q_obj)
+                    except: pass
+        except: pass
+        return questions
+
+    # ==============================================================================
+    # 1. PARSER CẤU HÌNH (Level Parser)
+    # ==============================================================================
+    total_questions = 30 # Mặc định trả lời ngắn khoảng 30 câu
+    match_total = re.search(r'["\']?tong_so_cau["\']?\s*[:=]\s*(\d+)', base_prompt)
+    if match_total: total_questions = int(match_total.group(1))
+    
+    config_levels = {"nhan_biet": 0, "thong_hieu": 0, "van_dung": 0, "van_dung_cao": 0}
+    found_config = False
+    
+    keywords_priority = [
+        ("van_dung_cao", ["VẬN DỤNG CAO", "MỨC 4"]), 
+        ("van_dung",     ["VẬN DỤNG", "MỨC 3"]),     
+        ("thong_hieu",   ["THÔNG HIỂU", "MỨC 2"]),
+        ("nhan_biet",    ["NHẬN BIẾT", "MỨC 1"])
+    ]
+    range_pattern = r"(?:từ câu|câu)\s*(\d+)\s*(?:đến câu|-|đến)\s*(\d+)"
+    lines = base_prompt.split('\n')
+    for line in lines:
+        line_upper = line.upper()
+        matched_key = None
+        for key, kws in keywords_priority:
+            if any(kw in line_upper for kw in kws):
+                matched_key = key
+                break 
+        if matched_key:
+            match_range = re.search(range_pattern, line, re.IGNORECASE)
+            if match_range:
+                start_q = int(match_range.group(1))
+                end_q = int(match_range.group(2))
+                count = end_q - start_q + 1
+                if count > 0:
+                    config_levels[matched_key] = max(config_levels[matched_key], count) 
+                    found_config = True
+
+    if not found_config:
+        config_levels["nhan_biet"] = int(total_questions * 0.4) 
+        config_levels["thong_hieu"] = int(total_questions * 0.3)
+        config_levels["van_dung"] = int(total_questions * 0.3)
+        config_levels["van_dung_cao"] = total_questions - sum(config_levels.values())
+
+    t_nb = config_levels["nhan_biet"]
+    t_th = t_nb + config_levels["thong_hieu"]
+    t_vd = t_th + config_levels["van_dung"]
+    t_vdc = t_vd + config_levels["van_dung_cao"]
+    
+    print(f"\n[Trả Lời Ngắn Batch] Tổng: {total_questions} câu. (NB:{config_levels['nhan_biet']}, TH:{config_levels['thong_hieu']}, VD:{config_levels['van_dung']}, VDC:{config_levels['van_dung_cao']})")
+    
+    # ==============================================================================
+    # 2. CHIA BATCH (BATCH_SIZE = 10)
+    # ==============================================================================
+    BATCH_SIZE = 10 
+    batches = []
+    current_start = 1
+    while current_start <= total_questions:
+        current_end = min(current_start + BATCH_SIZE - 1, total_questions)
+        mid_point = (current_start + current_end) / 2
+        
+        if mid_point <= t_nb: mode_desc = "NHẬN BIẾT"
+        elif mid_point <= t_th: mode_desc = "THÔNG HIỂU"
+        elif mid_point <= t_vd: mode_desc = "VẬN DỤNG"
+        else: mode_desc = "VẬN DỤNG CAO"
+            
+        batches.append({"range": f"{current_start}-{current_end}", "desc": mode_desc})
+        current_start += BATCH_SIZE
+
+    # ==============================================================================
+    # 3. THỰC THI (CÓ SALVAGE)
+    # ==============================================================================
+    all_raw_questions = []
+
+    for idx, batch in enumerate(batches):
+        print(f"   ► Batch {idx+1}/{len(batches)}: Câu {batch['range']} [{batch['desc']}]")
+        
+        batch_instruction = f"""
+{base_prompt}
+--------------------------------------------------------------------------------
+LỆNH THỰC THI BATCH {idx+1}/{len(batches)}:
+1. PHẠM VI STT: CHỈ TẠO CÁC CÂU TỪ {batch['range']}.
+2. TRỌNG TÂM KIẾN THỨC: {batch['desc']}.
+3. QUY ĐỊNH: Tuyệt đối giữ đúng cấu trúc JSON, ĐẶC BIỆT chú ý bắt buộc phải có <br> ở đầu nội dung câu hỏi.
+--------------------------------------------------------------------------------
+"""
+        max_retries = 2
+        retry_count = 0
+        success = False
+        
+        while retry_count < max_retries and not success:
+            try:
+                raw_text = client.send_data_to_AI(batch_instruction, file_path, response_schema=schema_tra_loi_ngan, max_output_tokens=65534)
+                if not raw_text: 
+                    print(f"      ⚠️ AI trả về rỗng. Thử lại...")
+                    retry_count += 1
+                    continue
+
+                batch_questions = []
+                try:
+                    clean_text = clean_json_response(raw_text)
+                    data = json.loads(clean_text)
+                    batch_questions = data.get("cau_hoi", [])
+                    print(f"      ✅ Batch {idx+1} OK: {len(batch_questions)} câu.")
+                except json.JSONDecodeError:
+                    print(f"      ⚠️ Batch {idx+1} lỗi cú pháp. Đang cứu dữ liệu...")
+                    batch_questions = salvage_questions_from_broken_json(raw_text)
+                    if len(batch_questions) > 0:
+                        print(f"      🚑 ĐÃ CỨU: {len(batch_questions)} câu.")
+                    else:
+                        raise Exception("Không cứu được câu nào.")
+
+                # POST-PROCESSING
+                for q in batch_questions:
+                    q['ma_dang'] = "" 
+                    
+                    # Force Level
+                    stt = q.get("stt", 0)
+                    if stt <= t_nb: q['muc_do'] = "nhan_biet"
+                    elif stt <= t_th: q['muc_do'] = "thong_hieu"
+                    elif stt <= t_vd: q['muc_do'] = "van_dung"
+                    else: q['muc_do'] = "van_dung_cao"
+
+                all_raw_questions.extend(batch_questions)
+                success = True 
+
+            except Exception as e:
+                retry_count += 1
+                print(f"      ❌ Lỗi Batch {idx+1} (Lần {retry_count}): {e}")
+
+    if not all_raw_questions: return None
+    
+    all_raw_questions.sort(key=lambda x: x.get("stt", 0))
+    
+    # Chuẩn hóa lại STT lần cuối
+    for i, q in enumerate(all_raw_questions):
+        q['stt'] = i + 1
+    
+    return {
+        "loai_de": "tra_loi_ngan",
+        "tong_so_cau": len(all_raw_questions),
+        "ma_bai": "", 
+        "cau_hoi": all_raw_questions
     }
 
 def response2docx_flexible(file_path, prompt, file_name, project_id, creds, model_name, question_type="trac_nghiem_4_dap_an", batch_name=None):
@@ -1382,6 +1587,11 @@ def response2docx_flexible(file_path, prompt, file_name, project_id, creds, mode
 
         elif question_type == "trac_nghiem_4_dap_an":
             final_json_data = process_trac_nghiem_smart_batch(
+                file_path, prompt, file_name, project_id, creds, model_name, batch_name
+            )
+
+        elif question_type == "tra_loi_ngan":
+            final_json_data = process_tra_loi_ngan_smart_batch(
                 file_path, prompt, file_name, project_id, creds, model_name, batch_name
             )
 
