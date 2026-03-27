@@ -11,7 +11,7 @@ class VertexClient:
         )
         self.model = GenerativeModel(model)
 
-    def send_data_to_AI(self, prompt, file_path=None, temperature=0.5, top_p=0.8):
+    def send_data_to_AI(self, prompt, file_path=None, temperature=0.4, top_p=0.8):
         parts = []
         if file_path:
             with open(file_path, "rb") as f:

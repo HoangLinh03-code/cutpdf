@@ -660,7 +660,7 @@ class DynamicDocxRenderer:
                 # Dòng tiêu đề EN
                 p_title_en = self.doc.add_paragraph()
                
-                prefix_run_en = p_title_en.add_run(f"+ ({item.get('ky_hieu', '')}.) ")
+                prefix_run_en = p_title_en.add_run(f"+ ({item.get('ky_hieu', '').upper()}.) ")
                 prefix_run_en.bold = False
                
                 # Lấy nội dung ý EN
@@ -962,6 +962,199 @@ def renumber_ma_dang_global(all_questions, reference_ma_bai):
     print(f"   ✅ [DungSai] Đã map {global_dang_counter} dạng bài duy nhất.")
     return final_questions
 
+def process_trac_nghiem_smart_batch(file_path, base_prompt, file_name, project_id, creds, model_name, batch_name):
+    from modules.common.callAPI import VertexClient
+    import re
+    import time
+    from modules.common.schema import schema_trac_nghiem
+    
+    client = VertexClient(project_id, creds, model_name)
+
+    # ==============================================================================
+    # 0. HÀM PHỤ: CỨU DỮ LIỆU JSON (Tương tự Đúng/Sai)
+    # ==============================================================================
+    def salvage_questions_from_broken_json(broken_text):
+        questions = []
+        try:
+            text = clean_json_response(broken_text)
+            start_pattern = re.compile(r'\{\s*[\'"]stt[\'"]\s*:', re.IGNORECASE)
+            
+            for match in start_pattern.finditer(text):
+                start_idx = match.start()
+                balance = 0
+                end_idx = -1
+                in_string = False
+                escape = False
+                
+                for i in range(start_idx, len(text)):
+                    char = text[i]
+                    if in_string:
+                        if char == '\\' and not escape: escape = True
+                        elif char == '"' and not escape: in_string = False; escape = False
+                        else: escape = False
+                    else:
+                        if char == '"': in_string = True
+                        elif char == '{': balance += 1
+                        elif char == '}':
+                            balance -= 1
+                            if balance == 0:
+                                end_idx = i + 1
+                                break
+                
+                if end_idx != -1:
+                    try:
+                        q_obj = json.loads(text[start_idx:end_idx])
+                        if "stt" in q_obj: questions.append(q_obj)
+                    except: pass
+        except: pass
+        return questions
+
+    # ==============================================================================
+    # 1. PARSER CẤU HÌNH (Level Parser)
+    # ==============================================================================
+    total_questions = 70
+    match_total = re.search(r'["\']?tong_so_cau["\']?\s*[:=]\s*(\d+)', base_prompt)
+    if match_total: total_questions = int(match_total.group(1))
+    
+    config_levels = {"nhan_biet": 0, "thong_hieu": 0, "van_dung": 0, "van_dung_cao": 0}
+    found_config = False
+    
+    keywords_priority = [
+        ("van_dung_cao", ["VẬN DỤNG CAO", "MỨC 4"]), 
+        ("van_dung",     ["VẬN DỤNG", "MỨC 3"]),     
+        ("thong_hieu",   ["THÔNG HIỂU", "MỨC 2"]),
+        ("nhan_biet",    ["NHẬN BIẾT", "MỨC 1"])
+    ]
+    range_pattern = r"(?:từ câu|câu)\s*(\d+)\s*(?:đến câu|-|đến)\s*(\d+)"
+    lines = base_prompt.split('\n')
+    for line in lines:
+        line_upper = line.upper()
+        matched_key = None
+        for key, kws in keywords_priority:
+            if any(kw in line_upper for kw in kws):
+                matched_key = key
+                break 
+        if matched_key:
+            match_range = re.search(range_pattern, line, re.IGNORECASE)
+            if match_range:
+                start_q = int(match_range.group(1))
+                end_q = int(match_range.group(2))
+                count = end_q - start_q + 1
+                if count > 0:
+                    # Dùng max() để chặn lỗi nhân đôi khi prompt nhắc lại số câu ở cuối
+                    config_levels[matched_key] = max(config_levels[matched_key], count) 
+                    found_config = True
+
+    if not found_config:
+        config_levels["nhan_biet"] = int(total_questions * 0.4) 
+        config_levels["thong_hieu"] = int(total_questions * 0.3)
+        config_levels["van_dung"] = int(total_questions * 0.3)
+        config_levels["van_dung_cao"] = total_questions - sum(config_levels.values())
+
+    t_nb = config_levels["nhan_biet"]
+    t_th = t_nb + config_levels["thong_hieu"]
+    t_vd = t_th + config_levels["van_dung"]
+    t_vdc = t_vd + config_levels["van_dung_cao"]
+    
+    print(f"\n[Trắc Nghiệm Batch] Tổng: {total_questions} câu. (NB:{config_levels['nhan_biet']}, TH:{config_levels['thong_hieu']}, VD:{config_levels['van_dung']}, VDC:{config_levels['van_dung_cao']})")
+    
+    # ==============================================================================
+    # 2. CHIA BATCH (BATCH_SIZE = 10)
+    # ==============================================================================
+    BATCH_SIZE = 10 
+    batches = []
+    current_start = 1
+    while current_start <= total_questions:
+        current_end = min(current_start + BATCH_SIZE - 1, total_questions)
+        mid_point = (current_start + current_end) / 2
+        
+        if mid_point <= t_nb: mode_desc = "NHẬN BIẾT"
+        elif mid_point <= t_th: mode_desc = "THÔNG HIỂU"
+        elif mid_point <= t_vd: mode_desc = "VẬN DỤNG"
+        else: mode_desc = "VẬN DỤNG CAO"
+            
+        batches.append({"range": f"{current_start}-{current_end}", "desc": mode_desc})
+        current_start += BATCH_SIZE
+
+    # ==============================================================================
+    # 3. THỰC THI (CÓ SALVAGE)
+    # ==============================================================================
+    all_raw_questions = []
+
+    for idx, batch in enumerate(batches):
+        print(f"   ► Batch {idx+1}/{len(batches)}: Câu {batch['range']} [{batch['desc']}]")
+        
+        # Inject dynamic prompt
+        batch_instruction = f"""
+{base_prompt}
+--------------------------------------------------------------------------------
+LỆNH THỰC THI BATCH {idx+1}/{len(batches)}:
+1. PHẠM VI STT: CHỈ TẠO CÁC CÂU TỪ {batch['range']}.
+2. TRỌNG TÂM KIẾN THỨC: {batch['desc']}.
+3. QUY ĐỊNH: Tuyệt đối giữ đúng cấu trúc JSON (không cắt xén giải thích/gợi ý).
+--------------------------------------------------------------------------------
+"""
+        max_retries = 2
+        retry_count = 0
+        success = False
+        
+        while retry_count < max_retries and not success:
+            try:
+                raw_text = client.send_data_to_AI(batch_instruction, file_path, response_schema=schema_trac_nghiem, max_output_tokens=65534)
+                if not raw_text: 
+                    print(f"      ⚠️ AI trả về rỗng. Thử lại...")
+                    retry_count += 1
+                    continue
+
+                batch_questions = []
+                try:
+                    clean_text = clean_json_response(raw_text)
+                    data = json.loads(clean_text)
+                    batch_questions = data.get("cau_hoi", [])
+                    print(f"      ✅ Batch {idx+1} OK: {len(batch_questions)} câu.")
+                except json.JSONDecodeError:
+                    print(f"      ⚠️ Batch {idx+1} lỗi cú pháp. Đang cứu dữ liệu...")
+                    batch_questions = salvage_questions_from_broken_json(raw_text)
+                    if len(batch_questions) > 0:
+                        print(f"      🚑 ĐÃ CỨU: {len(batch_questions)} câu.")
+                    else:
+                        raise Exception("Không cứu được câu nào.")
+
+                # POST-PROCESSING cho Trắc Nghiệm
+                for q in batch_questions:
+                    # Đảm bảo ma_dang rỗng theo đúng thiết kế của bạn
+                    q['ma_dang'] = "" 
+                    
+                    # Force Level
+                    stt = q.get("stt", 0)
+                    if stt <= t_nb: q['muc_do'] = "nhan_biet"
+                    elif stt <= t_th: q['muc_do'] = "thong_hieu"
+                    elif stt <= t_vd: q['muc_do'] = "van_dung"
+                    else: q['muc_do'] = "van_dung_cao"
+
+                all_raw_questions.extend(batch_questions)
+                success = True 
+
+            except Exception as e:
+                retry_count += 1
+                print(f"      ❌ Lỗi Batch {idx+1} (Lần {retry_count}): {e}")
+
+    if not all_raw_questions: return None
+    
+    all_raw_questions.sort(key=lambda x: x.get("stt", 0))
+    
+    # Chuẩn hóa lại STT lần cuối để đảm bảo thứ tự hoàn hảo
+    for i, q in enumerate(all_raw_questions):
+        q['stt'] = i + 1
+    
+    return {
+        "loai_de": "trac_nghiem_4_dap_an",
+        "tong_so_cau": len(all_raw_questions),
+        "ma_bai": "", # Prompt của bạn yêu cầu để chuỗi rỗng
+        "cau_hoi": all_raw_questions
+    }
+
+
 def process_dung_sai_smart_batch(file_path, base_prompt, file_name, project_id, creds, model_name, batch_name):
     from modules.common.callAPI import VertexClient
     import re
@@ -1184,6 +1377,11 @@ def response2docx_flexible(file_path, prompt, file_name, project_id, creds, mode
         # 1. LOGIC RIÊNG CHO ĐÚNG/SAI (Có can thiệp code renumber)
         if question_type == "dung_sai":
             final_json_data = process_dung_sai_smart_batch(
+                file_path, prompt, file_name, project_id, creds, model_name, batch_name
+            )
+
+        elif question_type == "trac_nghiem_4_dap_an":
+            final_json_data = process_trac_nghiem_smart_batch(
                 file_path, prompt, file_name, project_id, creds, model_name, batch_name
             )
 

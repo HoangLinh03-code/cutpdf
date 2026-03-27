@@ -51,7 +51,7 @@ schema_trac_nghiem = {
                     "goi_y": {"type": "STRING"},
                     "goi_y_en": {"type": "STRING"}
                 },
-                "required": ["stt", "muc_do","ma_dang", "phan", "noi_dung", "cac_lua_chon", "dap_an_dung", "giai_thich"]
+                "required": ["stt", "muc_do", "noi_dung", "cac_lua_chon", "dap_an_dung", "giai_thich"]
             }
         }
     },
@@ -130,7 +130,7 @@ schema_dung_sai = {
                         }
                     }
                 },
-                "required": ["stt","ma_dang", "phan", "doan_thong_tin", "cac_y", "dap_an_dung_sai", "giai_thich"]
+                "required": ["stt", "muc_do", "doan_thong_tin", "cac_y", "dap_an_dung_sai", "giai_thich"]
             }
         }
     },
@@ -178,7 +178,7 @@ schema_tra_loi_ngan = {
                     "giai_thich": {"type": "STRING", "description": "Giải thích Tiếng Việt CỰC KỲ CHI TIẾT, phân tích sâu bản chất/cơ chế, mở rộng vấn đề"},
                     "giai_thich_en": {"type": "STRING", "description": "Giải thích Tiếng Anh CỰC KỲ CHI TIẾT, phân tích sâu bản chất/cơ chế, mở rộng vấn đề"}
                 },
-                "required": ["stt", "muc_do", "ma_dang", "phan", "noi_dung", "dap_an", "hinh_anh", "giai_thich"]
+                "required": ["stt", "muc_do", "noi_dung", "dap_an", "hinh_anh", "giai_thich"]
             }
         }
     },
@@ -225,7 +225,7 @@ schema_tu_luan = {
                     "giai_thich": {"type": "STRING", "description": "Hướng dẫn chấm/Lời giải chi tiết Tiếng Việt. Phải đầy đủ các bước lập luận, công thức, thay số."},
                     "giai_thich_en": {"type": "STRING", "description": "Model Answer/Marking Guide in English."}
                 },
-                "required": ["stt", "muc_do", "ma_dang", "phan", "noi_dung", "hinh_anh", "giai_thich"]
+                "required": ["stt", "muc_do", "noi_dung", "hinh_anh", "giai_thich"]
             }
         }
     },

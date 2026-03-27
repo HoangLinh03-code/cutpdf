@@ -78,7 +78,7 @@ class ProcessingThread(QThread):
                 safe_name = " ".join(safe_name.split()).strip(". ")
                 
                 # Tạo đường dẫn file đầu ra
-                out_pdf = os.path.join(output_folder, f"{file_name}_{safe_name}.pdf")
+                out_pdf = os.path.join(output_folder, f"{safe_name}.pdf")
                 
                 # Gọi hàm cắt
                 cut_pdf_by_pages(self.pdf_file, out_pdf, bai['start_page'], bai['end_page'])

@@ -83,7 +83,7 @@ class VertexClient:
             print(f"Lỗi init GenAI Client: {e}")
             self.client = None
 
-    def send_data_to_AI(self, prompt, file_paths=None, temperature=0.2, top_p=0.8, response_schema=None, max_output_tokens=65535):
+    def send_data_to_AI(self, prompt, file_paths=None, temperature=0.45, top_p=0.8, response_schema=None, max_output_tokens=65535):
         if not self.client:
             return "❌ Lỗi: Client chưa được khởi tạo."
 

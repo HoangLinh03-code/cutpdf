@@ -86,38 +86,6 @@ I. NGUYÊN TẮC "ĐỀ THI KÍN" (TUYỆT ĐỐI TUÂN THỦ) & CHIA KHUNG KI�
   + Phân tích sai lầm (Nhận diện bẫy logic hoặc những hiểu lầm phổ biến của học sinh).
   + Tổng hợp đa kiến thức (Kết nối nhiều mảng kiến thức từ các trang khác nhau của tài liệu).
 
-6. QUY ĐỊNH VỀ MÃ BÀI VÀ MÃ DẠNG (ALGORITHMIC LOGIC)
-
-A. MÃ BÀI (ma_bai - Cấp cao nhất)
-- Cấu trúc: SN_[MÔN][CẤP]_[LỚP]_[TẬP]_[CHƯƠNG]_[BÀI]
-- LƯU Ý: [TẬP] chỉ có ở TOÁN, các môn còn lại không được thêm [TẬP] vào.
-- QUY TẮC BẮT BUỘC:
-  1. Phải quét mục lục PDF để lấy ĐÚNG số Chương và số Bài.
-  2. Ví dụ: SN_HOAHOCTHPT_C10_1_3 (Hóa lớp 10, Chương 1, Bài 3).
-
-B. MÃ DẠNG (ma_dang - Từng câu hỏi)
-- Cấu trúc MỚI (GLOBAL ID): SN_[MÔN][CẤP]_[LỚP]_[TẬP]_[CHƯƠNG]_[BÀI]_[ID_DẠNG]
-  (Lưu ý: Đã BỎ thành phần [MỤC] ra khỏi chuỗi mã).
-
-- THUẬT TOÁN GÁN ID_DẠNG (TOÀN CỤC - KHÔNG RESET):
-  Bạn phải duy trì một bộ đếm ID chạy xuyên suốt từ đầu đến cuối file PDF:
-  1. ID_DẠNG là số nguyên tăng dần (1, 2, 3...) đại diện cho loại dạng bài.
-  2. NGUYÊN TẮC "XUYÊN SUỐT": ID_DẠNG chạy liên tục cho toàn bộ Bài học.
-     -> TUYỆT ĐỐI KHÔNG được reset ID về 1 khi chuyển sang Mục mới (Ví dụ: Từ Mục I sang Mục II vẫn phải đếm tiếp).
-  3. LOGIC CẤP SỐ:
-     - Nếu Tên Dạng hoàn toàn mới (chưa từng xuất hiện trong cả bài): ID_DẠNG = Số ID lớn nhất hiện tại + 1.
-     - Nếu Tên Dạng trùng khớp với một dạng đã xuất hiện trước đó (dù ở mục khác): Dùng lại ID_DẠNG cũ.
-
-- VÍ DỤ MINH HỌA ĐÚNG (GLOBAL LOGIC):
-  + Mục I - "Dạng: Khái niệm" -> ID là 1. Mã: ..._1_3_1
-  + Mục I - "Dạng: Tính toán" -> ID là 2. Mã: ..._1_3_2
-  + Sang Mục II (Không reset):
-    - Gặp "Dạng: Ứng dụng" (Mới) -> ID là 3. Mã: ..._1_3_3
-    - Gặp lại "Dạng: Khái niệm" (Cũ) -> ID quay về 1. Mã: ..._1_3_1
-
-C. ĐỊNH DẠNG HIỂN THỊ TRONG JSON
-- AI trích xuất giá trị thuần túy vào JSON (Ví dụ: "SN_TOANTHPT_C10_1_1_3_5").
-
 7. (BỔ SUNG BẮT BUỘC) CƠ CHẾ "LỌC NHIỄU" & CHUẨN HÓA FILE TỔ HỢP (MIXED INPUT HANDLER):
 Do file PDF đầu vào là dạng "Tổ hợp", bạn phải kích hoạt bộ lọc sau để đảm bảo đầu ra luôn là BÀI TỰ LUẬN CHUẨN:
 
@@ -287,6 +255,8 @@ Nếu từ đó đúng nghĩa đen nhưng sai ngữ cảnh chuyên ngành -> PH�
 BẮT BUỘC tuân thủ cấu trúc Layout để hiển thị đúng trên ứng dụng:
 A. CẤU TRÚC CÂU HỎI:
 - Trường "stt": Số nguyên từ 1 đến 20.
+- Trường "ma_dang": "" (BẮT BUỘC PHẢI ĐỂ CHUỖI RỖNG. TUYỆT ĐỐI KHÔNG được sinh mã, không được điền bất kỳ giá trị nào).
+- Trường "ma_bai": "" (BẮT BUỘC PHẢI ĐỂ CHUỖI RỖNG).
 - Trường "muc_do": 
   + BẮT BUỘC tuân thủ logic Slot ở phần IV:
   + Câu 1-10 điền: "thong_hieu"
@@ -350,4 +320,4 @@ Bắt đầu thực hiện:
 3. PHÂN LOẠI & SẮP XẾP câu hỏi vào 2 SLOT cứng:
    - Câu 1-10: Thông hiểu -> Gán "Thông hiểu".
    - Câu 11-20: Vận dụng -> Gán "van_dung".
-4. XUẤT JSON chuẩn format Schema (Array cho 'phan', Split Vi/En cho 'noi_dung' và 'giai_thich').
+4. XUẤT JSON chuẩn format Schema (ma_bai, ma_dang để trống. Array cho 'phan', Split Vi/En cho 'noi_dung' và 'giai_thich').

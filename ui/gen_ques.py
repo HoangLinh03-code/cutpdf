@@ -21,6 +21,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtGui import QFont
 from config.credentials import Config
 from ui.groupfiles import main as _smart_group_files
+from ui.group_review_dialog import GroupReviewDialog
 
 # ============================================================
 # CLASS ĐA LUỒNG (WORKER) - ĐÃ TỐI ƯU HÓA
@@ -132,7 +133,7 @@ class ProcessingThread(QThread):
 
     def _process_worker(self, task):
         """Gọi hàm xử lý từ module được truyền vào"""
-        MODEL_NAME = "gemini-2.5-pro"
+        MODEL_NAME = "gemini-3-pro-preview"
         
         try:
             if task.task_type == "TN":
@@ -1148,37 +1149,48 @@ class GenQuesWidget(QWidget):
             QMessageBox.critical(self, "Lỗi Prompt", msg)
             return
 
-        # 3. Nếu mọi thứ OK -> Mới bắt đầu khóa nút và chạy Thread
-        self.btn_process.setEnabled(False)
-        self.progress_bar.setVisible(True)
-        self.progress_bar.setValue(0)
-        self.status_lbl.setText("⏳ Đang khởi tạo quá trình xử lý đa luồng...")
+        dialog = GroupReviewDialog(selected, self)
         
-        max_workers = self.spin_worker.value()
+        # Nếu người dùng bấm "Xác nhận & Chạy AI" trong Popup
+        if dialog.exec_() == QDialog.Accepted:
+            # Lấy data đã được người dùng chỉnh tay
+            final_selected_data = dialog.get_final_data()
+            
+            # 3. Bắt đầu khóa nút và chạy Thread với Dữ liệu mới
+            self.btn_process.setEnabled(False)
+            self.progress_bar.setVisible(True)
+            self.progress_bar.setValue(0)
+            self.status_lbl.setText("⏳ Đang khởi tạo quá trình xử lý đa luồng...")
+            
+            max_workers = self.spin_worker.value()
+            
+            # TRUYỀN `final_selected_data` THAY VÌ `selected_initial` VÀO THREAD
+            self.processing_thread = ProcessingThread(
+                final_selected_data, 
+                prompt_paths, 
+                self.project_id,
+                self.credentials,
+                self.processor_module,
+                max_workers
+            )
+            
+            self.processing_thread.progress.connect(lambda s: self.status_lbl.setText(s))
+            self.processing_thread.progress_update.connect(lambda c, t: self.progress_bar.setValue(int(c/t*100) if t else 0))
+            self.processing_thread.finished.connect(self.on_finished)
         
-        self.processing_thread = ProcessingThread(
-            selected,
-            prompt_paths, # Dict này đảm bảo chỉ chứa các path đã tồn tại
-            self.project_id,
-            self.credentials,
-            self.processor_module,
-            max_workers
-        )
-        
-        self.processing_thread.progress.connect(lambda s: self.status_lbl.setText(s))
-        self.processing_thread.progress_update.connect(lambda c, t: self.progress_bar.setValue(int(c/t*100) if t else 0))
-        self.processing_thread.finished.connect(self.on_finished)
-        
-        # Thêm xử lý lỗi để mở lại nút nếu Thread chết bất đắc kỳ tử
-        def on_thread_error(e):
-            QMessageBox.critical(self, "Lỗi xử lý", f"❌ Có lỗi xảy ra trong quá trình chạy:\n{e}")
-            self.btn_process.setEnabled(True) # Mở lại nút để user bấm lại
-            self.progress_bar.setVisible(False)
-            self.status_lbl.setText("Đã dừng do lỗi.")
+            # Thêm xử lý lỗi để mở lại nút nếu Thread chết bất đắc kỳ tử
+            def on_thread_error(e):
+                QMessageBox.critical(self, "Lỗi xử lý", f"❌ Có lỗi xảy ra trong quá trình chạy:\n{e}")
+                self.btn_process.setEnabled(True) # Mở lại nút để user bấm lại
+                self.progress_bar.setVisible(False)
+                self.status_lbl.setText("Đã dừng do lỗi.")
 
-        self.processing_thread.error_signal.connect(on_thread_error)
-        
-        self.processing_thread.start()
+            self.processing_thread.error_signal.connect(on_thread_error)
+            
+            self.processing_thread.start()
+        else:
+            # Nếu người dùng bấm "Hủy" trong Popup
+            self.status_lbl.setText("Đã hủy quá trình sinh câu hỏi.")
 
     def on_finished(self, files):
         self.generated_files = files

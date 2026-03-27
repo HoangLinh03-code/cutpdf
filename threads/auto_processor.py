@@ -229,7 +229,7 @@ class AutoProcessor(QThread):
         for idx, bai in enumerate(json_data):
             try:
                 safe_name = re.sub(r"[:\\/\"*?<>|]", ".", bai['name'])
-                output_filename = f"{book_name} + {safe_name}.pdf"
+                output_filename = f"{safe_name}.pdf"
                 output_path = os.path.join(output_folder, output_filename)
                 
                 # ⭐ CHỈ CẮT, KHÔNG NÉN ⭐

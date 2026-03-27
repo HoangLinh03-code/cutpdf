@@ -99,7 +99,7 @@ B. CẤU TRÚC CÂU HỎI ("cau_hoi"):
 - "stt": [Số thứ tự 1-50]
 - "muc_do": [thong_hieu / van_dung]
 - "ma_dang": "" (BẮT BUỘC PHẢI ĐỂ CHUỖI RỖNG).
-- "phan": [] (ĐỂ MẢNG RỖNG - *Vẫn tư duy theo mục lục*).
+- "phan": [] (ĐỂ MẢNG RỖNG).
 - "doan_thong_tin": [Ngữ cảnh Tiếng Việt 70 - 90 từ].
 - "doan_thong_tin_en": "" (ĐỂ CHUỖI RỖNG).
 

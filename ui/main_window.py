@@ -14,6 +14,7 @@ from ui.convert_pdf_widget import ConvertPdfWidget
 from ui.genques_khtn_widget import GenQuesKHTNWidget
 from ui.genques_khxh_widget import GenQuesKHXHWidget
 from ui.sidebar import Sidebar
+from ui.compress_pdf_widget import CompressPdfWidget
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -87,12 +88,16 @@ class MainWindow(QWidget):
         # Content area
         self.content_area = QStackedWidget()
         
+       
+        # self.stacked_widget.addWidget(self.compress_pdf_widget) 
+
         # Tạo các widget
         self.cut_pdf_widget = CutPdfWidget(
             self.credentials, 
             self.project_id, 
             self.default_prompt_file
         )
+        self.compress_pdf_widget = CompressPdfWidget()
         
         self.convert_pdf_widget = ConvertPdfWidget()
         
@@ -107,9 +112,10 @@ class MainWindow(QWidget):
         
         # Add widgets to stack
         self.content_area.addWidget(self.cut_pdf_widget)         # Index 0
-        self.content_area.addWidget(self.convert_pdf_widget)     # Index 1
-        self.content_area.addWidget(self.genques_khtn_widget)    # Index 2
-        self.content_area.addWidget(self.genques_khxh_widget)    # Index 3
+        self.content_area.addWidget(self.compress_pdf_widget)    # Index 1
+        self.content_area.addWidget(self.convert_pdf_widget)     # Index 2
+        self.content_area.addWidget(self.genques_khtn_widget)    # Index 3
+        self.content_area.addWidget(self.genques_khxh_widget)    # Index 4
         # self.content_area.addWidget(self.chuyen_dang_widget)
         
         content_layout.addWidget(self.content_area)
@@ -211,6 +217,7 @@ class MainWindow(QWidget):
         """Kết nối signals từ các widget để update status"""
         widgets = [
             self.cut_pdf_widget,
+            self.compress_pdf_widget,
             self.convert_pdf_widget,
             self.genques_khtn_widget,
             self.genques_khxh_widget
@@ -346,6 +353,7 @@ class MainWindow(QWidget):
         
         titles = [
             "CutPDF - Cắt PDF bằng AI",
+            "CutPDF - Nén PDF",
             "CutPDF - Convert PDF",
             "CutPDF - Sinh Câu Hỏi KHTN",
             "CutPDF - Sinh Câu Hỏi KHXH"
@@ -353,6 +361,7 @@ class MainWindow(QWidget):
         
         messages = [
             "Switched to Cut PDF mode",
+            "Switched to Compress PDF mode",
             "Switched to Convert PDF mode",
             "Switched to GenQues KHTN mode",
             "Switched to GenQues KHXH mode"

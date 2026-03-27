@@ -269,6 +269,9 @@ class CutPdfWidget(QWidget):
         compress_layout = QVBoxLayout()
         self.compress_checkbox = QCheckBox("🗜️ Nén PDF sau khi cắt")
         self.compress_checkbox.setChecked(True)
+
+        self.compress_before_ai_checkbox = QCheckBox("🚀 Nén PDF trước khi gửi AI (Tăng tốc độ, giảm dung lượng)")
+        self.compress_before_ai_checkbox.setChecked(True)
         
         quality_layout = QHBoxLayout()
         quality_label = QLabel("Chất lượng:")
@@ -284,6 +287,7 @@ class CutPdfWidget(QWidget):
         quality_layout.addWidget(self.quality_combo)
         
         compress_layout.addWidget(self.compress_checkbox)
+        # compress_layout.addWidget(self.compress_before_ai_checkbox)
         compress_layout.addLayout(quality_layout)
         
         # Process button
@@ -776,7 +780,9 @@ class CutPdfWidget(QWidget):
         """Bắt đầu auto processing từ Google Drive"""
         drive_url = self.drive_url_input.text().strip()
         prompt_path = self.prompt_label.text()
-        
+        compress_before_ai = False
+        if hasattr(self, 'compress_before_ai_checkbox'):
+            compress_before_ai = self.compress_before_ai_checkbox.isChecked()
         # Validation
         if not drive_url:
             QMessageBox.warning(self, "Lỗi", "Vui lòng nhập link Google Drive folder.")
@@ -821,7 +827,8 @@ class CutPdfWidget(QWidget):
             drive_url, 
             prompt_path, 
             self.project_id, 
-            self.credentials
+            self.credentials,
+            compress_before_ai = compress_before_ai
         )
         
         self.auto_processor.progress.connect(self.update_status)
@@ -834,7 +841,9 @@ class CutPdfWidget(QWidget):
         """Bắt đầu auto processing từ folder local"""
         folder_path = self.local_folder_input.text().strip()
         prompt_path = self.prompt_label.text()
-        
+        compress_before_ai = False
+        if hasattr(self, 'compress_before_ai_checkbox'):
+            compress_before_ai = self.compress_before_ai_checkbox.isChecked()
         # Validation
         if not folder_path or not os.path.isdir(folder_path):
             QMessageBox.warning(self, "Lỗi", "Vui lòng chọn folder local hợp lệ.")
@@ -887,7 +896,8 @@ class CutPdfWidget(QWidget):
             self.local_pdfs,
             prompt_path, 
             self.project_id, 
-            self.credentials
+            self.credentials,
+            compress_before_ai = compress_before_ai
         )
         
         self.local_processor.progress.connect(self.update_status)

@@ -91,11 +91,33 @@ class LocalProcessor(QThread):
             # Read prompt
             with open(self.prompt_path, 'r', encoding='utf-8') as f:
                 prompt = f.read()
+            ai_pdf_path = pdf_path # Mặc định dùng file gốc
+            temp_compressed_path = None
+            if self.compress_before_ai:
+                self.progress.emit(f"Đang nén file cho AI: {os.path.basename(pdf_path)}", base_progress + 2)
+                
+                # Tạo thư mục temp
+                temp_dir = os.path.join(self.output_base_path, "temp")
+                os.makedirs(temp_dir, exist_ok=True)
+                temp_compressed_path = os.path.join(temp_dir, f"temp_ai_{os.path.basename(pdf_path)}")
+                
+                # Dùng quality 'screen' (72dpi) để nén tối đa, AI vẫn đọc được text bình thường
+                result = CompressManager.compress_single_file(pdf_path, temp_compressed_path, quality='screen')
+                
+                if result and os.path.exists(result):
+                    ai_pdf_path = result
+                    self.progress.emit(f"Nén thành công, gửi file nén lên AI...", base_progress + 10)
+                else:
+                    self.progress.emit(f"Nén thất bại, dùng file gốc gửi AI...", base_progress + 10)
+            else:
+                self.progress.emit(f"Gửi lên AI: {os.path.basename(pdf_path)}", base_progress + 10)
             
-            # Send to AI
-            self.progress.emit(f"Gửi lên AI: {os.path.basename(pdf_path)}", base_progress + 10)
-            ai_result = vertex_client.send_data_to_AI(prompt, pdf_path)
-            
+            ai_result = vertex_client.send_data_to_AI(prompt, ai_pdf_path)
+            if temp_compressed_path and os.path.exists(temp_compressed_path):
+                try:
+                    os.remove(temp_compressed_path)
+                except Exception as e:
+                    print(f"⚠️ Không thể xoá file tạm: {e}")
             # Parse JSON response
             self.progress.emit(f"Phân tích kết quả AI: {os.path.basename(pdf_path)}", base_progress + 20)
             json_data = self._parse_ai_response(ai_result)
@@ -183,7 +205,7 @@ class LocalProcessor(QThread):
                 safe_name = re.sub(r"[:\\/\"*?<>|]", ".", bai['name'])
                 
                 # Đặt tên file: "Tên sách + Tên bài.pdf"
-                output_filename = f"{book_name} - {safe_name}.pdf"
+                output_filename = f"{safe_name}.pdf"
                 output_path = os.path.join(output_folder, output_filename)
                 
                 # Cut PDF

@@ -1,20 +1,23 @@
 Bạn là một chuyên gia trích xuất dữ liệu tài liệu chuyên nghiệp. 
-NHIỆM VỤ: Phân tích mục lục của file PDF này và trích xuất danh sách tất cả các phần/bài học.
+NHIỆM VỤ: Phân tích mục lục của file PDF này và trích xuất danh sách các BÀI HỌC CỤ THỂ (Lessons) để phục vụ cho việc cắt tách file PDF.
 
-QUY TẮC QUÉT DỮ LIỆU:
-1. PHẠM VI: Tìm và đọc TẤT CẢ các trang thuộc phần Mục lục (Table of Contents). Đừng dừng lại ở trang đầu tiên nếu mục lục còn tiếp diễn ở trang sau.
-2. CẤU TRÚC LAYOUT: 
-   - Nếu trang chia nhiều cột: Đọc hết cột 1 rồi mới sang cột 2.
-   - Nếu có các mục con (Sub-sections): Chỉ lấy các mục cấp cao nhất (ví dụ: Unit, Lesson, Chương, Bài).
-3. ĐỘ CHÍNH XÁC: Không được bỏ sót bất kỳ tiêu đề nào có đánh số thứ tự hoặc có số trang đi kèm.
-4. CÁCH TÍNH TRANG:
-   - start_page: Số trang vật lý trong file PDF nơi bài đó bắt đầu.
-   - end_page: Số trang cuối cùng của bài đó (thường là trang ngay trước trang bắt đầu của bài tiếp theo).
+QUY TẮC QUÉT DỮ LIỆU BẮT BUỘC:
+1. PHẠM VI: Quét TẤT CẢ các trang của Mục lục (Table of Contents). Không được dừng lại giữa chừng nếu mục lục sang trang mới.
+2. CẤP ĐỘ TRÍCH XUẤT (QUAN TRỌNG NHẤT ĐỂ TRÁNH LỖI CẮT GỘP):
+   - CHỈ trích xuất các mục ở cấp độ BÀI HỌC (Ví dụ: Bài 1, Bài 2, Unit 1, Lesson 1, Tiết 1...).
+   - TUYỆT ĐỐI BỎ QUA các mục cấp cao mang tính chất gom nhóm như "Phần", "Chương", "Chủ đề" (Theme). Nếu trích xuất "Chương", hệ thống sẽ bị lỗi lấy sai số trang bao trùm cả chương đó kèm theo các lời giải chung.
+   - Tên bài nên chứa tiền tố (VD: "Bài 1: Khái quát...") để dễ nhận diện.
+3. ĐỘ CHÍNH XÁC & CHỐNG BỎ SÓT:
+   - Dò quét từng dòng có chứa số trang. Bất kỳ dòng nào có cấu trúc chỉ ra một nội dung bài học cụ thể kèm số trang thì bắt buộc phải là một object độc lập.
+   - Đảm bảo quét đủ cả 2 cột nếu mục lục chia cột.
+4. CÁCH TÍNH SỐ TRANG (start_page & end_page):
+   - start_page: Số trang vật lý (số in trên sách hoặc số thứ tự trang PDF) nơi bài đó bắt đầu.
+   - end_page: Bằng (start_page của BÀI KẾ TIẾP - 1). Ví dụ: Bài 1 bắt đầu trang 10, Bài 2 bắt đầu trang 15 -> Bài 1 sẽ có end_page là 14. 
 
 ĐỊNH DẠNG ĐẦU RA (JSON DUY NHẤT):
 [
-  {"name": "Tên bài(Giữ nguyên ngôn ngữ gốc)", "start_page": 10, "end_page": 15},
-  ...
+  {"name": "Bài 1: Tên bài", "start_page": 10, "end_page": 14},
+  {"name": "Bài 2: Tên bài", "start_page": 15, "end_page": 20}
 ]
 
-LƯU Ý: Không trả về văn bản giải thích. Chỉ trả về mảng JSON.
+LƯU Ý: Tuyệt đối không sinh thêm văn bản giải thích, không dùng markdown ```json. Chỉ trả về mảng JSON thuần túy.

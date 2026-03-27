@@ -42,16 +42,21 @@ class Sidebar(QWidget):
         # Spacer nhỏ
         layout.addSpacing(15)
         
-        # Menu buttons
+        # Menu buttons  
+        
+        
         self.cut_pdf_btn = self.create_menu_button("CẮT PDF")
         self.cut_pdf_btn.clicked.connect(lambda: self.switch_to_mode(0))
         
+        self.compress_pdf_btn = self.create_menu_button("NÉN PDF")
+        self.compress_pdf_btn.clicked.connect(lambda: self.switch_to_mode(1))
+        
         self.convert_pdf_btn = self.create_menu_button("CHUYỂN ĐỔI PDF")
-        self.convert_pdf_btn.clicked.connect(lambda: self.switch_to_mode(1))
+        self.convert_pdf_btn.clicked.connect(lambda: self.switch_to_mode(2))
         
         # --- THÊM 2 NÚT MỚI ---
         self.genques_khtn_btn = self.create_menu_button("TẠO CÂU HỎI BẰNG AI")
-        self.genques_khtn_btn.clicked.connect(lambda: self.switch_to_mode(2))
+        self.genques_khtn_btn.clicked.connect(lambda: self.switch_to_mode(3))
         
         # self.genques_khxh_btn = self.create_menu_button("🏛️ GenQues KHXH")
         # self.genques_khxh_btn.clicked.connect(lambda: self.switch_to_mode(3))
@@ -60,6 +65,7 @@ class Sidebar(QWidget):
         # ------------------------
         
         layout.addWidget(self.cut_pdf_btn)
+        layout.addWidget(self.compress_pdf_btn)
         layout.addWidget(self.convert_pdf_btn)
         layout.addWidget(self.genques_khtn_btn)
         # layout.addWidget(self.genques_khxh_btn)
@@ -86,6 +92,7 @@ class Sidebar(QWidget):
         # Store buttons for easy access
         self.buttons = [
             self.cut_pdf_btn,
+            self.compress_pdf_btn,
             self.convert_pdf_btn,
             self.genques_khtn_btn,
             # self.genques_khxh_btn
