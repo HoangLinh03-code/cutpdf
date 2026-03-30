@@ -133,7 +133,7 @@ class ProcessingThread(QThread):
 
     def _process_worker(self, task):
         """Gọi hàm xử lý từ module được truyền vào"""
-        MODEL_NAME = "gemini-3-pro-preview"
+        MODEL_NAME = "gemini-2.5-pro"
         
         try:
             if task.task_type == "TN":

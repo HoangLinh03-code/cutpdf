@@ -15,6 +15,7 @@ from ui.genques_khtn_widget import GenQuesKHTNWidget
 from ui.genques_khxh_widget import GenQuesKHXHWidget
 from ui.sidebar import Sidebar
 from ui.compress_pdf_widget import CompressPdfWidget
+from ui.gen_image_widget import GenImageWidget
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -104,6 +105,7 @@ class MainWindow(QWidget):
         # --- THÊM 2 WIDGET MỚI ---
         self.genques_khtn_widget = GenQuesKHTNWidget()
         self.genques_khxh_widget = GenQuesKHXHWidget()
+        self.gen_image_widget = GenImageWidget()
         # -------------------------
         # self.chuyen_dang_widget = DocxProcessWidget(self, str(uuid.uuid4()))
         
@@ -115,7 +117,7 @@ class MainWindow(QWidget):
         self.content_area.addWidget(self.compress_pdf_widget)    # Index 1
         self.content_area.addWidget(self.convert_pdf_widget)     # Index 2
         self.content_area.addWidget(self.genques_khtn_widget)    # Index 3
-        self.content_area.addWidget(self.genques_khxh_widget)    # Index 4
+        self.content_area.addWidget(self.gen_image_widget)
         # self.content_area.addWidget(self.chuyen_dang_widget)
         
         content_layout.addWidget(self.content_area)
@@ -220,7 +222,7 @@ class MainWindow(QWidget):
             self.compress_pdf_widget,
             self.convert_pdf_widget,
             self.genques_khtn_widget,
-            self.genques_khxh_widget
+            self.gen_image_widget
         ]
         
         for widget in widgets:
@@ -356,7 +358,7 @@ class MainWindow(QWidget):
             "CutPDF - Nén PDF",
             "CutPDF - Convert PDF",
             "CutPDF - Sinh Câu Hỏi KHTN",
-            "CutPDF - Sinh Câu Hỏi KHXH"
+            "CutPDF - Sinh Ảnh Từ Mô Tả"
         ]
         
         messages = [
@@ -364,7 +366,7 @@ class MainWindow(QWidget):
             "Switched to Compress PDF mode",
             "Switched to Convert PDF mode",
             "Switched to GenQues KHTN mode",
-            "Switched to GenQues KHXH mode"
+            "Switched to GenImages mode"
         ]
         
         self.setWindowTitle(titles[mode])

@@ -58,6 +58,9 @@ class Sidebar(QWidget):
         self.genques_khtn_btn = self.create_menu_button("TẠO CÂU HỎI BẰNG AI")
         self.genques_khtn_btn.clicked.connect(lambda: self.switch_to_mode(3))
         
+        self.btn_gen_image = self.create_menu_button("SINH ẢNH TỪ MÔ TẢ")
+        # self.btn_gen_image.setCheckable(True)
+        self.btn_gen_image.clicked.connect(lambda: self.switch_to_mode(4))
         # self.genques_khxh_btn = self.create_menu_button("🏛️ GenQues KHXH")
         # self.genques_khxh_btn.clicked.connect(lambda: self.switch_to_mode(3))
         # self.chuyen_dang_btn = self.create_menu_button("🔄 Chuyển Dạng CH")
@@ -68,6 +71,7 @@ class Sidebar(QWidget):
         layout.addWidget(self.compress_pdf_btn)
         layout.addWidget(self.convert_pdf_btn)
         layout.addWidget(self.genques_khtn_btn)
+        layout.addWidget(self.btn_gen_image)
         # layout.addWidget(self.genques_khxh_btn)
         # layout.addWidget(self.chuyen_dang_btn)
         
@@ -95,6 +99,7 @@ class Sidebar(QWidget):
             self.compress_pdf_btn,
             self.convert_pdf_btn,
             self.genques_khtn_btn,
+            self.btn_gen_image,
             # self.genques_khxh_btn
             # self.chuyen_dang_btn
         ]

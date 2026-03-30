@@ -310,7 +310,7 @@ def generate_or_get_image(hinh_anh_data: Dict, target_key: str = "mo_ta") -> tup
     # 1. Lấy mô tả
     mo_ta = hinh_anh_data.get(target_key, "")
     
-    # 2. Tương thích ngược (Chỉ cho tiếng Việt)
+    # 2. Tương thích ngược
     if target_key == "mo_ta" and not mo_ta:
         mo_ta = hinh_anh_data.get("description", "")
 
@@ -320,33 +320,36 @@ def generate_or_get_image(hinh_anh_data: Dict, target_key: str = "mo_ta") -> tup
     # 3. Xác định ngôn ngữ
     lang_code = "en" if target_key == "mo_ta_en" else "vi"
 
+    # [QUAN TRỌNG]: Làm sạch mô tả, xóa các dấu xuống dòng và ký tự XML lỗi
+    safe_mo_ta = sanitize_xml_string(mo_ta.replace('\n', ' ').replace('\r', ''))
+
     # 4. Gọi API sinh ảnh
     if loai == "tu_mo_ta" and mo_ta:
         try:
             from modules.common.text2Image import generate_image_from_text
             
-            # Gọi hàm với tham số lang
             image_bytes = generate_image_from_text(mo_ta, lang=lang_code)
             
             if image_bytes:
-                time.sleep(15)
+                time.sleep(2) # Giữ 2s thôi nhé, bạn đang để 10s sẽ rất chậm
                 return image_bytes, None
             else:
-                return None, f"⚠️ [Lỗi Server] Không sinh được ảnh ({target_key})..."
+                return None, f"⚠️ [Lỗi Server API] Không sinh được ảnh ({target_key}) - Cần vẽ: {safe_mo_ta}"
         except Exception as e:
             print(f"❌ Lỗi sinh ảnh: {e}")
-            return None, f"⚠️ [Lỗi Code] {str(e)}"
+            return None, f"⚠️ [Lỗi Code] Cần vẽ: {safe_mo_ta} (Chi tiết: {str(e)})"
     
     # 5. Placeholder (Strict Mode - Báo lỗi nếu thiếu)
     placeholder = None
     lang_label = "EN" if lang_code == "en" else "VI"
     
     if mo_ta:
-        placeholder = f"🖼️ [{lang_label}: Cần chèn hình: {mo_ta}]"
+        placeholder = f"🖼️ [{lang_label} - Bỏ qua sinh ảnh] Cần vẽ: {safe_mo_ta}"
     elif hinh_anh_data.get("co_hinh"): 
         placeholder = f"❌ [MISSING {lang_label} IMAGE DESCRIPTION]"
         
     return None, placeholder
+
 
 def insert_image_or_placeholder(doc: Document, hinh_anh_data: Dict, target_key: str = "mo_ta"):
     if not hinh_anh_data.get("co_hinh"):
@@ -361,17 +364,20 @@ def insert_image_or_placeholder(doc: Document, hinh_anh_data: Dict, target_key: 
             doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
         except Exception as e:
             p = doc.add_paragraph()
-            run = p.add_run(f"⚠️ [Lỗi chèn ảnh: {str(e)}]")
+            # Bọc sanitize_xml_string an toàn tuyệt đối
+            run = p.add_run(sanitize_xml_string(f"⚠️ [Lỗi chèn ảnh vào Word: {str(e)}]"))
             run.font.color.rgb = RGBColor(255, 0, 0)
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     elif placeholder:
         p = doc.add_paragraph()
-        run = p.add_run(placeholder)
-        run.font.color.rgb = RGBColor(200, 0, 0)
+        # Bọc sanitize_xml_string an toàn tuyệt đối
+        run = p.add_run(sanitize_xml_string(placeholder))
+        run.font.color.rgb = RGBColor(255, 0, 0) # Chuyển sang màu đỏ tươi rực rỡ để dễ nhìn
         run.italic = True
         run.bold = True
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        
     return doc
-
 class PromptBuilder:
     """
     PromptBuilder mới: Gọn nhẹ, chỉ tập trung vào nội dung.
@@ -1108,7 +1114,7 @@ LỆNH THỰC THI BATCH {idx+1}/{len(batches)}:
 3. QUY ĐỊNH: Tuyệt đối giữ đúng cấu trúc JSON (không cắt xén giải thích/gợi ý).
 --------------------------------------------------------------------------------
 """
-        max_retries = 2
+        max_retries = 4
         retry_count = 0
         success = False
         
@@ -1152,6 +1158,13 @@ LỆNH THỰC THI BATCH {idx+1}/{len(batches)}:
             except Exception as e:
                 retry_count += 1
                 print(f"      ❌ Lỗi Batch {idx+1} (Lần {retry_count}): {e}")
+                
+                # NẾU VẪN CÒN LƯỢT THỬ LẠI -> BẮT BUỘC PHẢI DELAY
+                if retry_count < max_retries:
+                    # Lần 1 nghỉ 15s, lần 2 nghỉ 30s, lần 3 nghỉ 45s...
+                    sleep_time = 15 * retry_count 
+                    print(f"      ⏳ Server AI đang bận (Lỗi 503/429). Tạm nghỉ {sleep_time} giây trước khi thử lại...")
+                    time.sleep(sleep_time)
 
     if not all_raw_questions: return None
     
@@ -1313,7 +1326,7 @@ LỆNH THỰC THI BATCH {idx+1}/{len(batches)}:
 3. QUY ĐỊNH: Trường "phan" CHỈ chứa địa chỉ sách, CẤM chứa tên mức độ.
 --------------------------------------------------------------------------------
 """
-        max_retries = 2
+        max_retries = 4
         retry_count = 0
         success = False
         
@@ -1368,6 +1381,13 @@ LỆNH THỰC THI BATCH {idx+1}/{len(batches)}:
             except Exception as e:
                 retry_count += 1
                 print(f"      ❌ Lỗi Batch {idx+1} (Lần {retry_count}): {e}")
+                
+                # NẾU VẪN CÒN LƯỢT THỬ LẠI -> BẮT BUỘC PHẢI DELAY
+                if retry_count < max_retries:
+                    # Lần 1 nghỉ 15s, lần 2 nghỉ 30s, lần 3 nghỉ 45s...
+                    sleep_time = 15 * retry_count 
+                    print(f"      ⏳ Server AI đang bận (Lỗi 503/429). Tạm nghỉ {sleep_time} giây trước khi thử lại...")
+                    time.sleep(sleep_time)
 
     if not all_raw_questions: return None
     
@@ -1513,7 +1533,7 @@ LỆNH THỰC THI BATCH {idx+1}/{len(batches)}:
 3. QUY ĐỊNH: Tuyệt đối giữ đúng cấu trúc JSON, ĐẶC BIỆT chú ý bắt buộc phải có <br> ở đầu nội dung câu hỏi.
 --------------------------------------------------------------------------------
 """
-        max_retries = 2
+        max_retries = 4
         retry_count = 0
         success = False
         
@@ -1556,6 +1576,13 @@ LỆNH THỰC THI BATCH {idx+1}/{len(batches)}:
             except Exception as e:
                 retry_count += 1
                 print(f"      ❌ Lỗi Batch {idx+1} (Lần {retry_count}): {e}")
+                
+                # NẾU VẪN CÒN LƯỢT THỬ LẠI -> BẮT BUỘC PHẢI DELAY
+                if retry_count < max_retries:
+                    # Lần 1 nghỉ 15s, lần 2 nghỉ 30s, lần 3 nghỉ 45s...
+                    sleep_time = 15 * retry_count 
+                    print(f"      ⏳ Server AI đang bận (Lỗi 503/429). Tạm nghỉ {sleep_time} giây trước khi thử lại...")
+                    time.sleep(sleep_time)
 
     if not all_raw_questions: return None
     
