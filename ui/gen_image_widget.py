@@ -61,10 +61,10 @@ class BatchImageGenThread(QThread):
 
     def generate_single_image(self, client, prompt, lang):
         if lang == 'vi':
-            final_prompt = f"Vẽ hình ảnh minh họa chính xác cho mô tả sau. Đảm bảo các chữ/nhãn trong hình là TIẾNG VIỆT: {prompt}"
+            final_prompt = f"Vẽ hình ảnh minh họa chính xác cho mô tả sau: {prompt}"
             selected_model = self.model_vi
         else:
-            final_prompt = f"Generate a high-quality, accurate illustration based on the following description. Ensure all text labels inside the image are in ENGLISH: {prompt}"
+            final_prompt = f"Generate a high-quality, accurate illustration based on the following description: {prompt}"
             selected_model = self.model_en
 
         if selected_model == "gemini-3-pro-image-preview":

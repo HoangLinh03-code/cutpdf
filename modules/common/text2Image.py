@@ -59,17 +59,17 @@ def generate_image_from_text(prompt, aspect_ratio="1:1", lang="vi"):
         
         # --- PHÂN LUỒNG MODEL & PROMPT THEO NGÔN NGỮ ---
         if lang == 'en':
-            final_prompt = f"Generate a high-quality, accurate illustration based on the following description. Ensure all text labels inside the image are in ENGLISH: {prompt}"
+            final_prompt = f"Generate a high-quality, accurate illustration based on the following description: {prompt}"
             # Tiếng Anh chỉ sử dụng 2.5 flash
             models_to_try = [
                 "gemini-2.5-flash-image"
             ]
         else:
-            final_prompt = f"Vẽ hình ảnh minh họa chính xác cho mô tả sau. Đảm bảo các chữ/nhãn trong hình là TIẾNG VIỆT: {prompt}"
+            final_prompt = f"Vẽ hình ảnh minh họa chính xác cho mô tả sau: {prompt}"
             # Tiếng Việt ưu tiên 3 pro, fallback sang 3.1 flash preview nếu 429
             models_to_try = [
-                "gemini-3-pro-image-preview", 
-                "gemini-3.1-flash-image-preview"
+                "gemini-3.1-flash-image-preview",
+                "gemini-3-pro-image-preview"
             ]
         
         max_retries = 3   # Khai báo số lần thử lại tối đa

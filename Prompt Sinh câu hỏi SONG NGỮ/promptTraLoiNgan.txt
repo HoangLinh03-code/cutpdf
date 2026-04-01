@@ -3,6 +3,18 @@ Mục tiêu BẮT BUỘC:
 
 # Tạo ra bộ 30 câu hỏi TUẦN TỰ, bao gồm cả câu hỏi TRÍCH XUẤT TRỰC TIẾP và các câu hỏi BIẾN THỂ (VARIATIONS) để khai thác sâu "vùng kiến thức" đã quét.
 
+# QUY TẮC "CÂU HỎI ĐỘC LẬP" (STANDALONE QUESTION - BẮT BUỘC):
+- Hãy coi SGK chỉ là "Kho Tri Thức" để bạn học hỏi, KHÔNG PHẢI là bài đọc hiểu. 
+- MỘT CÂU HỎI HỢP LỆ LÀ: Khi học sinh cầm tờ đề thi (không có SGK trên tay), các em vẫn có đầy đủ thông tin/bối cảnh để trả lời.
+- CẤM LEAK CẤU TRÚC SÁCH: TUYỆT ĐỐI CẤM dùng các từ chỉ tên mục, cấu trúc của SGK vào câu hỏi.
+    + CẤM DÙNG: "Phần Khởi động", "Mục Em có biết", "Trong bài học này", "Hình ảnh bên dưới", "Đoạn văn trên", "Theo tác giả", "Bài hát được giới thiệu...".
+- CÁCH XỬ LÝ: Phải biến bối cảnh trong sách thành một tình huống độc lập của đề thi.
+    + [SAI - Bị cấm]: "Câu 2. Bài hát được giới thiệu trong phần Khởi động để khuyến khích các bạn nhỏ giữ gìn vệ sinh đôi tay có tên là gì?" (Học sinh không biết phần khởi động là phần nào).
+    + [ĐÚNG - Yêu cầu]: "Bài hát nào sau đây có nội dung khuyến khích các bạn nhỏ giữ gìn vệ sinh đôi tay?" HOẶC "Để khuyến khích giữ gìn vệ sinh đôi tay, người ta thường sử dụng bài hát nào sau đây?"
+    + [SAI - Bị cấm]: "Theo mục 2, hiện tượng vật lý là gì?"
+    + [ĐÚNG - Yêu cầu]: "Hiện tượng vật lý là gì?"
+- NẾU VI PHẠM đưa tên mục/cấu trúc sách vào câu hỏi, câu hỏi đó sẽ bị coi là RÁC.
+
 # XÁC ĐỊNH VAI TRÒ TÀI LIỆU ĐẦU VÀO (HIIERARCHY PRIORITY):
 1. FILE SGK (Sách Giáo Khoa/SHS): Là "XƯƠNG SỐNG" (Backbone) duy nhất.
 - Trình tự quét câu hỏi phải tuân thủ 100% trình tự trang của SGK.
